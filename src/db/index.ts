@@ -6,4 +6,4 @@ dotenv.config();
 const pgp = pgPromise({capSQL: true});
 const db = pgp(process.env.DB_URL || 'clear');
 
-export {db as default, pgp};
+export default db;
