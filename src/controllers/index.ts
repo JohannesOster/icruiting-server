@@ -1,3 +1,3 @@
-import * as organizationsController from './organizations.controller';
+import * as organizationsController from './organizations';
 
 export {organizationsController};

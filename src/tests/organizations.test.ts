@@ -43,4 +43,12 @@ describe('POST /organizations', () => {
     expect(org.organization_name).toBe(organization.organization_name);
     done();
   });
+
+  it('Returns 422 on missing params', (done) => {
+    request(app)
+      .post('/organizations')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(422, done);
+  });
 });
