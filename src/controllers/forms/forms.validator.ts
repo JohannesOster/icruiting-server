@@ -7,7 +7,6 @@ export const validateCreateForm = [
   body('form_items').isArray({min: 1}),
   body('form_items[*].component').isString(),
   body('form_items[*].item_label').isString(),
-  body('form_items[*].item_name').isString(),
   body('form_items[*].form_index').isInt(),
   body('form_items[*].item_validation.required').optional().isBoolean(),
   body('form_items[*].item_options.label').optional().isString(),

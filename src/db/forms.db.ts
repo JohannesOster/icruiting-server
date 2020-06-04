@@ -9,7 +9,6 @@ interface insertFormParams {
   form_items: Array<{
     component: string;
     item_label: string;
-    item_name: string;
     form_index: number;
     item_validation?: {
       required: boolean;
@@ -35,7 +34,6 @@ export const insertForm = async (params: insertFormParams) => {
       'form_id',
       'component',
       'item_label',
-      'item_name',
       'form_index',
       'item_validation',
       'item_options',
@@ -50,7 +48,6 @@ export const insertForm = async (params: insertFormParams) => {
       form_id: insertedForm.form_id,
       component: item.component,
       item_label: item.item_label,
-      item_name: item.item_name,
       form_index: item.form_index,
       item_validation:
         (item.item_validation && JSON.stringify(item.item_validation)) || null,

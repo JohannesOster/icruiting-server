@@ -50,14 +50,12 @@ const getForm = () => {
       {
         component: 'Textfield',
         item_label: faker.random.word(),
-        item_name: faker.random.uuid(),
         form_index: 0,
         item_validation: {required: true},
       },
       {
         component: 'Select',
         item_label: faker.random.word(),
-        item_name: faker.random.alphaNumeric(),
         form_index: 1,
         item_options: [
           {label: faker.random.word(), name: faker.random.alphaNumeric()},

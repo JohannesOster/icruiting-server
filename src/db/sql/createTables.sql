@@ -35,13 +35,12 @@ CREATE TABLE IF NOT EXISTS form (
 );
 
 -- ================= FORM ITEMS
-CREATE TYPE FORM_COMPONENT AS ENUM ('Textfield', 'Textarea', 'Select', 'Radiogroup', 'Checkbox', 'FileUpload');
+CREATE TYPE FORM_COMPONENT AS ENUM ('Input', 'Textarea', 'Select', 'Radio', 'Checkbox', 'FileUpload');
 CREATE TABLE IF NOT EXISTS form_item (
   form_item_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
   component FORM_COMPONENT NOT NULL,
   item_label TEXT NOT NULL,
-  item_name TEXT NOT NULL,
   form_index INTEGER NOT NULL,
   item_validation JSONB,    -- validation object for form item
   item_options JSONB,       -- array of options if componen is select, radio, etc.
