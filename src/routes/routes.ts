@@ -14,6 +14,7 @@ router.post(
   organizationsController.createOrganization,
 );
 
+router.use(requireAuth);
 router.get('/employees', employeesController.getEmployees);
 router.post(
   '/employees',
@@ -21,11 +22,11 @@ router.post(
   employeesController.createEmployee,
 );
 
-router.use(requireAuth);
 router.post(
   '/jobs',
   jobsController.validateCreateJob,
   jobsController.createJob,
 );
+router.get('/jobs', jobsController.getJobs);
 
 export {router as routes};

@@ -1,5 +1,5 @@
 import {RequestHandler} from 'express';
-import {insertJob} from '../../db/jobs.db';
+import {insertJob, selectJobs} from '../../db/jobs.db';
 import {validationResult} from 'express-validator';
 
 export const createJob: RequestHandler = (req, res, next) => {
@@ -17,6 +17,17 @@ export const createJob: RequestHandler = (req, res, next) => {
   insertJob(job)
     .then((resp: any) => {
       res.status(201).json(resp);
+    })
+    .catch((error: any) => {
+      next(error);
+    });
+};
+
+export const getJobs: RequestHandler = (req, res, next) => {
+  const organization_id = res.locals.user.orgID;
+  selectJobs(organization_id)
+    .then((resp) => {
+      res.status(200).json(resp);
     })
     .catch((error: any) => {
       next(error);

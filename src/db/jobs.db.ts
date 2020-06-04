@@ -1,9 +1,10 @@
 import db from '.';
+import {selectJobs as selectJobsSQL} from './sql';
 
 interface inserJobParams {
   job_title: string;
   organization_id: string;
-  requirements: [{requirement_label: string}];
+  requirements: Array<{requirement_label: string}>;
 }
 export const insertJob = (params: inserJobParams) => {
   const job = {
@@ -30,4 +31,8 @@ export const insertJob = (params: inserJobParams) => {
       return {requirements, ...insertedJob};
     });
   });
+};
+
+export const selectJobs = (organization_id: string) => {
+  return db.any(selectJobsSQL, {organization_id});
 };

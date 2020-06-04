@@ -3,6 +3,7 @@ import app from '../app';
 import faker from 'faker';
 import {createAllTables, dropAllTables, endConnection} from '../db/utils';
 import db from '../db';
+import {insertJob} from '../db/jobs.db';
 
 jest.mock('../middlewares/auth');
 
@@ -17,6 +18,11 @@ beforeAll(async (done) => {
     process.env.TEST_ORG_ID,
     faker.company.companyName,
   ]);
+  done();
+});
+
+beforeEach(async (done) => {
+  await db.none('DELETE FROM job');
   done();
 });
 
@@ -79,6 +85,55 @@ describe('POST /jobs', () => {
     const stmt = 'SELECT COUNT(*) FROM job WHERE job_id=$1';
     const {count} = await db.one(stmt, job_id);
     expect(parseInt(count)).toBe(1);
+
+    done();
+  });
+});
+
+describe('GET /jobs', () => {
+  it('Returns 200 json response', async (done) => {
+    request(app)
+      .get('/jobs')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200, done);
+  });
+
+  it('Returns empty array if ther are no jobs', async (done) => {
+    const resp = await request(app)
+      .get('/jobs')
+      .set('Accept', 'application/json')
+      .expect(200);
+
+    expect(resp.body.length).toBe(0);
+
+    done();
+  });
+
+  it('Returns arra of jobs with its requirements', async (done) => {
+    const job = {
+      organization_id: process.env.TEST_ORG_ID || '',
+      job_title: faker.company.companyName(),
+      requirements: [
+        {requirement_label: faker.commerce.productName()},
+        {requirement_label: faker.commerce.productName()},
+      ],
+    };
+    await insertJob(job);
+
+    const resp = await request(app)
+      .get('/jobs')
+      .set('Accept', 'application/json')
+      .expect(200);
+
+    expect(resp.body.length).toBe(1);
+    expect(resp.body[0].job_title).toBe(job.job_title);
+    const requirementLabels = job.requirements.map(
+      (req) => req.requirement_label,
+    );
+    resp.body[0].requirements.forEach((req: any) => {
+      expect(requirementLabels.includes(req.requirement_label)).toBe(true);
+    });
 
     done();
   });

@@ -4,6 +4,8 @@ import {selectOrganization} from '../db/organizations.db';
 import faker from 'faker';
 import {createAllTables, dropAllTables, endConnection} from '../db/utils';
 
+jest.mock('../middlewares/auth');
+
 beforeAll(async (done) => {
   await createAllTables();
   done();
