@@ -9,6 +9,7 @@ router.post(
   organizationsController.createOrganization,
 );
 
+router.get('/employees', employeesController.getEmployees);
 router.post(
   '/employees',
   employeesController.validateCreateEmployee,
