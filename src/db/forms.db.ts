@@ -1,5 +1,5 @@
 import db from '.';
-import {selectJobs as selectJobsSQL} from './sql';
+import {selectForms as selectFormsSQL} from './sql';
 
 interface insertFormParams {
   organization_id: string;
@@ -62,4 +62,8 @@ export const insertForm = async (params: insertFormParams) => {
   const stmt = db.$config.pgp.helpers.insert(values, cs) + ' RETURNING *';
 
   return db.any(stmt).then((items) => ({...insertedForm, form_items: items}));
+};
+
+export const selectForms = (organization_id: string) => {
+  return db.any(selectFormsSQL, {organization_id});
 };

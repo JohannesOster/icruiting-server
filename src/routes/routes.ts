@@ -35,5 +35,6 @@ router.post(
   formsController.validateCreateForm,
   formsController.createForm,
 );
+router.get('/forms', formsController.getForms);
 
 export {router as routes};

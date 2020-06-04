@@ -1,6 +1,6 @@
 import {RequestHandler} from 'express';
 import {validationResult} from 'express-validator';
-import {insertForm} from '../../db/forms.db';
+import {insertForm, selectForms} from '../../db/forms.db';
 
 export const createForm: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
@@ -13,6 +13,18 @@ export const createForm: RequestHandler = (req, res, next) => {
       res.status(201).json(data);
     })
     .catch((err) => {
+      next(err);
+    });
+};
+
+export const getForms: RequestHandler = (req, res, next) => {
+  selectForms(res.locals.user.orgID)
+    .then((forms) => {
+      res.status(200).json(forms);
+    })
+    .catch((err) => {
+      console.log(err);
+
       next(err);
     });
 };

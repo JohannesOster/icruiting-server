@@ -3,6 +3,7 @@ import app from '../app';
 import faker from 'faker';
 import {createAllTables, dropAllTables, endConnection} from '../db/utils';
 import db from '../db';
+import {insertForm} from '../db/forms.db';
 
 jest.mock('../middlewares/auth');
 
@@ -48,7 +49,7 @@ const getForm = () => {
     form_category: 'APPLICATION',
     form_items: [
       {
-        component: 'Textfield',
+        component: 'Input',
         item_label: faker.random.word(),
         form_index: 0,
         item_validation: {required: true},
@@ -91,6 +92,34 @@ describe('POST /forms', () => {
     expect(resp.body.form_title).toBe(form.form_title);
     expect(resp.body.form_category).toBe(form.form_category);
     expect(resp.body.form_items.length).toBe(form.form_items.length);
+    done();
+  });
+});
+
+describe('GET /forms', () => {
+  it('Returns 200 json response', (done) => {
+    request(app)
+      .get('/forms')
+      .set('Accept', 'application/json')
+      .send(getForm())
+      .expect('Content-Type', /json/)
+      .expect(200, done);
+  });
+
+  it('Returns array of forms along with their form items', async (done) => {
+    await db.none('DELETE FROM form');
+    const form: any = getForm();
+    form.organization_id = process.env.TEST_ORG_ID;
+
+    const insertedForm = await insertForm(form);
+
+    const resp = await request(app)
+      .get('/forms')
+      .set('Accept', 'application/json')
+      .expect(200);
+
+    expect(resp.body[0].form_id).toBe(insertedForm.form_id);
+    expect(resp.body[0].form_items.length).toBe(insertedForm.form_items.length);
     done();
   });
 });
