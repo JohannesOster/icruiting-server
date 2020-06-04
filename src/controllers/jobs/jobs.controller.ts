@@ -1,15 +1,20 @@
 import {RequestHandler} from 'express';
-import {insertOrganization} from '../../db/organizations.db';
+import {insertJob} from '../../db/jobs.db';
 import {validationResult} from 'express-validator';
 
-export const createOrganization: RequestHandler = (req, res, next) => {
+export const createJob: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(422).json({errors: errors.array()});
   }
 
-  const {organization_name} = req.body;
-  insertOrganization({organization_name})
+  const job = {
+    job_title: req.body.job_title,
+    organization_id: res.locals.user.orgID,
+    requirements: req.body.requirements,
+  };
+
+  insertJob(job)
     .then((resp: any) => {
       res.status(201).json(resp);
     })

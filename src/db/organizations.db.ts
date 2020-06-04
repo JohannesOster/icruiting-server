@@ -1,12 +1,12 @@
 import db from '.';
 
-interface insertProductParams {
+interface insertOrganizationParams {
   organization_name: string;
 }
-export const insertProduct = (params: insertProductParams) => {
+export const insertOrganization = (params: insertOrganizationParams) => {
   const stmt =
     db.$config.pgp.helpers.insert(params, null, 'organization') +
-    ' RETURNING organization_id';
+    ' RETURNING *';
   return db.one(stmt);
 };
 
