@@ -22,105 +22,33 @@ CREATE TABLE IF NOT EXISTS job_requirement (
   CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
+CREATE TYPE FORM_CATEGORY AS ENUM ('APPLICATION', 'SCREENING', 'ASSESSMENT');
 CREATE TABLE IF NOT EXISTS form (
   form_id UUID DEFAULT uuid_generate_v4(),
   organization_id UUID NOT NULL,
   job_id UUID NOT NULL,
-  form_category TEXT NOT NULL,
+  form_category FORM_CATEGORY NOT NULL,
+  form_title TEXT NOT NULL,
   CONSTRAINT form_id_pk PRIMARY KEY (form_id),
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
-  CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
-  CONSTRAINT form_category_check CHECK (
-    form_category = 'APPLICATION'
-    OR form_category = 'SCREENING'
-    OR form_category = 'ASSESSMENT'
-  )
+  CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
 -- ================= FORM ITEMS
+CREATE TYPE FORM_COMPONENT AS ENUM ('Textfield', 'Textarea', 'Select', 'Radiogroup', 'Checkbox', 'FileUpload');
 CREATE TABLE IF NOT EXISTS form_item (
   form_item_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
+  component FORM_COMPONENT NOT NULL,
   item_label TEXT NOT NULL,
   item_name TEXT NOT NULL,
   form_index INTEGER NOT NULL,
+  item_validation JSONB,    -- validation object for form item
+  item_options JSONB,       -- array of options if componen is select, radio, etc.
+  editable BOOLEAN DEFAULT FALSE,
+  deletable BOOLEAN DEFAULT FALSE,
   CONSTRAINT form_item_id_pk PRIMARY KEY (form_item_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
-  CONSTRAINT form_index_check CHECK (form_index >= 0)
-);
-
-CREATE TABLE IF NOT EXISTS textfield (
-  textfield_id UUID DEFAULT uuid_generate_v4(),
-  form_item_id UUID NOT NULL,
-  CONSTRAINT textfield_id_pk PRIMARY KEY (textfield_id),
-  CONSTRAINT form_item_id_fk FOREIGN KEY (form_item_id) REFERENCES form_item(form_item_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS textarea (
-  textarea_id UUID DEFAULT uuid_generate_v4(),
-  form_item_id UUID NOT NULL,
-  CONSTRAINT textarea_id_pk PRIMARY KEY (textarea_id),
-  CONSTRAINT form_item_id_fk FOREIGN KEY (form_item_id) REFERENCES form_item(form_item_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS file_upload_field (
-  file_upload_field_id UUID DEFAULT uuid_generate_v4(),
-  form_item_id UUID NOT NULL,
-  CONSTRAINT file_upload_field_id_pk PRIMARY KEY (file_upload_field_id),
-  CONSTRAINT form_item_id_fk FOREIGN KEY (form_item_id) REFERENCES form_item(form_item_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS select_field (
-  select_field_id UUID DEFAULT uuid_generate_v4(),
-  form_item_id UUID NOT NULL,
-  CONSTRAINT select_field_id_pk PRIMARY KEY (select_field_id),
-  CONSTRAINT form_item_id_fk FOREIGN KEY (form_item_id) REFERENCES form_item(form_item_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS select_field_option (
-  select_field_option_id UUID DEFAULT uuid_generate_v4(),
-  select_field_id UUID NOT NULL,
-  option_label TEXT NOT NULL,
-  option_value TEXT NOT NULL,
-  CONSTRAINT select_field_option_id_pk PRIMARY KEY (select_field_option_id),
-  CONSTRAINT select_field_id_fk FOREIGN KEY (select_field_id) REFERENCES select_field(select_field_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS radio_group (
-  radio_group_id UUID DEFAULT uuid_generate_v4(),
-  form_item_id UUID NOT NULL,
-  CONSTRAINT radio_group_id_pk PRIMARY KEY (radio_group_id),
-  CONSTRAINT form_item_id_fk FOREIGN KEY (form_item_id) REFERENCES form_item(form_item_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS radio_group_option (
-  radio_group_option_id UUID DEFAULT uuid_generate_v4(),
-  radio_group_id UUID NOT NULL,
-  option_label TEXT NOT NULL,
-  option_value TEXT NOT NULL,
-  CONSTRAINT radio_group_option_id_pk PRIMARY KEY (radio_group_option_id),
-  CONSTRAINT radio_group_id_fk FOREIGN KEY (radio_group_id) REFERENCES radio_group(radio_group_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS checkbox_group (
-  checkbox_group_id UUID DEFAULT uuid_generate_v4(),
-  form_item_id UUID NOT NULL,
-  CONSTRAINT checkbox_group_id_pk PRIMARY KEY (checkbox_group_id),
-  CONSTRAINT form_item_id_fk FOREIGN KEY (form_item_id) REFERENCES form_item(form_item_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS checkbox_group_option (
-  checkbox_group_option_id UUID DEFAULT uuid_generate_v4(),
-  checkbox_group_id UUID NOT NULL,
-  option_label TEXT NOT NULL,
-  option_value TEXT NOT NULL,
-  CONSTRAINT checkbox_group_option_id_pk PRIMARY KEY (checkbox_group_option_id),
-  CONSTRAINT checkbox_group_id_fk FOREIGN KEY (checkbox_group_id) REFERENCES checkbox_group(checkbox_group_id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS rating_group (
-  rating_group_id UUID DEFAULT uuid_generate_v4(),
-  form_item_id UUID NOT NULL,
-  CONSTRAINT rating_group_id_pk PRIMARY KEY (rating_group_id),
-  CONSTRAINT form_item_id_fk FOREIGN KEY (form_item_id) REFERENCES form_item(form_item_id) ON DELETE CASCADE
+  CONSTRAINT form_index_check CHECK (form_index >= 0),
+  CONSTRAINT form_id_form_index_unique UNIQUE (form_id, form_index) -- make shure the index inside of the form is unique
 );
