@@ -8,11 +8,11 @@ interface insertFormParams {
   form_category: 'APPLICATION' | 'SCREENING' | 'ASSESSMENT';
   form_items: Array<{
     component: string;
-    item_label: string;
     form_index: number;
-    item_validation?: {
-      required: boolean;
-    };
+    label?: string;
+    placeholder?: string;
+    default_value?: string;
+    item_validation?: {required: boolean};
     item_options?: Array<{label: string; value: string}>;
     editable?: boolean;
     deletable?: boolean;
@@ -33,29 +33,27 @@ export const insertForm = async (params: insertFormParams) => {
     [
       'form_id',
       'component',
-      'item_label',
       'form_index',
-      'item_validation',
-      'item_options',
-      'editable',
-      'deletable',
+      'label',
+      {name: 'placeholder', def: null},
+      {name: 'default_value', def: null},
+      {name: 'item_validation', def: null},
+      {name: 'item_options', def: null},
+      {name: 'editable', def: false},
+      {name: 'deletable', def: false},
     ],
     {table: 'form_item'},
   );
 
   const values = params.form_items.map((item) => {
     const map = {
+      ...item,
       form_id: insertedForm.form_id,
-      component: item.component,
-      item_label: item.item_label,
-      form_index: item.form_index,
+      item_options: item.item_options && JSON.stringify(item.item_options),
       item_validation:
-        (item.item_validation && JSON.stringify(item.item_validation)) || null,
-      item_options:
-        (item.item_options && JSON.stringify(item.item_options)) || null,
-      editable: !!item.editable,
-      deletable: !!item.deletable,
+        item.item_validation && JSON.stringify(item.item_validation),
     };
+
     return map;
   });
 

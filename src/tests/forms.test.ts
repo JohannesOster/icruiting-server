@@ -50,7 +50,8 @@ const getForm = () => {
     form_items: [
       {
         component: 'Input',
-        item_label: faker.random.word(),
+        label: faker.random.word(),
+        placeholder: faker.random.word(),
         form_index: 0,
         item_validation: {required: true},
       },
