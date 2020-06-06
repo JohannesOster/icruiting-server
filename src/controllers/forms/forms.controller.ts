@@ -8,11 +8,12 @@ export const createForm: RequestHandler = (req, res, next) => {
     return res.status(422).json({errors: errors.array()});
   }
 
-  insertForm({organization_id: res.locals.user.orgID, ...req.body})
+  insertForm({...req.body, organization_id: res.locals.user.orgID})
     .then((data) => {
       res.status(201).json(data);
     })
     .catch((err) => {
+      console.log(err);
       next(err);
     });
 };

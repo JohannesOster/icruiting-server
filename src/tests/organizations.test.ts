@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from '../app';
 import {selectOrganization} from '../db/organizations.db';
-import faker from 'faker';
+import fake from './fake';
 import {createAllTables, dropAllTables, endConnection} from '../db/utils';
 
 jest.mock('../middlewares/auth');
@@ -19,21 +19,16 @@ afterAll(async (done) => {
 
 describe('POST /organizations', () => {
   it('Returns 202 json response', (done) => {
-    const organization = {
-      organization_name: faker.company.companyName(),
-    };
     request(app)
       .post('/organizations')
       .set('Accept', 'application/json')
-      .send(organization)
+      .send(fake.organization())
       .expect('Content-Type', /json/)
       .expect(201, done);
   });
 
   it('Returns inserts store entity', async (done) => {
-    const organization = {
-      organization_name: faker.company.companyName(),
-    };
+    const organization = fake.organization();
     const resp = await request(app)
       .post('/organizations')
       .set('Accept', 'application/json')
