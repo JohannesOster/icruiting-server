@@ -55,8 +55,23 @@ describe('POST /forms', () => {
       .expect(201, done);
   });
 
-  it('Returns inserted form entity as well as form items', async (done) => {
+  it('Returns application form entity as well as form items', async (done) => {
     const form = fake.applicationForm(jobId);
+    const resp = await request(app)
+      .post('/forms')
+      .set('Accept', 'application/json')
+      .send(form)
+      .expect(201);
+
+    expect(!!resp.body.form_id).toBe(true);
+    expect(resp.body.form_title).toBe(form.form_title);
+    expect(resp.body.form_category).toBe(form.form_category);
+    expect(resp.body.form_items.length).toBe(form.form_items.length);
+    done();
+  });
+
+  it('Returns screening form entity as well as form items', async (done) => {
+    const form = fake.screeningForm(jobId);
     const resp = await request(app)
       .post('/forms')
       .set('Accept', 'application/json')

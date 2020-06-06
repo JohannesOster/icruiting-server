@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS form (
 );
 
 -- ================= FORM ITEMS
-CREATE TYPE FORM_COMPONENT AS ENUM ('Input', 'Textarea', 'Select', 'Radio', 'FileUpload');
+CREATE TYPE FORM_COMPONENT AS ENUM ('Input', 'Textarea', 'Select', 'Radio', 'FileUpload', 'RatingGroup');
 CREATE TABLE IF NOT EXISTS form_item (
   form_item_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,

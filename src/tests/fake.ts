@@ -41,6 +41,27 @@ const fake = {
       },
     ],
   }),
+  screeningForm: (job_id: string, organization_id: string = '') => ({
+    organization_id,
+    job_id: job_id,
+    form_title: faker.random.words(),
+    form_category: 'SCREENING',
+    form_items: [
+      {
+        component: 'RatingGroup',
+        label: faker.random.word(),
+        placeholder: faker.random.word(),
+        form_index: 0,
+        item_options: [
+          {label: faker.random.word(), name: faker.random.alphaNumeric()},
+          {label: faker.random.word(), name: faker.random.alphaNumeric()},
+          {label: faker.random.word(), name: faker.random.alphaNumeric()},
+        ],
+        editable: true,
+        deletable: true,
+      },
+    ],
+  }),
 };
 
 export default fake;
