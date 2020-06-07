@@ -15,6 +15,9 @@ router.post(
   organizationsController.createOrganization,
 );
 
+router.get('/forms/:form_id/html', formsController.renderHTMLForm);
+router.post('/forms/:form_id/html', formsController.submitHTMLForm);
+
 router.use(requireAuth);
 router.get('/employees', employeesController.getEmployees);
 router.post(

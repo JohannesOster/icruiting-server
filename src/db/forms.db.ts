@@ -1,5 +1,8 @@
 import db from '.';
-import {selectForms as selectFormsSQL} from './sql';
+import {
+  selectForms as selectFormsSQL,
+  selectForm as selectFormSQL,
+} from './sql';
 
 interface insertFormParams {
   organization_id: string;
@@ -64,4 +67,8 @@ export const insertForm = async (params: insertFormParams) => {
 
 export const selectForms = (organization_id: string) => {
   return db.any(selectFormsSQL, {organization_id});
+};
+
+export const selectForm = (form_id: string) => {
+  return db.any(selectFormSQL, {form_id});
 };

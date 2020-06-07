@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS applicant;
 DROP TABLE IF EXISTS form_item;
 DROP TABLE IF EXISTS form;
 DROP TABLE IF EXISTS job_requirement;

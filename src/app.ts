@@ -9,6 +9,9 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
+app.set('views', __dirname + '/views');
+app.set('view engine', 'pug');
+
 app.use('/', routes);
 
 app.use(cors());

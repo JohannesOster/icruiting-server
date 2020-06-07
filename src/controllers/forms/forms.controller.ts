@@ -1,6 +1,6 @@
 import {RequestHandler} from 'express';
 import {validationResult} from 'express-validator';
-import {insertForm, selectForms} from '../../db/forms.db';
+import {insertForm, selectForms, selectForm} from '../../db/forms.db';
 
 export const createForm: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
@@ -28,4 +28,25 @@ export const getForms: RequestHandler = (req, res, next) => {
 
       next(err);
     });
+};
+
+export const renderHTMLForm: RequestHandler = (req, res, next) => {
+  selectForm(req.params.form_id)
+    .then((result) => {
+      if (!result.length) return res.sendStatus(404);
+      const form = result[0];
+      const currUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+      res.header('Content-Type', 'text/html');
+      res.render('form', {
+        formID: form.form_id,
+        formItems: form.form_items,
+        submitAction: currUrl,
+      });
+    })
+    .catch(next);
+};
+
+export const submitHTMLForm: RequestHandler = (req, res, next) => {
+  res.header('Content-Type', 'text/html');
+  res.render('form-submission', {});
 };
