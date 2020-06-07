@@ -44,27 +44,25 @@ CREATE TABLE IF NOT EXISTS form_item (
   label TEXT NOT NULL,
   placeholder TEXT,
   default_value TEXT,
-  item_validation JSONB,    -- validation object for form item
-  item_options JSONB,       -- array of options if componen is select, radio, etc.
+  validation JSONB,    -- validation object for form item
+  options JSONB,       -- array of options if componen is select, radio, etc.
   editable BOOLEAN DEFAULT FALSE,
   deletable BOOLEAN DEFAULT FALSE,
   CONSTRAINT form_item_id_pk PRIMARY KEY (form_item_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT form_index_check CHECK (form_index >= 0),
   CONSTRAINT form_id_form_index_unique UNIQUE (form_id, form_index), -- make shure the index inside of the form is unique
-  CONSTRAINT item_options_conditional_not_null CHECK(
+  CONSTRAINT options_conditional_not_null CHECK(
     NOT (component='Select' OR component='Radio' OR component='RatingGroup')
-    OR item_options IS NOT NULL)
+    OR options IS NOT NULL)
 );
 
 CREATE TABLE IF NOT EXISTS applicant (
   applicant_id UUID DEFAULT uuid_generate_v4(),
   organization_id UUID NOT NULL,
   job_id UUID NOT NULL,
-  full_name TEXT NOT NULL,
-  email TEXT NOT NULL,
   attributes JSONB NOT NULL, -- {label, value}
-  files JSONB,               -- {label, value}
+  files JSONB,               -- {label, url}
   CONSTRAINT applicant_id_pk PRIMARY KEY (applicant_id),
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
   CONSTRAINT job_id_id FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE

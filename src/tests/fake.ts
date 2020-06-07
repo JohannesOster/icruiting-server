@@ -25,13 +25,13 @@ const fake = {
         label: faker.random.word(),
         placeholder: faker.random.word(),
         form_index: 0,
-        item_validation: {required: true},
+        validation: {required: true},
       },
       {
         component: 'Select',
         label: faker.random.word(),
         form_index: 1,
-        item_options: [
+        options: [
           {label: faker.random.word(), name: faker.random.alphaNumeric()},
           {label: faker.random.word(), name: faker.random.alphaNumeric()},
           {label: faker.random.word(), name: faker.random.alphaNumeric()},
@@ -52,7 +52,7 @@ const fake = {
         label: faker.random.word(),
         placeholder: faker.random.word(),
         form_index: 0,
-        item_options: [
+        options: [
           {label: faker.random.word(), name: faker.random.alphaNumeric()},
           {label: faker.random.word(), name: faker.random.alphaNumeric()},
           {label: faker.random.word(), name: faker.random.alphaNumeric()},

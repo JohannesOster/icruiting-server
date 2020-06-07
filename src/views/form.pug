@@ -22,7 +22,8 @@ html
       class="ic-form",
       method="POST",
       id=formID,
-      action=submitAction)
+      action=submitAction,
+      enctype="multipart/form-data")
       each formItem in formItems
         div(class="ic-form-field-container")
           label(for=formItem.form_item_id) #{formItem.label}
@@ -34,7 +35,7 @@ html
                 id=formItem.form_item_id,
                 name=formItem.form_item_id,
                 placeholder=formItem.placeholder
-                required=formItem.item_validation && formItem.item_validation.required
+                required=formItem.validation && formItem.validation.required
               )
             when "Textarea"
               textarea(
@@ -50,16 +51,17 @@ html
                   id=formItem.form_item_id,
                   name=formItem.form_item_id,
                 )
-                  each option in formItem.item_options
+                  each option in formItem.options
                     option(value=option.value) #{option.label}
                 include select-icon.svg
             when "Radio"
-              each option in formItem.item_options
+              each option in formItem.options
                 div(style="display: flex")
                   input(
                     type="radio"
                     name=formItem.form_item_id,
                     value=option.value
+                    checked=formItem.default_value === option.value
                   )
                   span(style="margin-left: 5px") #{option.label}
             when "Checkbox"
@@ -74,8 +76,9 @@ html
               input(
                 type="file",
                 id=`fileUpload-${formItem.form_item_id}`,
+                name=formItem.form_item_id,
                 accept="application/pdf, image/jpeg",
-                required=formItem.item_validation && formItem.item_validation.required
+                required=formItem.validation && formItem.validation.required
               )
             default: span Invalides Formular
       div

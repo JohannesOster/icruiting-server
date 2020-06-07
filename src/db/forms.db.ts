@@ -15,8 +15,8 @@ interface insertFormParams {
     label?: string;
     placeholder?: string;
     default_value?: string;
-    item_validation?: {required: boolean};
-    item_options?: Array<{label: string; value: string}>;
+    validation?: {required: boolean};
+    options?: Array<{label: string; value: string}>;
     editable?: boolean;
     deletable?: boolean;
   }>;
@@ -40,8 +40,8 @@ export const insertForm = async (params: insertFormParams) => {
       'label',
       {name: 'placeholder', def: null},
       {name: 'default_value', def: null},
-      {name: 'item_validation', def: null},
-      {name: 'item_options', def: null},
+      {name: 'validation', def: null},
+      {name: 'options', def: null},
       {name: 'editable', def: false},
       {name: 'deletable', def: false},
     ],
@@ -52,9 +52,8 @@ export const insertForm = async (params: insertFormParams) => {
     const map = {
       ...item,
       form_id: insertedForm.form_id,
-      item_options: item.item_options && JSON.stringify(item.item_options),
-      item_validation:
-        item.item_validation && JSON.stringify(item.item_validation),
+      options: item.options && JSON.stringify(item.options),
+      validation: item.validation && JSON.stringify(item.validation),
     };
 
     return map;
