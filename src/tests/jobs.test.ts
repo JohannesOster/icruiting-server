@@ -1,9 +1,9 @@
 import request from 'supertest';
 import app from '../app';
-import faker from 'faker';
+import fake from './fake';
 import {createAllTables, dropAllTables, endConnection} from '../db/utils';
-import db from '../db';
 import {insertJob} from '../db/jobs.db';
+import db from '../db';
 
 jest.mock('../middlewares/auth');
 
@@ -14,9 +14,10 @@ beforeAll(async (done) => {
      from the token payload in the auth middleware. The mock
      of this middleware also accesses process.env.TEST_ORG_ID
   */
+  const organization = fake.organization(process.env.TEST_ORG_ID);
   await db.none('INSERT INTO organization VALUES ($1, $2)', [
-    process.env.TEST_ORG_ID,
-    faker.company.companyName,
+    organization.organization_id,
+    organization.organization_name,
   ]);
   done();
 });
@@ -34,13 +35,7 @@ afterAll(async (done) => {
 
 describe('POST /jobs', () => {
   it('Returns 202 json response', (done) => {
-    const job = {
-      job_title: faker.company.companyName(),
-      requirements: [
-        {requirement_label: faker.commerce.productName()},
-        {requirement_label: faker.commerce.productName()},
-      ],
-    };
+    const job = fake.job();
     request(app)
       .post('/jobs')
       .set('Accept', 'application/json')
@@ -50,13 +45,7 @@ describe('POST /jobs', () => {
   });
 
   it('Returns created job entity as json object', async (done) => {
-    const job = {
-      job_title: faker.company.companyName(),
-      requirements: [
-        {requirement_label: faker.commerce.productName()},
-        {requirement_label: faker.commerce.productName()},
-      ],
-    };
+    const job = fake.job();
     const resp = await request(app)
       .post('/jobs')
       .set('Accept', 'application/json')
@@ -68,13 +57,7 @@ describe('POST /jobs', () => {
   });
 
   it('Actually inserts job enitity', async (done) => {
-    const job = {
-      job_title: faker.company.companyName(),
-      requirements: [
-        {requirement_label: faker.commerce.productName()},
-        {requirement_label: faker.commerce.productName()},
-      ],
-    };
+    const job = fake.job();
     const resp = await request(app)
       .post('/jobs')
       .set('Accept', 'application/json')
@@ -111,14 +94,7 @@ describe('GET /jobs', () => {
   });
 
   it('Returns arra of jobs with its requirements', async (done) => {
-    const job = {
-      organization_id: process.env.TEST_ORG_ID || '',
-      job_title: faker.company.companyName(),
-      requirements: [
-        {requirement_label: faker.commerce.productName()},
-        {requirement_label: faker.commerce.productName()},
-      ],
-    };
+    const job = fake.job(process.env.TEST_ORG_ID);
     await insertJob(job);
 
     const resp = await request(app)
