@@ -154,3 +154,29 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
     });
   });
 };
+
+export const submitForm: RequestHandler = async (req, res, next) => {
+  selectForm(req.params.form_id)
+    .then((result) => {
+      if (!result.length) return res.sendStatus(404);
+      const form = result[0];
+      const submitterId = res.locals.user['sub'];
+      try {
+        if (form.form_category === 'SCREENING')
+          submitScreening(form, submitterId, req.body);
+      } catch (error) {
+        next(error);
+      }
+
+      res.json({});
+    })
+    .catch(next);
+};
+
+const submitScreening = async (form: any, submitterId: string, body: any) => {
+  console.log(
+    `Submit screening form ${JSON.stringify(
+      form,
+    )}. Submitted by ${submitterId} with req body ${JSON.stringify(body)}`,
+  );
+};

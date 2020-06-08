@@ -67,3 +67,14 @@ CREATE TABLE IF NOT EXISTS applicant (
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
   CONSTRAINT job_id_id FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
+
+-- Represents a submission of a screening form
+CREATE TABLE IF NOT EXISTS screening (
+  form_id UUID NOT NULL,
+  applicant_id UUID NOT NULL,
+  submitter_id TEXT NOT NULL, -- id of submitting user
+  submission JSONB NOT NULL, -- {form_item_id,value}
+  CONSTRAINT form_id_applicant_id_submitter_id_pk PRIMARY KEY (form_id, applicant_id, submitter_id),
+  CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE NO ACTION,
+  CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE NO ACTION
+);

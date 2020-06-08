@@ -1,6 +1,5 @@
 import request from 'supertest';
 import app from '../app';
-import faker from 'faker';
 import {createAllTables, dropAllTables, endConnection} from '../db/utils';
 import db from '../db';
 import {insertForm} from '../db/forms.db';
@@ -108,5 +107,23 @@ describe('GET /forms', () => {
     expect(resp.body[0].form_id).toBe(insertedForm.form_id);
     expect(resp.body[0].form_items.length).toBe(insertedForm.form_items.length);
     done();
+  });
+});
+
+describe('POST /forms/:form_id', () => {
+  let insertedForm: any;
+  beforeAll(async (done) => {
+    await db.none('DELETE FROM form');
+    const form: any = fake.screeningForm(jobId, process.env.TEST_ORG_ID);
+    insertedForm = await insertForm(form);
+    done();
+  });
+
+  it('Returns 200 json response', (done) => {
+    request(app)
+      .post(`/forms/${insertedForm.form_id}`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200, done);
   });
 });

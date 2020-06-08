@@ -11,8 +11,8 @@ export const validateCreateForm = [
   body('form_items[*].default_values').optional().isString(),
   body('form_items[*].form_index').isInt(),
   body('form_items[*].validation.required').optional().isBoolean(),
-  body('form_items[*].options.label').optional().isString(),
-  body('form_items[*].options.value').optional().isString(),
+  //body('form_items[*].options[*].label').optional().isString(),
+  //body('form_items[*].options[*].value').optional().isString(),
   body('form_items[*].editable').optional().isBoolean(),
   body('form_items[*].deletable').optional().isBoolean(),
 ];

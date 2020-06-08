@@ -4,6 +4,7 @@ import {
   employeesController,
   jobsController,
   formsController,
+  applicantsController,
 } from '../controllers';
 import {requireAuth} from '../middlewares';
 
@@ -39,5 +40,8 @@ router.post(
   formsController.createForm,
 );
 router.get('/forms', formsController.getForms);
+router.post('/forms/:form_id', formsController.submitForm);
+
+router.get('/applicants', applicantsController.getApplicants);
 
 export {router as routes};
