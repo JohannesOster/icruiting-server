@@ -9,8 +9,3 @@ export const insertOrganization = (params: insertOrganizationParams) => {
     ' RETURNING *';
   return db.one(stmt);
 };
-
-export const selectOrganization = (organization_id: string) => {
-  const stmt = 'SELECT * FROM organization WHERE organization_id=$1';
-  return db.one(stmt, organization_id);
-};
