@@ -36,3 +36,36 @@ export const insertJob = (params: inserJobParams) => {
 export const selectJobs = (organization_id: string) => {
   return db.any(selectJobsSQL, {organization_id});
 };
+
+export const updateJob = (job_id: string, body: any) => {
+  return db
+    .tx((t) => {
+      const promises = [];
+      const update = db.$config.pgp.helpers.update;
+
+      /* Update job title or query job */
+      if (body.job_title) {
+        const vals = {job_title: body.job_title};
+        const stmt = update(vals, null, 'job') + ' WHERE job_id=$1 RETURNING *';
+        promises.push(t.one(stmt, job_id));
+      } else {
+        const stmt = 'SELECT * FROM job WHERE job_id=$1';
+        promises.push(t.one(stmt, job_id));
+      }
+
+      (body.job_requirements || []).forEach((req: any) => {
+        const vals = {requirement_label: req.requirement_label};
+        const condition = ' WHERE job_requirement_id=$1';
+        const stmt = update(vals, null, 'job_requirement') + condition;
+        promises.push(t.none(stmt, req.job_requirement_id));
+      });
+
+      return t.batch(promises);
+    })
+    .then(async (result) => {
+      // to send all requirements as response a new select stmt has to be made
+      const stmt = 'SELECT * FROM job_requirement WHERE job_id=$1';
+      const job_requirements = await db.any(stmt, job_id);
+      return {...result[0], job_requirements};
+    });
+};

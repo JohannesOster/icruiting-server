@@ -1,5 +1,9 @@
 import {RequestHandler} from 'express';
-import {insertJob, selectJobs} from '../../db/jobs.db';
+import {
+  insertJob,
+  selectJobs,
+  updateJob as updateJobDb,
+} from '../../db/jobs.db';
 import {validationResult} from 'express-validator';
 
 export const createJob: RequestHandler = (req, res, next) => {
@@ -32,4 +36,14 @@ export const getJobs: RequestHandler = (req, res, next) => {
     .catch((error: any) => {
       next(error);
     });
+};
+
+export const updateJob: RequestHandler = (req, res, next) => {
+  const job_id = req.params.job_id;
+
+  updateJobDb(job_id, req.body)
+    .then((resp) => {
+      res.status(200).json(resp);
+    })
+    .catch(next);
 };

@@ -33,6 +33,7 @@ router.post(
   jobsController.createJob,
 );
 router.get('/jobs', jobsController.getJobs);
+router.put('/jobs/:job_id', jobsController.updateJob);
 
 router.post(
   '/forms',
