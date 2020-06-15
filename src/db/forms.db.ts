@@ -8,10 +8,10 @@ interface insertFormParams {
   organization_id: string;
   job_id: string;
   form_title: string;
-  form_category: 'APPLICATION' | 'SCREENING' | 'ASSESSMENT';
+  form_category: 'application' | 'screening' | 'assessment';
   form_items: Array<{
     component: string;
-    form_index: number;
+    row_index: number;
     label?: string;
     placeholder?: string;
     default_value?: string;
@@ -36,7 +36,7 @@ export const insertForm = async (params: insertFormParams) => {
     [
       'form_id',
       'component',
-      'form_index',
+      'row_index',
       'label',
       {name: 'placeholder', def: null},
       {name: 'default_value', def: null},
@@ -70,4 +70,9 @@ export const selectForms = (organization_id: string) => {
 
 export const selectForm = (form_id: string) => {
   return db.any(selectFormSQL, {form_id});
+};
+
+export const deleteForm = (form_id: string) => {
+  const stmt = 'DELETE FROM form WHERE form_id=$1';
+  return db.none(stmt, form_id);
 };

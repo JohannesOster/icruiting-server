@@ -5,32 +5,46 @@ const fake = {
     organization_id,
     organization_name: faker.company.companyName(),
   }),
-  job: (organization_id: string = '') => ({
+  job: (organization_id: string) => ({
     organization_id,
+    job_id: faker.random.uuid(),
     job_title: faker.company.companyName(),
-    requirements: [
-      {requirement_label: faker.commerce.productName()},
-      {requirement_label: faker.commerce.productName()},
-      {requirement_label: faker.commerce.productName()},
-    ],
   }),
-  applicationForm: (job_id: string, organization_id: string = '') => ({
+  job_requirement: (job_id: string) => ({
+    job_id,
+    requirement_label: faker.commerce.productName(),
+  }),
+  applicant: (organization_id: string, job_id: string) => ({
+    organization_id,
+    job_id,
+    attributes: {
+      [faker.random.alphaNumeric()]: faker.random.alphaNumeric(),
+      [faker.random.alphaNumeric()]: faker.random.alphaNumeric(),
+      [faker.random.alphaNumeric()]: faker.random.alphaNumeric(),
+    },
+    files: {
+      [faker.random.alphaNumeric()]: faker.image.imageUrl(),
+      [faker.random.alphaNumeric()]: faker.image.imageUrl(),
+      [faker.random.alphaNumeric()]: faker.image.imageUrl(),
+    },
+  }),
+  applicationForm: (organization_id: string, job_id: string) => ({
     organization_id,
     job_id: job_id,
     form_title: faker.random.words(),
-    form_category: 'APPLICATION',
+    form_category: 'application',
     form_items: [
       {
-        component: 'Input',
+        component: 'input',
         label: faker.random.word(),
         placeholder: faker.random.word(),
-        form_index: 0,
+        row_index: 0,
         validation: {required: true},
       },
       {
-        component: 'Select',
+        component: 'select',
         label: faker.random.word(),
-        form_index: 1,
+        row_index: 1,
         options: [
           {label: faker.random.word(), value: faker.random.alphaNumeric()},
           {label: faker.random.word(), value: faker.random.alphaNumeric()},
@@ -41,17 +55,17 @@ const fake = {
       },
     ],
   }),
-  screeningForm: (job_id: string, organization_id: string = '') => ({
+  screeningForm: (organization_id: string, job_id: string) => ({
     organization_id,
     job_id: job_id,
     form_title: faker.random.words(),
-    form_category: 'SCREENING',
+    form_category: 'screening',
     form_items: [
       {
-        component: 'RatingGroup',
+        component: 'rating_group',
         label: faker.random.word(),
         placeholder: faker.random.word(),
-        form_index: 0,
+        row_index: 0,
         default_value: 1,
         options: [
           {label: '1', value: 1},

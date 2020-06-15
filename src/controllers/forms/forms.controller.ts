@@ -1,16 +1,20 @@
 import {RequestHandler} from 'express';
 import {validationResult} from 'express-validator';
-import {insertForm, selectForms, selectForm} from '../../db/forms.db';
+import {
+  insertForm,
+  selectForms,
+  selectForm,
+  deleteForm as deleteFormDb,
+} from '../../db/forms.db';
 import {insertApplicant} from '../../db/applicants.db';
 import {IncomingForm} from 'formidable';
+import {insertScreening} from '../../db/screenings.db';
 import {S3} from 'aws-sdk';
 import fs from 'fs';
 
 export const createForm: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({errors: errors.array()});
-  }
+  if (!errors.isEmpty()) return res.status(422).json({errors: errors.array()});
 
   insertForm({...req.body, organization_id: res.locals.user.orgID})
     .then((data) => {
@@ -29,7 +33,6 @@ export const getForms: RequestHandler = (req, res, next) => {
     })
     .catch((err) => {
       console.log(err);
-
       next(err);
     });
 };
@@ -54,6 +57,12 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
   selectForm(req.params.form_id).then((result) => {
     if (!result.length) return res.sendStatus(404);
     const form = result[0];
+
+    if (form.form_category !== 'application') {
+      return res.status(402).json({
+        message: 'Only application form are allowed to be submitted via html',
+      });
+    }
 
     // base object with required foreign keys
     const applicant: any = {
@@ -80,14 +89,14 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
             return acc;
           }
 
-          if (['Input', 'Textarea'].includes(item.component)) {
+          if (['input', 'textarea'].includes(item.component)) {
             console.log(`Got ${item.component}, no mapping required.`);
 
             acc.attributes.push({
               name: item.label,
               value: fields[item.form_item_id],
             });
-          } else if (['Select', 'Radio'].includes(item.component)) {
+          } else if (['select', 'radio'].includes(item.component)) {
             console.log(`Got ${item.component}, map value to label of option.`);
             // find the one option where option.value is equal to submitted value value
             const val = fields[item.form_item_id];
@@ -102,7 +111,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
               name: item.label,
               value: options[0].label,
             });
-          } else if (item.component === 'FileUpload') {
+          } else if (item.component === 'file_upload') {
             console.log(
               `Got ${item.component}. Upload file to S3 bucket and map value to {label, fileURL}`,
             );
@@ -142,8 +151,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
       promises.push(insertApplicant(applicant));
 
       Promise.all(promises)
-        .then((data) => {
-          console.log(data);
+        .then(() => {
           res.header('Content-Type', 'text/html');
           res.render('form-submission', {});
         })
@@ -161,22 +169,18 @@ export const submitForm: RequestHandler = async (req, res, next) => {
       if (!result.length) return res.sendStatus(404);
       const form = result[0];
       const submitterId = res.locals.user['sub'];
-      try {
-        if (form.form_category === 'SCREENING')
-          submitScreening(form, submitterId, req.body);
-      } catch (error) {
-        next(error);
-      }
 
-      res.json({});
+      if (form.form_category === 'screening')
+        return insertScreening({form, submitterId, body: req.body})
+          .then((data) => res.status(201).json(data))
+          .catch(next);
+      else throw new Error('Invalid form category');
     })
     .catch(next);
 };
 
-const submitScreening = async (form: any, submitterId: string, body: any) => {
-  console.log(
-    `Submit screening form ${JSON.stringify(
-      form,
-    )}. Submitted by ${submitterId} with req body ${JSON.stringify(body)}`,
-  );
+export const deleteForm: RequestHandler = async (req, res, next) => {
+  deleteFormDb(req.params.form_id)
+    .then(() => res.status(200).json({}))
+    .catch(next);
 };

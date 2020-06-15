@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS job_requirement (
   CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
-CREATE TYPE FORM_CATEGORY AS ENUM ('APPLICATION', 'SCREENING', 'ASSESSMENT');
+CREATE TYPE FORM_CATEGORY AS ENUM ('application', 'screening', 'assessment');
 CREATE TABLE IF NOT EXISTS form (
   form_id UUID DEFAULT uuid_generate_v4(),
   organization_id UUID NOT NULL,
@@ -35,12 +35,12 @@ CREATE TABLE IF NOT EXISTS form (
 );
 
 -- ================= FORM ITEMS
-CREATE TYPE FORM_COMPONENT AS ENUM ('Input', 'Textarea', 'Select', 'Radio', 'FileUpload', 'RatingGroup');
+CREATE TYPE FORM_COMPONENT AS ENUM ('input', 'textarea', 'select', 'radio', 'file_upload', 'rating_group');
 CREATE TABLE IF NOT EXISTS form_item (
   form_item_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
   component FORM_COMPONENT NOT NULL,
-  form_index INTEGER NOT NULL,
+  row_index INTEGER NOT NULL,
   label TEXT NOT NULL,
   placeholder TEXT,
   default_value TEXT,
@@ -50,10 +50,10 @@ CREATE TABLE IF NOT EXISTS form_item (
   deletable BOOLEAN DEFAULT FALSE,
   CONSTRAINT form_item_id_pk PRIMARY KEY (form_item_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
-  CONSTRAINT form_index_check CHECK (form_index >= 0),
-  CONSTRAINT form_id_form_index_unique UNIQUE (form_id, form_index), -- make shure the index inside of the form is unique
+  CONSTRAINT row_index_check CHECK (row_index >= 0),
+  CONSTRAINT form_id_row_index_unique UNIQUE (form_id, row_index), -- make shure the index inside of the form is unique
   CONSTRAINT options_conditional_not_null CHECK(
-    NOT (component='Select' OR component='Radio' OR component='RatingGroup')
+    NOT (component='select' OR component='radio' OR component='rating_group')
     OR options IS NOT NULL)
 );
 
@@ -70,11 +70,12 @@ CREATE TABLE IF NOT EXISTS applicant (
 
 -- Represents a submission of a screening form
 CREATE TABLE IF NOT EXISTS screening (
-  form_id UUID NOT NULL,
-  applicant_id UUID NOT NULL,
-  submitter_id TEXT NOT NULL, -- id of submitting user
+  applicant_id UUID,
+  submitter_id TEXT, -- id of submitting user
+  form_id UUID,
   submission JSONB NOT NULL, -- {form_item_id,value}
-  CONSTRAINT form_id_applicant_id_submitter_id_pk PRIMARY KEY (form_id, applicant_id, submitter_id),
-  CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE NO ACTION,
-  CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE NO ACTION
+  CONSTRAINT applicant_id_submitter_id_pk PRIMARY KEY (applicant_id, submitter_id),
+  CONSTRAINT form_id_applicant_id_submitter_id_uq UNIQUE (form_id, applicant_id, submitter_id),
+  CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE SET NULL,
+  CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE
 );
