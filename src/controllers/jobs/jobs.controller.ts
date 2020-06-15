@@ -11,7 +11,7 @@ export const createJob: RequestHandler = (req, res, next) => {
   const job = {
     job_title: req.body.job_title,
     organization_id: res.locals.user.orgID,
-    requirements: req.body.requirements,
+    job_requirements: req.body.job_requirements,
   };
 
   insertJob(job)

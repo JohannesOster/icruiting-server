@@ -20,14 +20,19 @@ beforeAll(async (done) => {
   await db.none(insOrg);
 
   const job = fake.job(organization.organization_id);
-  const insJob = insert(job, null, 'job');
-  await db.none(insJob);
+  const params = {
+    organization_id: job.organization_id,
+    job_title: job.job_title,
+  };
 
-  const job_requirement = fake.job_requirement(job.job_id);
-  const insReq = insert(job_requirement, null, 'job_requirement');
+  const insJob = insert(params, null, 'job') + ' RETURNING *';
+  const {job_id} = await db.one(insJob);
+
+  const req = {job_id, ...job.job_requirements[0]};
+  const insReq = insert(req, null, 'job_requirement');
   await db.none(insReq);
 
-  jobId = job.job_id; // set jobId for "global" access in test file
+  jobId = job_id; // set jobId for "global" access in test file
 
   done();
 });
@@ -249,6 +254,58 @@ describe('forms', () => {
       );
 
       expect(parseInt(count)).toBe(0);
+
+      done();
+    });
+  });
+
+  describe('PUT /forms/:form_id', () => {
+    it('Returns json 200 response', async (done) => {
+      const orgId = process.env.TEST_ORG_ID || '';
+      const fakeForm: any = fake.applicationForm(orgId, jobId);
+      const form = await insertForm(fakeForm);
+
+      request(app)
+        .put(`/forms/${form.form_id}`)
+        .set('Accept', 'application/json')
+        .send({})
+        .expect('Content-Type', /json/)
+        .expect(200, done);
+    });
+
+    it('Returns updated form entity', async (done) => {
+      const orgId = process.env.TEST_ORG_ID || '';
+      const fakeForm: any = fake.applicationForm(orgId, jobId);
+      const form = await insertForm(fakeForm);
+
+      const updateVals: any = fake.applicationForm(orgId, jobId);
+      const resp = await request(app)
+        .put(`/forms/${form.form_id}`)
+        .set('Accept', 'application/json')
+        .send(updateVals)
+        .expect(200);
+
+      // make shure form_id, organization_id and job_id are unmodified
+      expect(resp.body.form_id).toBe(form.form_id);
+      expect(resp.body.organization_id).toBe(form.organization_id);
+      expect(resp.body.job_id).toBe(form.job_id);
+
+      expect(resp.body.form_title).toBe(updateVals.form_title);
+
+      /*
+       * for each received form item
+       *    go through all sent form_items to find the corresponding one
+       *        for this item go through all object keys and compare them to response item
+       */
+      resp.body.form_items.forEach((item: any) => {
+        for (let i = 0; i < updateVals.form_items.length; ++i) {
+          if (updateVals.form_items[i].label === item.label) {
+            Object.keys(updateVals.form_items[i]).forEach((key: string) => {
+              expect(updateVals.form_items[i][key]).toStrictEqual(item[key]);
+            });
+          }
+        }
+      });
 
       done();
     });

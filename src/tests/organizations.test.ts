@@ -43,11 +43,10 @@ describe('organizations', () => {
         .expect(201);
 
       const stmt = 'SELECT * FROM organization WHERE organization_id=$1';
-      const result = await db.any(stmt, resp.body.organization_id);
+      const result = await db.one(stmt, resp.body.organization_id);
 
-      expect(result.length).toBe(1);
-      expect(result[0].organization_name).toBe(organization.organization_name);
-      expect(!!result[0].organization_id).toBe(true);
+      expect(result.organization_name).toBe(organization.organization_name);
+      expect(!!result.organization_id).toBe(true);
       done();
     });
   });

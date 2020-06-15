@@ -7,12 +7,12 @@ const fake = {
   }),
   job: (organization_id: string) => ({
     organization_id,
-    job_id: faker.random.uuid(),
     job_title: faker.company.companyName(),
-  }),
-  job_requirement: (job_id: string) => ({
-    job_id,
-    requirement_label: faker.commerce.productName(),
+    job_requirements: [
+      {requirement_label: faker.commerce.productName()},
+      {requirement_label: faker.commerce.productName()},
+      {requirement_label: faker.commerce.productName()},
+    ],
   }),
   applicant: (organization_id: string, job_id: string) => ({
     organization_id,

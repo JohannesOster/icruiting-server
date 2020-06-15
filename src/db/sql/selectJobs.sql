@@ -1,7 +1,7 @@
 SELECT
   job.job_id,
   job.job_title,
-  json_agg(jr) requirements
+  json_agg(jr) job_requirements
 FROM
   job
   JOIN (select * FROM job_requirement) as jr 

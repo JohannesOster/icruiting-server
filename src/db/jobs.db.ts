@@ -4,7 +4,7 @@ import {selectJobs as selectJobsSQL} from './sql';
 interface inserJobParams {
   job_title: string;
   organization_id: string;
-  requirements: Array<{requirement_label: string}>;
+  job_requirements: Array<{requirement_label: string}>;
 }
 export const insertJob = (params: inserJobParams) => {
   const job = {
@@ -20,15 +20,15 @@ export const insertJob = (params: inserJobParams) => {
       {table: 'job_requirement'},
     );
 
-    const values = params.requirements.map((requirement) => ({
+    const values = params.job_requirements.map((requirement) => ({
       job_id: insertedJob.job_id,
       requirement_label: requirement.requirement_label,
     }));
 
     const stmt = db.$config.pgp.helpers.insert(values, cs) + ' RETURNING *';
 
-    return db.any(stmt).then((requirements) => {
-      return {requirements, ...insertedJob};
+    return db.any(stmt).then((job_requirements) => {
+      return {job_requirements, ...insertedJob};
     });
   });
 };

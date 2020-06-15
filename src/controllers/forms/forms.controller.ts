@@ -5,6 +5,7 @@ import {
   selectForms,
   selectForm,
   deleteForm as deleteFormDb,
+  updateForm as updateFormDb,
 } from '../../db/forms.db';
 import {insertApplicant} from '../../db/applicants.db';
 import {IncomingForm} from 'formidable';
@@ -179,8 +180,19 @@ export const submitForm: RequestHandler = async (req, res, next) => {
     .catch(next);
 };
 
-export const deleteForm: RequestHandler = async (req, res, next) => {
+export const deleteForm: RequestHandler = (req, res, next) => {
   deleteFormDb(req.params.form_id)
     .then(() => res.status(200).json({}))
     .catch(next);
+};
+
+export const updateForm: RequestHandler = (req, res, next) => {
+  updateFormDb(req.params.form_id, req.body)
+    .then((result: any) => {
+      res.status(200).json(result);
+    })
+    .catch((err) => {
+      console.log(err);
+      next(err);
+    });
 };

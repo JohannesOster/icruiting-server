@@ -42,6 +42,7 @@ router.post(
 router.get('/forms', formsController.getForms);
 router.post('/forms/:form_id', formsController.submitForm);
 router.delete('/forms/:form_id', formsController.deleteForm);
+router.put('/forms/:form_id', formsController.updateForm);
 
 router.get('/applicants', applicantsController.getApplicants);
 

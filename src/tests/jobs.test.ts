@@ -34,8 +34,9 @@ afterAll(async (done) => {
 });
 
 describe('POST /jobs', () => {
+  const organizationId = process.env.TEST_ORG_ID || '';
   it('Returns 202 json response', (done) => {
-    const job = fake.job();
+    const job = fake.job(organizationId);
     request(app)
       .post('/jobs')
       .set('Accept', 'application/json')
@@ -45,19 +46,19 @@ describe('POST /jobs', () => {
   });
 
   it('Returns created job entity as json object', async (done) => {
-    const job = fake.job();
+    const job = fake.job(organizationId);
     const resp = await request(app)
       .post('/jobs')
       .set('Accept', 'application/json')
       .send(job)
       .expect(201);
-    expect(resp.body.requirements.length).toBe(job.requirements.length);
+    expect(resp.body.job_requirements.length).toBe(job.job_requirements.length);
     expect(resp.body.job_title).toBe(job.job_title);
     done();
   });
 
   it('Actually inserts job enitity', async (done) => {
-    const job = fake.job();
+    const job = fake.job(organizationId);
     const resp = await request(app)
       .post('/jobs')
       .set('Accept', 'application/json')
@@ -93,8 +94,8 @@ describe('GET /jobs', () => {
     done();
   });
 
-  it('Returns arra of jobs with its requirements', async (done) => {
-    const job = fake.job(process.env.TEST_ORG_ID);
+  it('Returns arra of jobs with its job_requirements', async (done) => {
+    const job = fake.job(process.env.TEST_ORG_ID || '');
     await insertJob(job);
 
     const resp = await request(app)
@@ -104,10 +105,10 @@ describe('GET /jobs', () => {
 
     expect(resp.body.length).toBe(1);
     expect(resp.body[0].job_title).toBe(job.job_title);
-    const requirementLabels = job.requirements.map(
+    const requirementLabels = job.job_requirements.map(
       (req) => req.requirement_label,
     );
-    resp.body[0].requirements.forEach((req: any) => {
+    resp.body[0].job_requirements.forEach((req: any) => {
       expect(requirementLabels.includes(req.requirement_label)).toBe(true);
     });
 

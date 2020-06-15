@@ -40,8 +40,8 @@ export const insertForm = async (params: insertFormParams) => {
       'label',
       {name: 'placeholder', def: null},
       {name: 'default_value', def: null},
-      {name: 'validation', def: null},
-      {name: 'options', def: null},
+      {name: 'validation', mod: ':json', cast: 'jsonb', def: null},
+      {name: 'options', mod: ':json', cast: 'jsonb', def: null},
       {name: 'editable', def: false},
       {name: 'deletable', def: false},
     ],
@@ -52,8 +52,6 @@ export const insertForm = async (params: insertFormParams) => {
     const map = {
       ...item,
       form_id: insertedForm.form_id,
-      options: item.options && JSON.stringify(item.options),
-      validation: item.validation && JSON.stringify(item.validation),
     };
 
     return map;
@@ -75,4 +73,65 @@ export const selectForm = (form_id: string) => {
 export const deleteForm = (form_id: string) => {
   const stmt = 'DELETE FROM form WHERE form_id=$1';
   return db.none(stmt, form_id);
+};
+
+export const updateForm = (form_id: string, body: any) => {
+  return db
+    .tx(async (t) => {
+      const promises = [];
+
+      /* To return the updated form either update title or select the original form */
+      if (body.form_title) {
+        const stmt =
+          'UPDATE form SET form_title=$1 WHERE form_id=$2 RETURNING *';
+        promises.push(t.one(stmt, [body.form_title, form_id]));
+      } else {
+        const stmt = 'SELECT * FROM form WHERE form_id=$1';
+        promises.push(t.one(stmt, form_id));
+      }
+
+      if (body.form_items) {
+        /*
+         * Instead of updating existing items all items are deleted and new items are inserted
+         * This is because it is pretty complicated to row_index, since it is unique
+         */
+        await db.none('DELETE FROM form_item WHERE form_id=$1', form_id);
+        const cs = new db.$config.pgp.helpers.ColumnSet(
+          [
+            'form_id',
+            'component',
+            'row_index',
+            'label',
+            {name: 'placeholder', def: null},
+            {name: 'default_value', def: null},
+            {name: 'validation', mod: ':json', cast: 'jsonb', def: null},
+            {name: 'options', mod: ':json', cast: 'jsonb', def: null},
+            {name: 'editable', def: false},
+            {name: 'deletable', def: false},
+          ],
+          {table: 'form_item'},
+        );
+
+        const values = body.form_items.map((item: any) => {
+          const map = {...item, form_id};
+          return map;
+        });
+
+        const stmt = db.$config.pgp.helpers.insert(values, cs) + ' RETURNING *';
+        promises.push(db.any(stmt));
+      } else {
+        const stmt = 'SELECT * FROM form_item WHERE form_id=$1';
+        promises.push(db.any(stmt, form_id));
+      }
+
+      return t.batch(promises);
+    })
+    .then((result) => {
+      const form = result[0];
+      const formItems = result[1];
+      return {
+        ...form,
+        form_items: formItems,
+      };
+    });
 };

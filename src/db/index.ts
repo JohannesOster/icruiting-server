@@ -11,7 +11,7 @@ const dbURL = () => {
       console.log('Running development database');
       return process.env.DEV_DB_URL;
     default:
-      console.log('Running testing database');
+      //console.log('Running testing database');
       return process.env.TEST_DB_URL;
   }
 };
