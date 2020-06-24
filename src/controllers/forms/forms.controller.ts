@@ -146,8 +146,8 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
         {attributes: [], files: []},
       );
 
-      applicant.files = map.files && JSON.stringify(map.files);
-      applicant.attributes = map.attributes && JSON.stringify(map.attributes);
+      applicant.files = !!map.files && JSON.stringify(map.files);
+      applicant.attributes = !!map.attributes && JSON.stringify(map.attributes);
 
       promises.push(insertApplicant(applicant));
 
