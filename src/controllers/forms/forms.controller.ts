@@ -94,7 +94,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
             console.log(`Got ${item.component}, no mapping required.`);
 
             acc.attributes.push({
-              name: item.label,
+              key: item.label,
               value: fields[item.form_item_id],
             });
           } else if (['select', 'radio'].includes(item.component)) {
@@ -109,7 +109,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
             if (!options.length) throw new Error('Invalid submission.');
 
             acc.attributes.push({
-              name: item.label,
+              key: item.label,
               value: options[0].label,
             });
           } else if (item.component === 'file_upload') {
@@ -138,7 +138,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
             });
 
             promises.push(s3.upload(params).promise());
-            acc.files.push({name: item.label, value: fileKey});
+            acc.files.push({key: item.label, value: fileKey});
           }
 
           return acc;
