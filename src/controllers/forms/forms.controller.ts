@@ -9,7 +9,6 @@ import {
 } from '../../db/forms.db';
 import {insertApplicant} from '../../db/applicants.db';
 import {IncomingForm} from 'formidable';
-import {insertScreening} from '../../db/screenings.db';
 import {S3} from 'aws-sdk';
 import fs from 'fs';
 
@@ -162,22 +161,6 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
         });
     });
   });
-};
-
-export const submitForm: RequestHandler = async (req, res, next) => {
-  selectForm(req.params.form_id)
-    .then((result) => {
-      if (!result.length) return res.sendStatus(404);
-      const form = result[0];
-      const submitterId = res.locals.user['sub'];
-
-      if (form.form_category === 'screening')
-        return insertScreening({form, submitterId, body: req.body})
-          .then((data) => res.status(201).json(data))
-          .catch(next);
-      else throw new Error('Invalid form category');
-    })
-    .catch(next);
 };
 
 export const deleteForm: RequestHandler = (req, res, next) => {

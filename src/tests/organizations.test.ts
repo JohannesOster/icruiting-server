@@ -16,7 +16,7 @@ afterAll(async (done) => {
 
 describe('organizations', () => {
   describe('POST /organizations', () => {
-    it('Returns 202 json response', (done) => {
+    it('Returns 201 json response', (done) => {
       request(app)
         .post('/organizations')
         .set('Accept', 'application/json')

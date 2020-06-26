@@ -5,6 +5,8 @@ import {
   jobsController,
   formsController,
   applicantsController,
+  rankingsController,
+  screeningsController,
 } from '../controllers';
 import {requireAuth} from '../middlewares';
 
@@ -41,10 +43,21 @@ router.post(
   formsController.createForm,
 );
 router.get('/forms', formsController.getForms);
-router.post('/forms/:form_id', formsController.submitForm);
 router.delete('/forms/:form_id', formsController.deleteForm);
 router.put('/forms/:form_id', formsController.updateForm);
 
+router.post(
+  '/screenings',
+  screeningsController.validateCreateScreening,
+  screeningsController.submitForm,
+);
+
 router.get('/applicants', applicantsController.getApplicants);
+
+router.get(
+  '/rankings/:job_id',
+  rankingsController.validateGetRanking,
+  rankingsController.getRanking,
+);
 
 export {router as routes};

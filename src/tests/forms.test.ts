@@ -3,9 +3,7 @@ import app from '../app';
 import {createAllTables, dropAllTables, endConnection} from '../db/utils';
 import db from '../db';
 import {insertForm} from '../db/forms.db';
-import {insertApplicant} from '../db/applicants.db';
 import fake from './fake';
-import faker from 'faker';
 
 jest.mock('../middlewares/auth');
 
@@ -115,79 +113,6 @@ describe('forms', () => {
 
       expect(resp.body[0].form_id).toBe(form.form_id);
       expect(resp.body[0].form_items.length).toBe(form.form_items.length);
-
-      done();
-    });
-  });
-
-  describe('POST /forms/:form_id', () => {
-    let screening: any;
-    beforeAll(async (done) => {
-      await db.none('DELETE FROM form');
-
-      const promises = [];
-
-      const orgId = process.env.TEST_ORG_ID || '';
-
-      const fakeForm: any = fake.screeningForm(orgId, jobId);
-      promises.push(insertForm(fakeForm));
-
-      const fakeApplicant: any = fake.applicant(orgId, jobId);
-      promises.push(insertApplicant(fakeApplicant));
-
-      screening = await Promise.all(promises)
-        .then((data: any) => {
-          const form = data[0];
-          const applicant = data[1][0];
-
-          const range = {min: 0, max: 5};
-
-          return {
-            applicantId: applicant.applicant_id,
-            submitterId: process.env.TEST_USER_ID,
-            formId: form.form_id,
-            submission: {
-              [faker.random.alphaNumeric()]: faker.random.number(range),
-              [faker.random.alphaNumeric()]: faker.random.number(range),
-              [faker.random.alphaNumeric()]: faker.random.number(range),
-              [faker.random.alphaNumeric()]: faker.random.number(range),
-            },
-          };
-        })
-        .catch((err) => {
-          console.error(err);
-        });
-
-      done();
-    });
-
-    afterEach((done) => {
-      db.none('DELETE FROM screening').finally(done);
-    });
-
-    it('Returns 200 json response for screening form', (done) => {
-      request(app)
-        .post(`/forms/${screening.formId}`)
-        .set('Accept', 'application/json')
-        .send(screening)
-        .expect('Content-Type', /json/)
-        .expect(201, done);
-    });
-
-    it('Returns created screening entity', async (done) => {
-      await request(app)
-        .post(`/forms/${screening.formId}`)
-        .set('Accept', 'application/json')
-        .send(screening)
-        .expect(201);
-
-      const stmt =
-        'SELECT COUNT(*) FROM screening' +
-        ' WHERE applicant_id=${applicantId}' +
-        ' AND submitter_id=${submitterId}';
-
-      const {count} = (await db.any(stmt, screening))[0];
-      expect(parseInt(count)).toBe(1);
 
       done();
     });
