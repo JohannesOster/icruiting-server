@@ -1,4 +1,4 @@
-import {body} from 'express-validator';
+import {body, query} from 'express-validator';
 
 export const validateCreateScreening = [
   body('form_id').isUUID(),

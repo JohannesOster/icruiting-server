@@ -49,8 +49,9 @@ router.put('/forms/:form_id', formsController.updateForm);
 router.post(
   '/screenings',
   screeningsController.validateCreateScreening,
-  screeningsController.submitForm,
+  screeningsController.insertScreening,
 );
+router.get('/screenings/:applicant_id', screeningsController.getScreening);
 
 router.get('/applicants', applicantsController.getApplicants);
 

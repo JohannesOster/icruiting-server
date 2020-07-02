@@ -4,6 +4,7 @@ import {createAllTables, dropAllTables, endConnection} from '../db/utils';
 import db from '../db';
 import {insertForm} from '../db/forms.db';
 import {insertApplicant} from '../db/applicants.db';
+import {insertScreening} from '../db/screenings.db';
 import fake from './fake';
 import faker from 'faker';
 
@@ -112,6 +113,68 @@ describe('screenings', () => {
 
       const {count} = (await db.any(stmt, screening))[0];
       expect(parseInt(count)).toBe(1);
+
+      done();
+    });
+  });
+
+  describe('GET /screenings?applicant_id', () => {
+    let screening: any;
+    beforeAll(async (done) => {
+      await db.none('DELETE FROM screening');
+      await db.none('DELETE FROM form');
+
+      const promises = [];
+
+      const orgId = process.env.TEST_ORG_ID || '';
+
+      const fakeForm: any = fake.screeningForm(orgId, jobId);
+      promises.push(insertForm(fakeForm));
+
+      const fakeApplicant: any = fake.applicant(orgId, jobId);
+      promises.push(insertApplicant(fakeApplicant));
+
+      Promise.all(promises)
+        .then(async (data: any) => {
+          const form = data[0];
+          const applicant = data[1][0];
+
+          const range = {min: 0, max: 5};
+
+          screening = await insertScreening({
+            applicant_id: applicant.applicant_id,
+            submitter_id: process.env.TEST_USER_ID || '',
+            form_id: form.form_id,
+            values: {
+              [faker.random.alphaNumeric()]: faker.random.number(range),
+              [faker.random.alphaNumeric()]: faker.random.number(range),
+              [faker.random.alphaNumeric()]: faker.random.number(range),
+              [faker.random.alphaNumeric()]: faker.random.number(range),
+            },
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+        })
+        .finally(done);
+    });
+
+    it('Returns 200 json response', (done) => {
+      request(app)
+        .get('/screenings/' + screening.applicant_id)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200, done);
+    });
+
+    it('Returns inserted screening', async (done) => {
+      const resp = await request(app)
+        .get('/screenings/' + screening.applicant_id)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(resp.body[0]).toEqual(screening);
 
       done();
     });

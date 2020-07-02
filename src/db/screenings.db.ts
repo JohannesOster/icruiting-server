@@ -24,5 +24,14 @@ export const insertScreening = (params: insertScreeningParams) => {
 
   const stmt =
     db.$config.pgp.helpers.insert(values, null, 'screening') + ' RETURNING *';
-  return db.any(stmt);
+  return db.one(stmt);
+};
+
+export const selectScreening = (params: {
+  submitter_id: string;
+  applicant_id: string;
+}) => {
+  const stmt =
+    'SELECT * FROM screening WHERE submitter_id=${submitter_id} AND applicant_id=${applicant_id}';
+  return db.any(stmt, params);
 };
