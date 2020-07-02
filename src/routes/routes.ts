@@ -52,6 +52,7 @@ router.post(
   screeningsController.insertScreening,
 );
 router.get('/screenings/:applicant_id', screeningsController.getScreening);
+router.put('/screenings/:applicant_id', screeningsController.updateScreening);
 
 router.get('/applicants', applicantsController.getApplicants);
 

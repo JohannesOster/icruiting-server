@@ -3,9 +3,10 @@ import {validationResult} from 'express-validator';
 import {
   insertScreening as insertScreeningDb,
   selectScreening,
+  updateScreening as updateScreeningDb,
 } from '../../db/screenings.db';
 
-export const insertScreening: RequestHandler = async (req, res, next) => {
+export const insertScreening: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(422).json({errors: errors.array()});
 
@@ -16,11 +17,24 @@ export const insertScreening: RequestHandler = async (req, res, next) => {
     .catch(next);
 };
 
-export const getScreening: RequestHandler = async (req, res, next) => {
+export const getScreening: RequestHandler = (req, res, next) => {
   const submitterId = res.locals.user['sub'];
   const applicantId = req.params.applicant_id;
 
-  selectScreening({submitter_id: submitterId, applicant_id: applicantId || ''})
+  selectScreening({submitter_id: submitterId, applicant_id: applicantId})
+    .then((data) => res.json(data))
+    .catch(next);
+};
+
+export const updateScreening: RequestHandler = (req, res, next) => {
+  const submitterId = res.locals.user['sub'];
+  const applicantId = req.params.applicant_id;
+
+  updateScreeningDb({
+    submitter_id: submitterId,
+    applicant_id: applicantId,
+    values: req.body.values,
+  })
     .then((data) => res.json(data))
     .catch(next);
 };

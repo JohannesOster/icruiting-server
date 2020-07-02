@@ -179,4 +179,77 @@ describe('screenings', () => {
       done();
     });
   });
+
+  describe('PUT /screenings?applicant_id', () => {
+    let screening: any;
+    beforeAll(async (done) => {
+      await db.none('DELETE FROM screening');
+      await db.none('DELETE FROM form');
+
+      const promises = [];
+
+      const orgId = process.env.TEST_ORG_ID || '';
+
+      const fakeForm: any = fake.screeningForm(orgId, jobId);
+      promises.push(insertForm(fakeForm));
+
+      const fakeApplicant: any = fake.applicant(orgId, jobId);
+      promises.push(insertApplicant(fakeApplicant));
+
+      Promise.all(promises)
+        .then(async (data: any) => {
+          const form = data[0];
+          const applicant = data[1][0];
+
+          const range = {min: 0, max: 5};
+
+          screening = await insertScreening({
+            applicant_id: applicant.applicant_id,
+            submitter_id: process.env.TEST_USER_ID || '',
+            form_id: form.form_id,
+            values: {
+              [faker.random.alphaNumeric()]: faker.random.number(range),
+              [faker.random.alphaNumeric()]: faker.random.number(range),
+              [faker.random.alphaNumeric()]: faker.random.number(range),
+              [faker.random.alphaNumeric()]: faker.random.number(range),
+            },
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+        })
+        .finally(done);
+    });
+
+    it('Returns 200 json response', (done) => {
+      request(app)
+        .put('/screenings/' + screening.applicant_id)
+        .set('Accept', 'application/json')
+        .send({})
+        .expect('Content-Type', /json/)
+        .expect(200, done);
+    });
+
+    it('Returns updated screening', async (done) => {
+      const range = {min: 0, max: 5};
+      const newValues = {
+        [faker.random.alphaNumeric()]: faker.random.number(range),
+        [faker.random.alphaNumeric()]: faker.random.number(range),
+        [faker.random.alphaNumeric()]: faker.random.number(range),
+        [faker.random.alphaNumeric()]: faker.random.number(range),
+      };
+
+      const resp = await request(app)
+        .put('/screenings/' + screening.applicant_id)
+        .set('Accept', 'application/json')
+        .send({values: newValues})
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(resp.body.applicant_id).toBe(screening.applicant_id);
+      expect(resp.body.submission).toEqual(newValues);
+
+      done();
+    });
+  });
 });
