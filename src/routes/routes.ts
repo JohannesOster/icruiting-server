@@ -22,6 +22,16 @@ router.get('/forms/:form_id/html', formsController.renderHTMLForm);
 router.post('/forms/:form_id/html', formsController.submitHTMLForm);
 
 router.use(requireAuth);
+router.post(
+  '/screenings',
+  screeningsController.validateCreateScreening,
+  screeningsController.insertScreening,
+);
+router.get('/screenings/:applicant_id', screeningsController.getScreening);
+router.put('/screenings/:applicant_id', screeningsController.updateScreening);
+
+router.get('/applicants', applicantsController.getApplicants);
+
 router.use(requireAdmin);
 router.get('/employees', employeesController.getEmployees);
 router.post(
@@ -46,16 +56,6 @@ router.post(
 router.get('/forms', formsController.getForms);
 router.delete('/forms/:form_id', formsController.deleteForm);
 router.put('/forms/:form_id', formsController.updateForm);
-
-router.post(
-  '/screenings',
-  screeningsController.validateCreateScreening,
-  screeningsController.insertScreening,
-);
-router.get('/screenings/:applicant_id', screeningsController.getScreening);
-router.put('/screenings/:applicant_id', screeningsController.updateScreening);
-
-router.get('/applicants', applicantsController.getApplicants);
 
 router.get(
   '/rankings/:job_id',
