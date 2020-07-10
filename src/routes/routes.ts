@@ -8,7 +8,7 @@ import {
   rankingsController,
   screeningsController,
 } from '../controllers';
-import {requireAuth} from '../middlewares';
+import {requireAuth, requireAdmin} from '../middlewares';
 
 const router = express.Router();
 
@@ -22,6 +22,7 @@ router.get('/forms/:form_id/html', formsController.renderHTMLForm);
 router.post('/forms/:form_id/html', formsController.submitHTMLForm);
 
 router.use(requireAuth);
+router.use(requireAdmin);
 router.get('/employees', employeesController.getEmployees);
 router.post(
   '/employees',

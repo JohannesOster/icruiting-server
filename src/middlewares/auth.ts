@@ -23,12 +23,20 @@ export const requireAuth: RequestHandler = (req, res, next) => {
 
     const lastSlashIdx = payload.iss.lastIndexOf('/');
     const userPoolID = payload.iss.substring(lastSlashIdx + 1);
-
     res.locals.user = {
       orgID: payload['custom:orgID'],
       userPoolID: userPoolID,
       sub: payload.sub,
+      userRole: payload['custom:role'],
     };
     next();
   });
+};
+
+export const requireAdmin: RequestHandler = (req, res, next) => {
+  const userRole = res.locals.user.userRole;
+  if (userRole !== 'admin') {
+    return res.status(401).json({message: 'Admin required.'});
+  }
+  next();
 };
