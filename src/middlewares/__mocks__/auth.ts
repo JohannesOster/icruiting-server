@@ -8,3 +8,5 @@ export const requireAuth: RequestHandler = (req, res, next) => {
   };
   next();
 };
+
+export const requireAdmin: RequestHandler = (req, res, next) => next();
