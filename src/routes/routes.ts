@@ -30,7 +30,11 @@ router.post(
 router.get('/screenings/:applicant_id', screeningsController.getScreening);
 router.put('/screenings/:applicant_id', screeningsController.updateScreening);
 
-router.get('/applicants', applicantsController.getApplicants);
+router.get(
+  '/applicants',
+  applicantsController.validateGetApplicants,
+  applicantsController.getApplicants,
+);
 
 router.use(requireAdmin);
 router.get('/employees', employeesController.getEmployees);

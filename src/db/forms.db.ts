@@ -5,6 +5,7 @@ import {
 } from './sql';
 
 interface insertFormParams {
+  form_id: string;
   organization_id: string;
   job_id: string;
   form_title: string;
@@ -23,6 +24,7 @@ interface insertFormParams {
 }
 export const insertForm = async (params: insertFormParams) => {
   const form = {
+    form_id: params.form_id,
     organization_id: params.organization_id,
     job_id: params.job_id,
     form_title: params.form_title,
