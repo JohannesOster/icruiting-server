@@ -1,6 +1,11 @@
 import faker from 'faker';
 
 const fake = {
+  user: (user_role: 'admin' | 'user' = 'admin') => ({
+    orgID: faker.random.uuid(),
+    sub: faker.random.uuid(),
+    user_role: user_role,
+  }),
   organization: (organization_id: string = '') => ({
     organization_id,
     organization_name: faker.company.companyName(),
@@ -59,7 +64,7 @@ const fake = {
     organization_id,
     job_id: job_id,
     form_title: faker.random.words(),
-    form_category: 'screening',
+    form_category: 'screening' as 'screening' | 'application' | 'assessment',
     form_items: [
       {
         component: 'rating_group',

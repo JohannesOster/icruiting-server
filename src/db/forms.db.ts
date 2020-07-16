@@ -5,7 +5,7 @@ import {
 } from './sql';
 
 interface insertFormParams {
-  form_id: string;
+  form_id?: string;
   organization_id: string;
   job_id: string;
   form_title: string;
@@ -15,21 +15,21 @@ interface insertFormParams {
     row_index: number;
     label?: string;
     placeholder?: string;
-    default_value?: string;
+    default_value?: string | number;
     validation?: {required: boolean};
-    options?: Array<{label: string; value: string}>;
+    options?: Array<{label: string; value: string | number}>;
     editable?: boolean;
     deletable?: boolean;
   }>;
 }
 export const insertForm = async (params: insertFormParams) => {
-  const form = {
-    form_id: params.form_id,
+  const form: any = {
     organization_id: params.organization_id,
     job_id: params.job_id,
     form_title: params.form_title,
     form_category: params.form_category,
   };
+  if (params.form_id) form.form_id = params.form_id;
   const formStmt =
     db.$config.pgp.helpers.insert(form, null, 'form') + ' RETURNING *';
   const insertedForm = await db.one(formStmt);

@@ -1,4 +1,5 @@
 import db from '.';
+import {selectApplicants as selectApplicantsSQL} from './sql';
 
 export const insertApplicant = (params: any) => {
   const stmt =
@@ -6,7 +7,10 @@ export const insertApplicant = (params: any) => {
   return db.any(stmt);
 };
 
-export const selectApplicants = (organization_id: string) => {
-  const stmt = 'SELECT * FROM applicant WHERE organization_id=$1';
-  return db.any(stmt, organization_id);
+type TSelectParams = {
+  organization_id: string;
+  job_id?: string;
+};
+export const selectApplicants = (params: TSelectParams) => {
+  return db.any(selectApplicantsSQL, params);
 };

@@ -86,7 +86,7 @@ describe('rankings', () => {
                   ].applicant_id,
                 submitter_id: faker.random.uuid(),
                 form_id: form.form_id,
-                values: {
+                submission: {
                   [faker.random.alphaNumeric()]: faker.random.number(range),
                   [faker.random.alphaNumeric()]: faker.random.number(range),
                   [faker.random.alphaNumeric()]: faker.random.number(range),

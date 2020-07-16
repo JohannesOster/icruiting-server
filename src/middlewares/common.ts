@@ -8,6 +8,7 @@ export const notFound: RequestHandler = (req, res, next) => {
 
 /* eslint-disable no-unused-vars */
 export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  console.log(err);
   const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   res.status(statusCode).json({message: err.message, stack: err.stack});
 };
