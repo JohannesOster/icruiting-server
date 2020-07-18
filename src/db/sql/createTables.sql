@@ -28,7 +28,6 @@ CREATE TABLE IF NOT EXISTS form (
   organization_id UUID NOT NULL,
   job_id UUID NOT NULL,
   form_category FORM_CATEGORY NOT NULL,
-  form_title TEXT NOT NULL,
   CONSTRAINT form_id_pk PRIMARY KEY (form_id),
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
   CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE

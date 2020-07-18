@@ -64,7 +64,6 @@ describe('forms', () => {
         .expect(201);
 
       expect(!!resp.body.form_id).toBe(true);
-      expect(resp.body.form_title).toBe(form.form_title);
       expect(resp.body.form_category).toBe(form.form_category);
       expect(resp.body.form_items.length).toBe(form.form_items.length);
 
@@ -81,7 +80,6 @@ describe('forms', () => {
         .expect(201);
 
       expect(!!resp.body.form_id).toBe(true);
-      expect(resp.body.form_title).toBe(form.form_title);
       expect(resp.body.form_category).toBe(form.form_category);
       expect(resp.body.form_items.length).toBe(form.form_items.length);
       done();
@@ -214,8 +212,6 @@ describe('forms', () => {
       expect(resp.body.form_id).toBe(form.form_id);
       expect(resp.body.organization_id).toBe(form.organization_id);
       expect(resp.body.job_id).toBe(form.job_id);
-
-      expect(resp.body.form_title).toBe(updateVals.form_title);
 
       /*
        * for each received form item

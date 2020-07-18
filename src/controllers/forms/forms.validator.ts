@@ -1,7 +1,6 @@
 import {body} from 'express-validator';
 
 export const validateCreateForm = [
-  body('form_title').isString(),
   body('job_id').isUUID(),
   body('form_category').isIn(['application', 'screening', 'assessment']),
   body('form_items').isArray({min: 1}),

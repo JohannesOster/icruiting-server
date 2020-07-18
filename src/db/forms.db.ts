@@ -8,7 +8,6 @@ interface insertFormParams {
   form_id?: string;
   organization_id: string;
   job_id: string;
-  form_title: string;
   form_category: 'application' | 'screening' | 'assessment';
   form_items: Array<{
     component: string;
@@ -26,7 +25,6 @@ export const insertForm = async (params: insertFormParams) => {
   const form: any = {
     organization_id: params.organization_id,
     job_id: params.job_id,
-    form_title: params.form_title,
     form_category: params.form_category,
   };
   if (params.form_id) form.form_id = params.form_id;
@@ -81,16 +79,6 @@ export const updateForm = (form_id: string, body: any) => {
   return db
     .tx(async (t) => {
       const promises = [];
-
-      /* To return the updated form either update title or select the original form */
-      if (body.form_title) {
-        const stmt =
-          'UPDATE form SET form_title=$1 WHERE form_id=$2 RETURNING *';
-        promises.push(t.one(stmt, [body.form_title, form_id]));
-      } else {
-        const stmt = 'SELECT * FROM form WHERE form_id=$1';
-        promises.push(t.one(stmt, form_id));
-      }
 
       if (body.form_items) {
         /*

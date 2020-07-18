@@ -36,7 +36,6 @@ const fake = {
   applicationForm: (organization_id: string, job_id: string) => ({
     organization_id,
     job_id: job_id,
-    form_title: faker.random.words(),
     form_category: 'application',
     form_items: [
       {
@@ -63,7 +62,6 @@ const fake = {
   screeningForm: (organization_id: string, job_id: string) => ({
     organization_id,
     job_id: job_id,
-    form_title: faker.random.words(),
     form_category: 'screening' as 'screening' | 'application' | 'assessment',
     form_items: [
       {
