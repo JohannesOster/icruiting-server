@@ -62,6 +62,7 @@ CREATE TABLE IF NOT EXISTS applicant (
   job_id UUID NOT NULL,
   attributes JSONB NOT NULL, -- {label, value}
   files JSONB,               -- {label, url}
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT applicant_id_pk PRIMARY KEY (applicant_id),
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
   CONSTRAINT job_id_id FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
