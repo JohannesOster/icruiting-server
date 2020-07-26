@@ -124,6 +124,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
             const params: any = {
               Key: 'applications/' + fileKey,
               Bucket: process.env.S3_BUCKET || '',
+              ContentType: 'application/pdf',
             };
 
             const fileStream = fs.createReadStream(file.path);
