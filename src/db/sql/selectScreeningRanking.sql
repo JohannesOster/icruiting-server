@@ -1,12 +1,13 @@
-SELECT 
+SELECT
 	s.applicant_id,
-	sum(VALUE::NUMERIC) as score
+	STDDEV_POP(s.single_score) as std,
+	sum(s.single_score) as score
 FROM 
-	screening s
+	(SELECT applicant_id, sum(VALUE::NUMERIC) AS single_score FROM screening, jsonb_each_text(submission) GROUP BY screening.submitter_id, screening.applicant_id) as s
 JOIN 
 	applicant a
 ON 
-	a.applicant_id = s.applicant_id, jsonb_each_text(s.submission) AS sum
+	a.applicant_id = s.applicant_id
 WHERE a.job_id = ${job_id}
 GROUP BY 
 	s.applicant_id
