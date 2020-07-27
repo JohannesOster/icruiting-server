@@ -35,6 +35,8 @@ router.get(
   applicantsController.validateGetApplicants,
   applicantsController.getApplicants,
 );
+router.get('/jobs', jobsController.getJobs);
+router.get('/forms', formsController.getForms);
 
 router.use(requireAdmin);
 router.get('/employees', employeesController.getEmployees);
@@ -49,7 +51,6 @@ router.post(
   jobsController.validateCreateJob,
   jobsController.createJob,
 );
-router.get('/jobs', jobsController.getJobs);
 router.put('/jobs/:job_id', jobsController.updateJob);
 
 router.post(
@@ -57,7 +58,6 @@ router.post(
   formsController.validateCreateForm,
   formsController.createForm,
 );
-router.get('/forms', formsController.getForms);
 router.delete('/forms/:form_id', formsController.deleteForm);
 router.put('/forms/:form_id', formsController.updateForm);
 

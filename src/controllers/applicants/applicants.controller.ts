@@ -8,6 +8,7 @@ export const getApplicants: RequestHandler = (req, res, next) => {
   selectApplicants({
     organization_id: res.locals.user.orgID,
     job_id,
+    user_id: res.locals.user.sub,
   })
     .then((resp) => {
       const s3 = new S3();

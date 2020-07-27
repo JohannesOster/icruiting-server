@@ -19,7 +19,7 @@ export const createEmployee: RequestHandler = (req, res, next) => {
     UserAttributes: [
       {Name: 'email', Value: email},
       {Name: 'custom:orgID', Value: res.locals.user.orgID},
-      {Name: 'custom:role', Value: 'admin'},
+      {Name: 'custom:role', Value: 'employee'},
     ],
   };
 

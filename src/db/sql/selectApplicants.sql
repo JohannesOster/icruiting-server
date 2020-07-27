@@ -4,7 +4,7 @@ SELECT
 FROM 
   applicant appl
 LEFT JOIN
-  (SELECT applicant_id FROM screening) as screening
+  (SELECT applicant_id FROM screening WHERE submitter_id = ${user_id}) as screening
 ON
   screening.applicant_id = appl.applicant_id
 WHERE
