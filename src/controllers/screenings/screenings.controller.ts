@@ -31,9 +31,9 @@ export const updateScreening: RequestHandler = (req, res, next) => {
   const applicantId = req.params.applicant_id;
 
   updateScreeningDb({
+    ...req.body,
     submitter_id: submitterId,
     applicant_id: applicantId,
-    submission: req.body.submission,
   })
     .then((data) => res.json(data))
     .catch(next);
