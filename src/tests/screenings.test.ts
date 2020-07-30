@@ -71,12 +71,13 @@ describe('screenings', () => {
             applicant_id: applicant.applicant_id,
             submitter_id: process.env.TEST_USER_ID,
             form_id: form.form_id,
-            values: {
+            submission: {
               [faker.random.alphaNumeric()]: faker.random.number(range),
               [faker.random.alphaNumeric()]: faker.random.number(range),
               [faker.random.alphaNumeric()]: faker.random.number(range),
               [faker.random.alphaNumeric()]: faker.random.number(range),
             },
+            comment: faker.random.words(),
           };
         })
         .catch((err) => {
@@ -145,12 +146,13 @@ describe('screenings', () => {
             applicant_id: applicant.applicant_id,
             submitter_id: process.env.TEST_USER_ID || '',
             form_id: form.form_id,
-            values: {
+            submission: {
               [faker.random.alphaNumeric()]: faker.random.number(range),
               [faker.random.alphaNumeric()]: faker.random.number(range),
               [faker.random.alphaNumeric()]: faker.random.number(range),
               [faker.random.alphaNumeric()]: faker.random.number(range),
             },
+            comment: faker.random.words(),
           });
         })
         .catch((err) => {
@@ -207,12 +209,13 @@ describe('screenings', () => {
             applicant_id: applicant.applicant_id,
             submitter_id: process.env.TEST_USER_ID || '',
             form_id: form.form_id,
-            values: {
+            submission: {
               [faker.random.alphaNumeric()]: faker.random.number(range),
               [faker.random.alphaNumeric()]: faker.random.number(range),
               [faker.random.alphaNumeric()]: faker.random.number(range),
               [faker.random.alphaNumeric()]: faker.random.number(range),
             },
+            comment: faker.random.words(),
           });
         })
         .catch((err) => {
@@ -242,7 +245,7 @@ describe('screenings', () => {
       const resp = await request(app)
         .put('/screenings/' + screening.applicant_id)
         .set('Accept', 'application/json')
-        .send({values: newValues})
+        .send({submission: newValues})
         .expect('Content-Type', /json/)
         .expect(200);
 

@@ -35,9 +35,6 @@ beforeAll(async (done) => {
 
   jobId = job_id; // set jobId for "global" access in test file
 
-  const promises = [];
-  const orgId = process.env.TEST_ORG_ID || '';
-
   done();
 });
 
@@ -117,7 +114,6 @@ describe('rankings', () => {
         .get(`/rankings/${jobId}?form_category=screening`)
         .set('Accept', 'application/json')
         .expect(200);
-
       expect(resp.body.length).toBe(applicantsCount);
       done();
     });

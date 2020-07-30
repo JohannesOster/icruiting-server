@@ -128,7 +128,7 @@ describe('GET /applicants', () => {
     const screening = {
       form_id,
       applicant_id: randomApplId,
-      submitter_id: random.uuid(),
+      submitter_id: mockUser.sub,
       submission: {
         [random.alphaNumeric()]: random.number(range),
         [random.alphaNumeric()]: random.number(range),

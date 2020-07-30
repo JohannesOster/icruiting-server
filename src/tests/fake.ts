@@ -22,16 +22,16 @@ const fake = {
   applicant: (organization_id: string, job_id: string) => ({
     organization_id,
     job_id,
-    attributes: {
-      [faker.random.alphaNumeric()]: faker.random.alphaNumeric(),
-      [faker.random.alphaNumeric()]: faker.random.alphaNumeric(),
-      [faker.random.alphaNumeric()]: faker.random.alphaNumeric(),
-    },
-    files: {
-      [faker.random.alphaNumeric()]: faker.image.imageUrl(),
-      [faker.random.alphaNumeric()]: faker.image.imageUrl(),
-      [faker.random.alphaNumeric()]: faker.image.imageUrl(),
-    },
+    attributes: JSON.stringify([
+      {key: faker.random.alphaNumeric(), value: faker.random.alphaNumeric()},
+      {key: faker.random.alphaNumeric(), value: faker.random.alphaNumeric()},
+      {key: faker.random.alphaNumeric(), value: faker.random.alphaNumeric()},
+    ]),
+    files: JSON.stringify([
+      {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
+      {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
+      {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
+    ]),
   }),
   applicationForm: (organization_id: string, job_id: string) => ({
     organization_id,

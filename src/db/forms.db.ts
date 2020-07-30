@@ -79,7 +79,7 @@ export const updateForm = (form_id: string, body: any) => {
   return db
     .tx(async (t) => {
       const promises = [];
-
+      promises.push(db.one('SELECT * FROM form WHERE form_id = $1', [form_id]));
       if (body.form_items) {
         /*
          * Instead of updating existing items all items are deleted and new items are inserted
