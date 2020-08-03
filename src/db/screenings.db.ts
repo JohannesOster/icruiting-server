@@ -8,7 +8,6 @@ type TInsertScreeningParams = {
   comment?: string;
 };
 export const insertScreening = (params: TInsertScreeningParams) => {
-  console.log(params);
   // make shure submissionValues are only integers
   Object.keys(params.submission).forEach((key) => {
     const numericVal = parseInt(params.submission[key].toString());

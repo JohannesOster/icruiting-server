@@ -17,4 +17,4 @@ const dbURL = () => {
 };
 const db = pgp(dbURL() || '');
 
-export default db;
+export {db as default, pgp};
