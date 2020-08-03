@@ -69,27 +69,21 @@ describe('rankings', () => {
 
           const range = {min: 0, max: 5};
 
-          const screeningsCount = 10;
-          Array(screeningsCount)
-            .fill(0)
-            .forEach(() => {
-              const screening = {
-                applicant_id:
-                  applicants[
-                    faker.random.number({min: 0, max: applicants.length - 1})
-                  ].applicant_id,
-                submitter_id: faker.random.uuid(),
-                form_id: form.form_id,
-                submission: {
-                  [faker.random.alphaNumeric()]: faker.random.number(range),
-                  [faker.random.alphaNumeric()]: faker.random.number(range),
-                  [faker.random.alphaNumeric()]: faker.random.number(range),
-                  [faker.random.alphaNumeric()]: faker.random.number(range),
-                },
-              };
+          applicants.forEach((appl: any) => {
+            const screening = {
+              applicant_id: appl.applicant_id,
+              submitter_id: faker.random.uuid(),
+              form_id: form.form_id,
+              submission: {
+                [faker.random.alphaNumeric()]: faker.random.number(range),
+                [faker.random.alphaNumeric()]: faker.random.number(range),
+                [faker.random.alphaNumeric()]: faker.random.number(range),
+                [faker.random.alphaNumeric()]: faker.random.number(range),
+              },
+            };
 
-              promises.push(insertScreening(screening));
-            });
+            promises.push(insertScreening(screening));
+          });
 
           Promise.all(promises).finally(done);
         })
@@ -122,7 +116,7 @@ describe('rankings', () => {
         .expect(200);
 
       for (let i = 0; i < resp.body.length - 2; ++i) {
-        expect(parseInt(resp.body[i].score)).toBeGreaterThan(
+        expect(parseInt(resp.body[i].score)).toBeGreaterThanOrEqual(
           parseInt(resp.body[i + 1].score),
         );
       }
