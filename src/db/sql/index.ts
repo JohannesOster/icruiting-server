@@ -8,6 +8,7 @@ const queryFile = (filname: string) => {
 
 export const createTables = queryFile('createTables.sql');
 export const dropTables = queryFile('dropTables.sql');
+export const truncateAll = queryFile('truncateAll.sql');
 export const selectJobs = queryFile('selectJobs.sql');
 export const selectForms = queryFile('selectForms.sql');
 export const selectForm = queryFile('selectForm.sql');

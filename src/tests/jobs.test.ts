@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from '../app';
 import fake from './fake';
-import {createAllTables, dropAllTables, endConnection} from '../db/utils';
+import {endConnection, truncateAllTables} from '../db/utils';
 import {insertJob} from '../db/jobs.db';
 import db from '../db';
 import faker from 'faker';
@@ -9,7 +9,6 @@ import faker from 'faker';
 jest.mock('../middlewares/auth');
 
 beforeAll(async (done) => {
-  await createAllTables();
   /* Insert organization with the id set in .env file 
      This is neccessary since all routes get their orgID
      from the token payload in the auth middleware. The mock
@@ -28,10 +27,9 @@ beforeEach(async (done) => {
   done();
 });
 
-afterAll(async (done) => {
-  await dropAllTables();
+afterAll(async () => {
+  await truncateAllTables();
   endConnection();
-  done();
 });
 
 describe('jobs', () => {

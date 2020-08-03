@@ -1,17 +1,12 @@
 import request from 'supertest';
 import app from '../app';
 import fake from './fake';
-import {createAllTables, dropAllTables, endConnection} from '../db/utils';
+import {endConnection, truncateAllTables} from '../db/utils';
 import db from '../db';
 
-beforeAll((done) => {
-  createAllTables().finally(done);
-});
-
-afterAll(async (done) => {
-  await dropAllTables();
+afterAll(async () => {
+  await truncateAllTables();
   endConnection();
-  done();
 });
 
 describe('organizations', () => {

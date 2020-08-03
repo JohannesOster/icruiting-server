@@ -1,8 +1,8 @@
 import request from 'supertest';
 import app from '../app';
-import db, {pgp} from '../db';
+import db from '../db';
 import fake from './fake';
-import {endConnection} from '../db/utils';
+import {endConnection, truncateAllTables} from '../db/utils';
 import {random} from 'faker';
 import {TApplicant} from 'controllers/applicants';
 import {insertForm} from '../db/forms.db';
@@ -45,7 +45,10 @@ beforeAll(async (done) => {
     .finally(done);
 });
 
-afterAll(() => endConnection());
+afterAll(async () => {
+  await truncateAllTables();
+  endConnection();
+});
 
 describe('GET /applicants', () => {
   let applicants: TApplicant[] = [];

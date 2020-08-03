@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from '../app';
-import {createAllTables, dropAllTables, endConnection} from '../db/utils';
+import {endConnection, truncateAllTables} from '../db/utils';
 import db from '../db';
 import {insertForm} from '../db/forms.db';
 import {insertScreening} from '../db/screenings.db';
@@ -12,8 +12,6 @@ jest.mock('../middlewares/auth');
 
 let jobId: string;
 beforeAll(async (done) => {
-  await createAllTables();
-
   const insert = db.$config.pgp.helpers.insert;
 
   const organization = fake.organization(process.env.TEST_ORG_ID);
@@ -38,10 +36,9 @@ beforeAll(async (done) => {
   done();
 });
 
-afterAll(async (done) => {
-  await dropAllTables();
+afterAll(async () => {
+  await truncateAllTables();
   endConnection();
-  done();
 });
 
 describe('rankings', () => {
