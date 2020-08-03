@@ -47,13 +47,20 @@ CREATE TABLE IF NOT EXISTS form_item (
   options JSONB,       -- array of options if componen is select, radio, etc.
   editable BOOLEAN DEFAULT FALSE,
   deletable BOOLEAN DEFAULT FALSE,
+  -- assessment forms only
+  job_requirement_id UUID DEFAULT NULL,
+  weighting INTEGER DEFAULT NULL,
   CONSTRAINT form_item_id_pk PRIMARY KEY (form_item_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT row_index_check CHECK (row_index >= 0),
   CONSTRAINT form_id_row_index_unique UNIQUE (form_id, row_index), -- make shure the index inside of the form is unique
   CONSTRAINT options_conditional_not_null CHECK(
     NOT (component='select' OR component='radio' OR component='rating_group')
-    OR options IS NOT NULL)
+    OR options IS NOT NULL),
+  CONSTRAINT job_requirement_id_fk FOREIGN KEY (job_requirement_id) REFERENCES job_requirement(job_requirement_id) ON DELETE SET NULL,
+  CONSTRAINT weighting_check_positive CHECK (weighting >= 0),
+  CONSTRAINT weighting_check_exists CHECK (job_requirement_id IS NULL OR weighting IS NOT NULL)
+
 );
 
 CREATE TABLE IF NOT EXISTS applicant (
@@ -79,4 +86,18 @@ CREATE TABLE IF NOT EXISTS screening (
   CONSTRAINT form_id_applicant_id_submitter_id_uq UNIQUE (form_id, applicant_id, submitter_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE SET NULL,
   CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS assessment_center (
+  assessment_center_id UUID DEFAULT uuid_generate_v4(),
+  job_id UUID NOT NULL,
+  CONSTRAINT assessment_center_id_pk PRIMARY KEY (assessment_center_id),
+  CONSTRAINT job_id_id FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS assessment_center_exercise (
+ assessment_center_exercise UUID DEFAULT uuid_generate_v4(),
+ assessment_center_id UUID NOT NULL,
+ CONSTRAINT assessment_center_exercise_pk PRIMARY KEY (assessment_center_exercise),
+ CONSTRAINT assessment_center_id_fk FOREIGN KEY (assessment_center_id) REFERENCES assessment_center(assessment_center_id) ON DELETE CASCADE
 );
