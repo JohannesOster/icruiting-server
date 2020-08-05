@@ -21,5 +21,7 @@ afterAll(async () => {
 });
 
 describe('GET /:job_id/assessment-center', () => {
-  it('Returns 200 json response', (done) => {});
+  it('Returns 200 json response', (done) => {
+    done();
+  });
 });
