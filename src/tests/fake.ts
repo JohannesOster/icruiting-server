@@ -82,6 +82,10 @@ const fake = {
       },
     ],
   }),
+  assessmentCenter: (organization_id: string, job_id: string) => ({
+    organization_id,
+    job_id,
+  }),
 };
 
 export default fake;

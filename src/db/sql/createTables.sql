@@ -91,8 +91,10 @@ CREATE TABLE IF NOT EXISTS screening (
 CREATE TABLE IF NOT EXISTS assessment_center (
   assessment_center_id UUID DEFAULT uuid_generate_v4(),
   job_id UUID NOT NULL,
+  organization_id UUID NOT NULL,
   CONSTRAINT assessment_center_id_pk PRIMARY KEY (assessment_center_id),
-  CONSTRAINT job_id_id FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
+  CONSTRAINT job_id_id FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
+  CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS assessment_center_exercise (
