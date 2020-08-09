@@ -75,8 +75,21 @@ CREATE TABLE IF NOT EXISTS screening (
   form_id UUID,
   submission JSONB NOT NULL, -- {form_item_id,value}
   comment TEXT,
-  CONSTRAINT applicant_id_submitter_id_pk PRIMARY KEY (applicant_id, submitter_id),
-  CONSTRAINT form_id_applicant_id_submitter_id_uq UNIQUE (form_id, applicant_id, submitter_id),
+  CONSTRAINT screening_applicant_id_submitter_id_pk PRIMARY KEY (applicant_id, submitter_id),
+  CONSTRAINT screening_form_id_applicant_id_submitter_id_uq UNIQUE (form_id, applicant_id, submitter_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE SET NULL,
   CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE
 );
+
+-- Represents a submission of a assessment form
+CREATE TABLE IF NOT EXISTS assessment (
+  applicant_id UUID,
+  submitter_id TEXT, -- id of submitting user
+  form_id UUID,
+  submission JSONB NOT NULL, -- {form_item_id,value}
+  comment TEXT,
+  CONSTRAINT assessment_applicant_id_submitter_id_pk PRIMARY KEY (applicant_id, submitter_id),
+  CONSTRAINT assessment_form_id_applicant_id_submitter_id_uq UNIQUE (form_id, applicant_id, submitter_id),
+  CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE SET NULL,
+  CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE
+);;

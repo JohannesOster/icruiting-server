@@ -7,6 +7,7 @@ import {
   applicantsController,
   rankingsController,
   screeningsController,
+  assessmentsController,
 } from '../controllers';
 import {requireAuth, requireAdmin} from '../middlewares';
 
@@ -29,6 +30,17 @@ router.post(
 );
 router.get('/screenings/:applicant_id', screeningsController.getScreening);
 router.put('/screenings/:applicant_id', screeningsController.updateScreening);
+
+router.post(
+  '/assessments',
+  assessmentsController.validateCreateAssessment,
+  assessmentsController.insertAssessment,
+);
+router.get('/assessments/:applicant_id', assessmentsController.getAssessment);
+router.put(
+  '/assessments/:applicant_id',
+  assessmentsController.updateAssessment,
+);
 
 router.get(
   '/applicants',
