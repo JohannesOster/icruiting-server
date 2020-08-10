@@ -92,4 +92,4 @@ CREATE TABLE IF NOT EXISTS assessment (
   CONSTRAINT assessment_form_id_applicant_id_submitter_id_uq UNIQUE (form_id, applicant_id, submitter_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE SET NULL,
   CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE
-);;
+);

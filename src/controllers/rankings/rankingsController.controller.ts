@@ -1,6 +1,9 @@
 import {RequestHandler} from 'express';
 import {validationResult} from 'express-validator';
-import {selectScreeningRanking} from '../../db/rankings.db';
+import {
+  selectScreeningRanking,
+  selectAssessmentRanking,
+} from '../../db/rankings.db';
 
 export const getRanking: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
@@ -12,6 +15,12 @@ export const getRanking: RequestHandler = (req, res, next) => {
   if (!formCategory) throw new Error('Missing form_category');
   if (formCategory === 'screening') {
     selectScreeningRanking(jobId)
+      .then((result) => {
+        res.status(200).json(result);
+      })
+      .catch(next);
+  } else if (formCategory === 'assessment') {
+    selectAssessmentRanking(jobId)
       .then((result) => {
         res.status(200).json(result);
       })
