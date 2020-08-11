@@ -38,6 +38,7 @@ CREATE TYPE FORM_COMPONENT AS ENUM ('input', 'textarea', 'select', 'radio', 'fil
 CREATE TABLE IF NOT EXISTS form_item (
   form_item_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
+  job_requirement_id UUID DEFAULT NULL,
   component FORM_COMPONENT NOT NULL,
   row_index INTEGER NOT NULL,
   label TEXT NOT NULL,
@@ -53,7 +54,8 @@ CREATE TABLE IF NOT EXISTS form_item (
   CONSTRAINT form_id_row_index_unique UNIQUE (form_id, row_index), -- make shure the index inside of the form is unique
   CONSTRAINT options_conditional_not_null CHECK(
     NOT (component='select' OR component='radio' OR component='rating_group')
-    OR options IS NOT NULL)
+    OR options IS NOT NULL),
+  CONSTRAINT job_requirement_id_fk FOREIGN KEY (job_requirement_id) REFERENCES job_requirement(job_requirement_id) ON DELETE NO ACTION
 );
 
 CREATE TABLE IF NOT EXISTS applicant (

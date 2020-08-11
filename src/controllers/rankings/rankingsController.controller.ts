@@ -22,7 +22,25 @@ export const getRanking: RequestHandler = (req, res, next) => {
   } else if (formCategory === 'assessment') {
     selectAssessmentRanking(jobId)
       .then((result) => {
-        res.status(200).json(result);
+        /* Turn requirement_sums_array of objects into object of sums
+           {[job_requirement_id]: sum} */
+        const tmp = result.map((entry) => {
+          const {requirement_sums_array, ...rest} = entry;
+          const keys = Object.keys(requirement_sums_array[0]);
+          const sumsObj = keys.reduce((acc: any, key) => {
+            // sum for current key
+            const keySum = requirement_sums_array.reduce(
+              (keySum: number, currObj: any) => keySum + currObj[key],
+              0,
+            );
+
+            acc[key] = keySum;
+            return acc;
+          }, {});
+
+          return {...rest, job_requirements_sum: sumsObj};
+        });
+        res.status(200).json(tmp);
       })
       .catch(next);
   } else

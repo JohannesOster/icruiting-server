@@ -19,6 +19,7 @@ interface insertFormParams {
     options?: Array<{label: string; value: string | number}>;
     editable?: boolean;
     deletable?: boolean;
+    job_requirement_id?: string;
   }>;
 }
 export const insertForm = async (params: insertFormParams) => {
@@ -44,6 +45,7 @@ export const insertForm = async (params: insertFormParams) => {
       {name: 'options', mod: ':json', cast: 'jsonb', def: null},
       {name: 'editable', def: false},
       {name: 'deletable', def: false},
+      {name: 'job_requirement_id', def: null},
     ],
     {table: 'form_item'},
   );
@@ -98,6 +100,7 @@ export const updateForm = (form_id: string, body: any) => {
             {name: 'options', mod: ':json', cast: 'jsonb', def: null},
             {name: 'editable', def: false},
             {name: 'deletable', def: false},
+            {name: 'job_requirement_id', def: null},
           ],
           {table: 'form_item'},
         );
