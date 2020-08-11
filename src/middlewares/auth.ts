@@ -3,14 +3,14 @@ import CognitoExpress from 'cognito-express';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const cognitoExpress = new CognitoExpress({
-  region: process.env.AWS_REGION,
-  cognitoUserPoolId: process.env.AWS_USER_POOL_ID,
-  tokenUse: 'id',
-  tokenExpiration: 3600000,
-});
-
 export const requireAuth: RequestHandler = (req, res, next) => {
+  const cognitoExpress = new CognitoExpress({
+    region: process.env.AWS_REGION,
+    cognitoUserPoolId: process.env.AWS_USER_POOL_ID,
+    tokenUse: 'id',
+    tokenExpiration: 3600000,
+  });
+
   const token = req.header('Authorization');
   if (!token)
     return res.status(401).json({message: 'Baerer Token missing from header'});

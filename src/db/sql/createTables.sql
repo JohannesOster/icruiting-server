@@ -48,6 +48,9 @@ CREATE TABLE IF NOT EXISTS form_item (
   options JSONB,       -- array of options if componen is select, radio, etc.
   editable BOOLEAN DEFAULT FALSE,
   deletable BOOLEAN DEFAULT FALSE,
+  -- assessment forms only
+  job_requirement_id UUID DEFAULT NULL,
+  weighting INTEGER DEFAULT NULL,
   CONSTRAINT form_item_id_pk PRIMARY KEY (form_item_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT row_index_check CHECK (row_index >= 0),
@@ -94,4 +97,20 @@ CREATE TABLE IF NOT EXISTS assessment (
   CONSTRAINT assessment_form_id_applicant_id_submitter_id_uq UNIQUE (form_id, applicant_id, submitter_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE SET NULL,
   CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS assessment_center (
+  assessment_center_id UUID DEFAULT uuid_generate_v4(),
+  job_id UUID NOT NULL,
+  organization_id UUID NOT NULL,
+  CONSTRAINT assessment_center_id_pk PRIMARY KEY (assessment_center_id),
+  CONSTRAINT job_id_id FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
+  CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS assessment_center_exercise (
+ assessment_center_exercise UUID DEFAULT uuid_generate_v4(),
+ assessment_center_id UUID NOT NULL,
+ CONSTRAINT assessment_center_exercise_pk PRIMARY KEY (assessment_center_exercise),
+ CONSTRAINT assessment_center_id_fk FOREIGN KEY (assessment_center_id) REFERENCES assessment_center(assessment_center_id) ON DELETE CASCADE
 );
