@@ -27,9 +27,10 @@ export const insertAssessment = (params: TInsertAssessmentParams) => {
 export const selectAssessment = (params: {
   submitter_id: string;
   applicant_id: string;
+  form_id: string;
 }) => {
   const stmt =
-    'SELECT * FROM assessment WHERE submitter_id=${submitter_id} AND applicant_id=${applicant_id}';
+    'SELECT * FROM assessment WHERE submitter_id=${submitter_id} AND applicant_id=${applicant_id} AND form_id=${form_id}';
   return db.any(stmt, params);
 };
 

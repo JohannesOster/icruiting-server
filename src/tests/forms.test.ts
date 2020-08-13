@@ -1,36 +1,31 @@
 import request from 'supertest';
 import app from '../app';
-import {endConnection, truncateAllTables} from '../db/utils';
 import db from '../db';
+import {endConnection, truncateAllTables} from '../db/utils';
 import {insertForm} from '../db/forms.db';
+import {insertOrganization} from '../db/organizations.db';
+import {insertJob} from '../db/jobs.db';
+import {TForm} from 'controllers/forms';
 import fake from './fake';
+import faker from 'faker';
 
-jest.mock('../middlewares/auth');
+const mockUser = fake.user();
+jest.mock('../middlewares/auth', () => ({
+  requireAdmin: jest.fn((req, res, next) => next()),
+  requireAuth: jest.fn((req, res, next) => {
+    res.locals.user = mockUser;
+    next();
+  }),
+}));
 
 let jobId: string;
-beforeAll(async (done) => {
-  const insert = db.$config.pgp.helpers.insert;
+beforeAll(async () => {
+  const organization = fake.organization(mockUser.orgID);
+  await insertOrganization(organization);
 
-  const organization = fake.organization(process.env.TEST_ORG_ID);
-  const insOrg = insert(organization, null, 'organization');
-  await db.none(insOrg);
-
-  const job = fake.job(organization.organization_id);
-  const params = {
-    organization_id: job.organization_id,
-    job_title: job.job_title,
-  };
-
-  const insJob = insert(params, null, 'job') + ' RETURNING *';
-  const {job_id} = await db.one(insJob);
-
-  const req = {job_id, ...job.job_requirements[0]};
-  const insReq = insert(req, null, 'job_requirement');
-  await db.none(insReq);
-
-  jobId = job_id; // set jobId for "global" access in test file
-
-  done();
+  const job = fake.job(mockUser.orgID);
+  const {job_id} = await insertJob(job);
+  jobId = job_id;
 });
 
 afterAll(async () => {
@@ -41,8 +36,8 @@ afterAll(async () => {
 describe('forms', () => {
   describe('POST /forms', () => {
     it('Returns 201 json response', (done) => {
-      const orgId = process.env.TEST_ORG_ID || '';
-      const form = fake.applicationForm(orgId, jobId);
+      const form = fake.applicationForm(mockUser.orgID, jobId);
+
       request(app)
         .post('/forms')
         .set('Accept', 'application/json')
@@ -51,32 +46,15 @@ describe('forms', () => {
         .expect(201, done);
     });
 
-    it('Returns application form entity as well as form items', async (done) => {
-      const orgId = process.env.TEST_ORG_ID || '';
-      const form = fake.applicationForm(orgId, jobId);
+    it('Returns created form entity', async (done) => {
+      const form = fake.applicationForm(mockUser.orgID, jobId);
       const resp = await request(app)
         .post('/forms')
         .set('Accept', 'application/json')
         .send(form)
         .expect(201);
 
-      expect(!!resp.body.form_id).toBe(true);
-      expect(resp.body.form_category).toBe(form.form_category);
-      expect(resp.body.form_items.length).toBe(form.form_items.length);
-
-      done();
-    });
-
-    it('Returns screening form entity as well as form items', async (done) => {
-      const orgId = process.env.TEST_ORG_ID || '';
-      const form = fake.screeningForm(orgId, jobId);
-      const resp = await request(app)
-        .post('/forms')
-        .set('Accept', 'application/json')
-        .send(form)
-        .expect(201);
-
-      expect(!!resp.body.form_id).toBe(true);
+      expect(resp.body.form_id).not.toBeUndefined();
       expect(resp.body.form_category).toBe(form.form_category);
       expect(resp.body.form_items.length).toBe(form.form_items.length);
       done();
@@ -84,9 +62,7 @@ describe('forms', () => {
   });
 
   describe('GET /forms', () => {
-    beforeEach((done) => {
-      db.none('DELETE FROM form').finally(done);
-    });
+    beforeEach(async () => await db.none('TRUNCATE form CASCADE'));
 
     it('Returns 200 json response', (done) => {
       request(app)
@@ -96,55 +72,48 @@ describe('forms', () => {
         .expect(200, done);
     });
 
-    it('Returns array of forms along with their form items', async (done) => {
-      const orgId = process.env.TEST_ORG_ID || '';
-      const fakeForm: any = fake.applicationForm(orgId, jobId);
-      const form = await insertForm(fakeForm);
+    it('Returns array of forms', async (done) => {
+      const promises = [
+        insertForm(fake.applicationForm(mockUser.orgID, jobId)),
+        insertForm(fake.screeningForm(mockUser.orgID, jobId)),
+        insertForm(fake.assessmentForm(mockUser.orgID, jobId)),
+        insertForm(fake.assessmentForm(mockUser.orgID, jobId)),
+        insertForm(fake.assessmentForm(mockUser.orgID, jobId)),
+      ];
+
+      await Promise.all(promises);
 
       const resp = await request(app)
         .get('/forms')
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(resp.body[0].form_id).toBe(form.form_id);
-      expect(resp.body[0].form_items.length).toBe(form.form_items.length);
-
+      expect(resp.body.length).toBe(promises.length);
       done();
     });
   });
 
   describe('GET /forms/:form_id/html', () => {
-    let form: any;
-    beforeAll(async (done) => {
-      await db.tx((t) =>
-        t.batch([
-          db.none('DELETE FROM form'),
-          db.none('DELETE FROM applicant'),
-        ]),
-      );
-
-      const orgId = process.env.TEST_ORG_ID || '';
-      const fakeForm: any = fake.screeningForm(orgId, jobId);
+    let form: TForm;
+    beforeAll(async () => {
+      const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
       form = await insertForm(fakeForm);
-      done();
     });
 
     it('Renders html without crashing', (done) => {
       request(app)
         .get(`/forms/${form.form_id}/html`)
         .set('Accept', 'text/html')
+        .expect('Content-Type', /html/)
         .expect(200, done);
     });
   });
 
   describe('DELETE /forms/:form_id', () => {
-    let form: any;
-    beforeEach(async (done) => {
-      await db.none('DELETE FROM form');
-      const orgId = process.env.TEST_ORG_ID || '';
-      const fakeForm: any = fake.screeningForm(orgId, jobId);
+    let form: TForm;
+    beforeEach(async () => {
+      const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
       form = await insertForm(fakeForm);
-      done();
     });
 
     it('Returns json 200 response', (done) => {
@@ -181,8 +150,7 @@ describe('forms', () => {
 
   describe('PUT /forms/:form_id', () => {
     it('Returns json 200 response', async (done) => {
-      const orgId = process.env.TEST_ORG_ID || '';
-      const fakeForm: any = fake.applicationForm(orgId, jobId);
+      const fakeForm = fake.applicationForm(mockUser.orgID, jobId);
       const form = await insertForm(fakeForm);
 
       request(app)
@@ -194,38 +162,37 @@ describe('forms', () => {
     });
 
     it('Returns updated form entity', async (done) => {
-      const orgId = process.env.TEST_ORG_ID || '';
-      const fakeForm: any = fake.applicationForm(orgId, jobId);
-      const form = await insertForm(fakeForm);
+      const fakeForm = fake.applicationForm(mockUser.orgID, jobId);
+      const form: TForm = await insertForm(fakeForm);
 
-      const updateVals: any = fake.applicationForm(orgId, jobId);
+      const updateVals = {...form};
+      updateVals.form_items = updateVals.form_items.map((item) => ({
+        ...item,
+        placeholder: faker.random.words(),
+      }));
+
       const resp = await request(app)
         .put(`/forms/${form.form_id}`)
         .set('Accept', 'application/json')
         .send(updateVals)
         .expect(200);
 
-      // make shure form_id, organization_id and job_id are unmodified
-      expect(resp.body.form_id).toBe(form.form_id);
-      expect(resp.body.organization_id).toBe(form.organization_id);
-      expect(resp.body.job_id).toBe(form.job_id);
-
-      /*
-       * for each received form item
-       *    go through all sent form_items to find the corresponding one
-       *        for this item go through all object keys and compare them to response item
-       */
-      resp.body.form_items.forEach((item: any) => {
-        for (let i = 0; i < updateVals.form_items.length; ++i) {
-          if (updateVals.form_items[i].label === item.label) {
-            Object.keys(updateVals.form_items[i]).forEach((key: string) => {
-              expect(updateVals.form_items[i][key]).toStrictEqual(item[key]);
-            });
-          }
-        }
-      });
+      expect(resp.body).toStrictEqual(updateVals);
 
       done();
     });
   });
+
+  // describe('POST /forms/:form_id', () => {
+  //   it('Returns 201 json response', (done) => {
+  //     const orgId = process.env.TEST_ORG_ID || '';
+  //     const form = fake.applicationForm(orgId, jobId);
+  //     request(app)
+  //       .post('/forms')
+  //       .set('Accept', 'application/json')
+  //       .send(form)
+  //       .expect('Content-Type', /json/)
+  //       .expect(201, done);
+  //   });
+  // });
 });

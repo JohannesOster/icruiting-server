@@ -16,25 +16,16 @@ export const createForm: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(422).json({errors: errors.array()});
 
-  insertForm({...req.body, organization_id: res.locals.user.orgID})
-    .then((data) => {
-      res.status(201).json(data);
-    })
-    .catch((err) => {
-      console.log(err);
-      next(err);
-    });
+  const orgID = res.locals.user.orgID;
+  insertForm({...req.body, organization_id: orgID})
+    .then((data) => res.status(201).json(data))
+    .catch(next);
 };
 
 export const getForms: RequestHandler = (req, res, next) => {
   selectForms(res.locals.user.orgID)
-    .then((forms) => {
-      res.status(200).json(forms);
-    })
-    .catch((err) => {
-      console.log(err);
-      next(err);
-    });
+    .then((forms) => res.status(200).json(forms))
+    .catch(next);
 };
 
 export const renderHTMLForm: RequestHandler = (req, res, next) => {
@@ -172,11 +163,11 @@ export const deleteForm: RequestHandler = (req, res, next) => {
 
 export const updateForm: RequestHandler = (req, res, next) => {
   updateFormDb(req.params.form_id, req.body)
-    .then((result: any) => {
-      res.status(200).json(result);
-    })
-    .catch((err) => {
-      console.log(err);
-      next(err);
-    });
+    .then((result: any) => res.status(200).json(result))
+    .catch(next);
+};
+
+export const submitForm: RequestHandler = (req, res, next) => {
+  console.log('submits form');
+  res.status(200).json('asdf');
 };

@@ -23,6 +23,8 @@ router.get('/forms/:form_id/html', formsController.renderHTMLForm);
 router.post('/forms/:form_id/html', formsController.submitHTMLForm);
 
 router.use(requireAuth);
+router.post('/forms/:form_id', formsController.submitForm);
+
 router.post(
   '/screenings',
   screeningsController.validateCreateScreening,

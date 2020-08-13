@@ -20,9 +20,17 @@ export const insertAssessment: RequestHandler = (req, res, next) => {
 export const getAssessment: RequestHandler = (req, res, next) => {
   const submitterId = res.locals.user['sub'];
   const applicantId = req.params.applicant_id;
+  const {form_id} = req.query as any;
 
-  selectAssessment({submitter_id: submitterId, applicant_id: applicantId})
-    .then((data) => res.json(data))
+  selectAssessment({
+    submitter_id: submitterId,
+    applicant_id: applicantId,
+    form_id,
+  })
+    .then((data) => {
+      console.log(data, form_id, applicantId);
+      res.json(data);
+    })
     .catch(next);
 };
 

@@ -1,7 +1,4 @@
-DROP TABLE IF EXISTS assessment_center_exercise;
-DROP TABLE IF EXISTS assessment_center;
-DROP TABLE IF EXISTS screening; 
-DROP TABLE IF EXISTS assessment; 
+DROP TABLE IF EXISTS form_submission;
 DROP TABLE IF EXISTS applicant;
 DROP TABLE IF EXISTS form_item;
 DROP TABLE IF EXISTS form;

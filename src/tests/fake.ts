@@ -1,4 +1,5 @@
 import faker from 'faker';
+import {EFormCategory} from '../controllers/forms';
 
 const fake = {
   user: (user_role: 'admin' | 'user' = 'admin') => ({
@@ -36,7 +37,7 @@ const fake = {
   applicationForm: (organization_id: string, job_id: string) => ({
     organization_id,
     job_id: job_id,
-    form_category: 'application',
+    form_category: EFormCategory.application,
     form_items: [
       {
         component: 'input',
@@ -62,20 +63,20 @@ const fake = {
   screeningForm: (organization_id: string, job_id: string) => ({
     organization_id,
     job_id: job_id,
-    form_category: 'screening' as 'screening' | 'application' | 'assessment',
+    form_category: EFormCategory.screening,
     form_items: [
       {
         component: 'rating_group',
         label: faker.random.word(),
         placeholder: faker.random.word(),
         row_index: 0,
-        default_value: 1,
+        default_value: '1',
         options: [
-          {label: '1', value: 1},
-          {label: '2', value: 2},
-          {label: '3', value: 3},
-          {label: '4', value: 4},
-          {label: '5', value: 5},
+          {label: '1', value: '1'},
+          {label: '2', value: '2'},
+          {label: '3', value: '3'},
+          {label: '4', value: '4'},
+          {label: '5', value: '5'},
         ],
         editable: true,
         deletable: true,
@@ -85,20 +86,20 @@ const fake = {
   assessmentForm: (organization_id: string, job_id: string) => ({
     organization_id,
     job_id: job_id,
-    form_category: 'assessment' as 'screening' | 'application' | 'assessment',
+    form_category: EFormCategory.assessment,
     form_items: [
       {
         component: 'rating_group',
         label: faker.random.word(),
         placeholder: faker.random.word(),
         row_index: 0,
-        default_value: 1,
+        default_value: '1',
         options: [
-          {label: '1', value: 1},
-          {label: '2', value: 2},
-          {label: '3', value: 3},
-          {label: '4', value: 4},
-          {label: '5', value: 5},
+          {label: '1', value: '1'},
+          {label: '2', value: '2'},
+          {label: '3', value: '3'},
+          {label: '4', value: '4'},
+          {label: '5', value: '5'},
         ],
         editable: true,
         deletable: true,

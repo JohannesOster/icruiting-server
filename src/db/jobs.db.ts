@@ -1,36 +1,29 @@
 import db from '.';
 import {selectJobs as selectJobsSQL} from './sql';
+import {TJob} from 'controllers/jobs/types';
 
-interface inserJobParams {
-  job_title: string;
-  organization_id: string;
-  job_requirements: Array<{requirement_label: string}>;
-}
-export const insertJob = (params: inserJobParams) => {
-  const job = {
-    job_title: params.job_title,
-    organization_id: params.organization_id,
-  };
-  const insertJobStmt =
-    db.$config.pgp.helpers.insert(job, null, 'job') + ' RETURNING *';
+export const insertJob = async ({job_requirements, ...job}: TJob) => {
+  const helpers = db.$config.pgp.helpers;
 
-  return db.one(insertJobStmt).then((insertedJob) => {
-    const cs = new db.$config.pgp.helpers.ColumnSet(
-      ['job_id', 'requirement_label'],
-      {table: 'job_requirement'},
-    );
+  const insertJobStmt = helpers.insert(job, null, 'job') + ' RETURNING *';
+  const insertedJob = await db.one(insertJobStmt);
 
-    const values = params.job_requirements.map((requirement) => ({
-      job_id: insertedJob.job_id,
-      requirement_label: requirement.requirement_label,
-    }));
+  const cs = new helpers.ColumnSet(
+    ['job_id', 'organization_id', 'requirement_label'],
+    {table: 'job_requirement'},
+  );
 
-    const stmt = db.$config.pgp.helpers.insert(values, cs) + ' RETURNING *';
+  const requirements = job_requirements.map((req) => ({
+    job_id: insertedJob.job_id,
+    organization_id: job.organization_id,
+    requirement_label: req.requirement_label,
+  }));
 
-    return db.any(stmt).then((job_requirements) => {
-      return {job_requirements, ...insertedJob};
-    });
-  });
+  const reqStmt = helpers.insert(requirements, cs) + ' RETURNING *';
+
+  return db
+    .any(reqStmt)
+    .then((job_requirements) => ({job_requirements, ...insertedJob}));
 };
 
 export const selectJobs = (organization_id: string) => {

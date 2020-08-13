@@ -3,39 +3,21 @@ import {
   selectForms as selectFormsSQL,
   selectForm as selectFormSQL,
 } from './sql';
+import {TForm} from 'controllers/forms';
 
-interface insertFormParams {
-  form_id?: string;
-  organization_id: string;
-  job_id: string;
-  form_category: 'application' | 'screening' | 'assessment';
-  form_items: Array<{
-    component: string;
-    row_index: number;
-    label?: string;
-    placeholder?: string;
-    default_value?: string | number;
-    validation?: {required: boolean};
-    options?: Array<{label: string; value: string | number}>;
-    editable?: boolean;
-    deletable?: boolean;
-    job_requirement_id?: string;
-  }>;
-}
-export const insertForm = async (params: insertFormParams) => {
-  const form: any = {
-    organization_id: params.organization_id,
-    job_id: params.job_id,
-    form_category: params.form_category,
-  };
-  if (params.form_id) form.form_id = params.form_id;
-  const formStmt =
-    db.$config.pgp.helpers.insert(form, null, 'form') + ' RETURNING *';
+export const insertForm = async ({form_items, ...form}: TForm) => {
+  const helpers = db.$config.pgp.helpers;
+
+  // - insert form
+  const formStmt = helpers.insert(form, null, 'form') + ' RETURNING *';
   const insertedForm = await db.one(formStmt);
 
-  const cs = new db.$config.pgp.helpers.ColumnSet(
+  // - insert form_items
+  const cs = new helpers.ColumnSet(
     [
       'form_id',
+      'organization_id',
+      {name: 'job_requirement_id', def: null},
       'component',
       'row_index',
       'label',
@@ -45,21 +27,17 @@ export const insertForm = async (params: insertFormParams) => {
       {name: 'options', mod: ':json', cast: 'jsonb', def: null},
       {name: 'editable', def: false},
       {name: 'deletable', def: false},
-      {name: 'job_requirement_id', def: null},
     ],
     {table: 'form_item'},
   );
 
-  const values = params.form_items.map((item) => {
-    const map = {
-      ...item,
-      form_id: insertedForm.form_id,
-    };
+  const values = form_items.map((item) => ({
+    ...item,
+    organization_id: form.organization_id,
+    form_id: insertedForm.form_id,
+  }));
 
-    return map;
-  });
-
-  const stmt = db.$config.pgp.helpers.insert(values, cs) + ' RETURNING *';
+  const stmt = helpers.insert(values, cs) + ' RETURNING *';
 
   return db.any(stmt).then((items) => ({...insertedForm, form_items: items}));
 };
@@ -77,54 +55,50 @@ export const deleteForm = (form_id: string) => {
   return db.none(stmt, form_id);
 };
 
-export const updateForm = (form_id: string, body: any) => {
-  return db
-    .tx(async (t) => {
-      const promises = [];
-      promises.push(db.one('SELECT * FROM form WHERE form_id = $1', [form_id]));
-      if (body.form_items) {
-        /*
-         * Instead of updating existing items all items are deleted and new items are inserted
-         * This is because it is pretty complicated to row_index, since it is unique
-         */
-        await db.none('DELETE FROM form_item WHERE form_id=$1', form_id);
-        const cs = new db.$config.pgp.helpers.ColumnSet(
-          [
-            'form_id',
-            'component',
-            'row_index',
-            'label',
-            {name: 'placeholder', def: null},
-            {name: 'default_value', def: null},
-            {name: 'validation', mod: ':json', cast: 'jsonb', def: null},
-            {name: 'options', mod: ':json', cast: 'jsonb', def: null},
-            {name: 'editable', def: false},
-            {name: 'deletable', def: false},
-            {name: 'job_requirement_id', def: null},
-          ],
-          {table: 'form_item'},
-        );
+export const updateForm = async (
+  form_id: string,
+  {form_items, ...form}: TForm,
+) => {
+  await db.tx(async (t) => {
+    if (form_items) {
+      await t.none('DELETE FROM form_item WHERE form_id=$1', form_id);
 
-        const values = body.form_items.map((item: any) => {
-          const map = {...item, form_id};
-          return map;
-        });
+      const rawText = (text: string) => ({
+        toPostgres: () => text,
+        rawType: true,
+      });
 
-        const stmt = db.$config.pgp.helpers.insert(values, cs) + ' RETURNING *';
-        promises.push(db.any(stmt));
-      } else {
-        const stmt = 'SELECT * FROM form_item WHERE form_id=$1';
-        promises.push(db.any(stmt, form_id));
-      }
+      const cs = new db.$config.pgp.helpers.ColumnSet(
+        [
+          {
+            name: 'form_item_id',
+            def: () => rawText('uuid_generate_v4()'),
+          }, // insert form_item_id to make shure already existsing form items "only get updated"
+          'form_id',
+          'organization_id',
+          {name: 'job_requirement_id', def: null},
+          'component',
+          'row_index',
+          'label',
+          {name: 'placeholder', def: null},
+          {name: 'default_value', def: null},
+          {name: 'validation', mod: ':json', cast: 'jsonb', def: null},
+          {name: 'options', mod: ':json', cast: 'jsonb', def: null},
+          {name: 'editable', def: false},
+          {name: 'deletable', def: false},
+        ],
+        {table: 'form_item'},
+      );
 
-      return t.batch(promises);
-    })
-    .then((result) => {
-      const form = result[0];
-      const formItems = result[1];
-      return {
-        ...form,
-        form_items: formItems,
-      };
-    });
+      const values = form_items.map((item) => ({
+        ...item,
+        organization_id: form.organization_id,
+        form_id,
+      }));
+
+      const stmt = db.$config.pgp.helpers.insert(values, cs);
+      await t.any(stmt);
+    }
+  });
+  return selectForm(form_id).then((resp) => resp[0]);
 };

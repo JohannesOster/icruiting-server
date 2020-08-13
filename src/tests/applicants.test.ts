@@ -121,6 +121,7 @@ describe('GET /applicants', () => {
       form_id,
       applicant_id: randomApplId,
       submitter_id: mockUser.sub,
+      organization_id: mockUser.orgID,
       comment: random.words(),
       submission: {
         [random.uuid()]: random.number(range),
