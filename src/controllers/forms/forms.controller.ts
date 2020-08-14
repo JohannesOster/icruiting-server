@@ -5,12 +5,14 @@ import {
   selectForm,
   deleteForm as deleteFormDb,
   updateForm as updateFormDb,
+  insertFormSubmission,
 } from '../../db/forms.db';
 import {insertApplicant} from '../../db/applicants.db';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import fs from 'fs';
 import {TForm} from './types';
+import {json} from 'body-parser';
 
 export const createForm: RequestHandler = (req, res, next) => {
   const orgId = res.locals.user.orgID;
@@ -170,7 +172,10 @@ export const updateForm: RequestHandler = (req, res, next) => {
     .catch(next);
 };
 
-export const submitForm: RequestHandler = (req, res) => {
-  console.log('submits form');
-  res.status(200).json('asdf');
+export const submitForm: RequestHandler = (req, res, next) => {
+  const {sub, orgID} = res.locals.user;
+  const params = {...req.body, submitter_id: sub, organization_id: orgID};
+  insertFormSubmission(params)
+    .then((data) => res.status(201).json(data))
+    .catch(next);
 };

@@ -6,8 +6,6 @@ import {
   formsController,
   applicantsController,
   rankingsController,
-  screeningsController,
-  assessmentsController,
 } from '../controllers';
 import {requireAuth, requireAdmin, catchValidationErrors} from '../middlewares';
 
@@ -23,25 +21,11 @@ router.get('/forms/:form_id/html', formsController.renderHTMLForm);
 router.post('/forms/:form_id/html', formsController.submitHTMLForm);
 
 router.use(requireAuth);
-router.post('/forms/:form_id', formsController.submitForm);
-
 router.post(
-  '/screenings',
-  screeningsController.validateCreateScreening,
-  screeningsController.insertScreening,
-);
-router.get('/screenings/:applicant_id', screeningsController.getScreening);
-router.put('/screenings/:applicant_id', screeningsController.updateScreening);
-
-router.post(
-  '/assessments',
-  assessmentsController.validateCreateAssessment,
-  assessmentsController.insertAssessment,
-);
-router.get('/assessments/:applicant_id', assessmentsController.getAssessment);
-router.put(
-  '/assessments/:applicant_id',
-  assessmentsController.updateAssessment,
+  '/forms/:form_id',
+  formsController.submitFormValidationRules,
+  catchValidationErrors,
+  formsController.submitForm,
 );
 
 router.get(

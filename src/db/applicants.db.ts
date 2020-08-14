@@ -1,10 +1,22 @@
 import db from '.';
 import {selectApplicants as selectApplicantsSQL} from './sql';
+import {TApplicant} from 'controllers/applicants';
 
-export const insertApplicant = (params: any) => {
-  const stmt =
-    db.$config.pgp.helpers.insert(params, null, 'applicant') + ' RETURNING *';
-  return db.any(stmt);
+export const insertApplicant = (applicant: TApplicant) => {
+  const helpers = db.$config.pgp.helpers;
+
+  const cs = new helpers.ColumnSet(
+    [
+      'organization_id',
+      'job_id',
+      {name: 'attributes', mod: ':json', cast: 'jsonb'},
+      {name: 'files', mod: ':json', cast: 'jsonb', def: null},
+    ],
+    {table: 'applicant'},
+  );
+
+  const stmt = helpers.insert(applicant, cs) + ' RETURNING *';
+  return db.one(stmt);
 };
 
 type TSelectParams = {
