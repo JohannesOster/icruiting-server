@@ -9,7 +9,7 @@ import {
   screeningsController,
   assessmentsController,
 } from '../controllers';
-import {requireAuth, requireAdmin} from '../middlewares';
+import {requireAuth, requireAdmin, catchValidationErrors} from '../middlewares';
 
 const router = express.Router();
 
@@ -69,7 +69,8 @@ router.put('/jobs/:job_id', jobsController.updateJob);
 
 router.post(
   '/forms',
-  formsController.validateCreateForm,
+  formsController.createFormValidationRules,
+  catchValidationErrors,
   formsController.createForm,
 );
 router.delete('/forms/:form_id', formsController.deleteForm);

@@ -59,6 +59,13 @@ describe('forms', () => {
       expect(resp.body.form_items.length).toBe(form.form_items.length);
       done();
     });
+
+    it('Validates req body', (done) => {
+      request(app)
+        .post('/forms')
+        .set('Accept', 'application/json')
+        .expect(422, done);
+    });
   });
 
   describe('GET /forms', () => {

@@ -1,5 +1,4 @@
 import {RequestHandler} from 'express';
-import {validationResult} from 'express-validator';
 import {
   insertForm,
   selectForms,
@@ -11,25 +10,26 @@ import {insertApplicant} from '../../db/applicants.db';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import fs from 'fs';
+import {TForm} from './types';
 
 export const createForm: RequestHandler = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(422).json({errors: errors.array()});
-
-  const orgID = res.locals.user.orgID;
-  insertForm({...req.body, organization_id: orgID})
+  const orgId = res.locals.user.orgID;
+  const params: TForm = {...req.body, organization_id: orgId};
+  insertForm(params)
     .then((data) => res.status(201).json(data))
     .catch(next);
 };
 
 export const getForms: RequestHandler = (req, res, next) => {
-  selectForms(res.locals.user.orgID)
+  const orgId = res.locals.user.orgID;
+  selectForms(orgId)
     .then((forms) => res.status(200).json(forms))
     .catch(next);
 };
 
 export const renderHTMLForm: RequestHandler = (req, res, next) => {
-  selectForm(req.params.form_id)
+  const {form_id} = req.params;
+  selectForm(form_id)
     .then((result) => {
       if (!result.length) return res.sendStatus(404);
       const form = result[0];
@@ -45,7 +45,8 @@ export const renderHTMLForm: RequestHandler = (req, res, next) => {
 };
 
 export const submitHTMLForm: RequestHandler = (req, res, next) => {
-  selectForm(req.params.form_id).then((result) => {
+  const {form_id} = req.params;
+  selectForm(form_id).then((result) => {
     if (!result.length) return res.sendStatus(404);
     const form = result[0];
 
@@ -156,18 +157,20 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
 };
 
 export const deleteForm: RequestHandler = (req, res, next) => {
-  deleteFormDb(req.params.form_id)
+  const {form_id} = req.params;
+  deleteFormDb(form_id)
     .then(() => res.status(200).json({}))
     .catch(next);
 };
 
 export const updateForm: RequestHandler = (req, res, next) => {
-  updateFormDb(req.params.form_id, req.body)
-    .then((result: any) => res.status(200).json(result))
+  const {form_id} = req.params;
+  updateFormDb(form_id, req.body)
+    .then((result) => res.status(200).json(result))
     .catch(next);
 };
 
-export const submitForm: RequestHandler = (req, res, next) => {
+export const submitForm: RequestHandler = (req, res) => {
   console.log('submits form');
   res.status(200).json('asdf');
 };

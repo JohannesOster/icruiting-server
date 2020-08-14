@@ -1,6 +1,6 @@
 import {body} from 'express-validator';
 
-export const validateCreateForm = [
+export const createFormValidationRules = [
   body('job_id').isUUID(),
   body('form_category').isIn(['application', 'screening', 'assessment']),
   body('form_items').isArray({min: 1}),
