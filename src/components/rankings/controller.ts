@@ -1,9 +1,6 @@
 import {RequestHandler} from 'express';
 import {validationResult} from 'express-validator';
-import {
-  selectScreeningRanking,
-  selectAssessmentRanking,
-} from '../../db/rankings.db';
+import {dbSelectScreeningRanking, dbSelectAssessmentRanking} from './database';
 
 export const getRanking: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
@@ -15,13 +12,13 @@ export const getRanking: RequestHandler = (req, res, next) => {
   const formCategory = req.query.form_category;
   if (!formCategory) throw new Error('Missing form_category');
   if (formCategory === 'screening') {
-    selectScreeningRanking(jobId, organization_id)
+    dbSelectScreeningRanking(jobId, organization_id)
       .then((result) => {
         res.status(200).json(result);
       })
       .catch(next);
   } else if (formCategory === 'assessment') {
-    selectAssessmentRanking(jobId, organization_id)
+    dbSelectAssessmentRanking(jobId, organization_id)
       .then((result) => {
         /* Turn requirement_sums_array of objects into object of sums
            {[job_requirement_id]: sum} */

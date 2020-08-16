@@ -1,18 +1,18 @@
 import request from 'supertest';
-import app from '../app';
-import {endConnection, truncateAllTables} from '../db/utils';
-import db from '../db';
-import {TForm, dbInsertForm} from 'components/forms';
-import {insertFormSubmission} from '../db/formSubmissions.db';
-import {dbInsertApplicant} from 'components/applicants';
-import fake from './fake';
 import faker from 'faker';
+import app from 'app';
+import db from 'db';
+import fake from 'tests/fake';
+import {endConnection, truncateAllTables} from 'db/utils';
+import {TForm, dbInsertForm} from 'components/forms';
+import {dbInsertFormSubmission} from 'components/formSubmissions';
+import {dbInsertApplicant} from 'components/applicants';
 import {dbInsertOrganization} from 'components/organizations';
 import {dbInsertJob} from 'components/jobs';
 import {TApplicant} from 'components/applicants';
 
 const mockUser = fake.user();
-jest.mock('../middlewares/auth', () => ({
+jest.mock('middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     res.locals.user = mockUser;
@@ -78,7 +78,7 @@ describe('rankings', () => {
             comment: faker.random.words(),
           };
 
-          promises.push(insertFormSubmission(screening));
+          promises.push(dbInsertFormSubmission(screening));
         });
 
         Promise.all(promises).finally(done);
@@ -158,7 +158,7 @@ describe('rankings', () => {
             comment: faker.random.words(),
           };
 
-          promises.push(insertFormSubmission(screening));
+          promises.push(dbInsertFormSubmission(screening));
         });
 
         Promise.all(promises).finally(done);

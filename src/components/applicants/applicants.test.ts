@@ -5,7 +5,7 @@ import {endConnection, truncateAllTables} from 'db/utils';
 import {TApplicant} from './types';
 import {dbInsertApplicant} from './database';
 import {TForm, dbInsertForm} from 'components/forms';
-import {insertFormSubmission} from 'db/formSubmissions.db';
+import {dbInsertFormSubmission} from 'components/formSubmissions';
 import {dbInsertOrganization} from 'components/organizations';
 import {dbInsertJob} from 'components/jobs';
 import fake from 'tests/fake';
@@ -117,7 +117,7 @@ describe('GET /applicants', () => {
       ),
     };
 
-    await insertFormSubmission(screening);
+    await dbInsertFormSubmission(screening);
 
     const res = await request(app)
       .get('/applicants')

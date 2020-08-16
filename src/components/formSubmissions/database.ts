@@ -1,7 +1,7 @@
-import db from '.';
-import {TFormSubmission} from 'controllers/formSubmissions';
+import db from 'db';
+import {TFormSubmission} from './types';
 
-export const insertFormSubmission = (submission: TFormSubmission) => {
+export const dbInsertFormSubmission = (submission: TFormSubmission) => {
   const helpers = db.$config.pgp.helpers;
 
   const cs = new helpers.ColumnSet(
@@ -21,7 +21,7 @@ export const insertFormSubmission = (submission: TFormSubmission) => {
   return db.one(stmt);
 };
 
-export const updateFormSubmission = (params: {
+export const dbUpdateFormSubmission = (params: {
   submitter_id: string;
   applicant_id: string;
   organization_id: string;
@@ -57,7 +57,7 @@ export const updateFormSubmission = (params: {
   return db.one(stmt, params);
 };
 
-export const selectFormSubmission = (params: {
+export const dbSelectFormSubmission = (params: {
   form_id: string;
   submitter_id: string;
   applicant_id: string;

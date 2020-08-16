@@ -1,19 +1,19 @@
 import request from 'supertest';
-import app from '../app';
-import db from '../db';
-import {endConnection, truncateAllTables} from '../db/utils';
+import faker from 'faker';
+import app from 'app';
+import db from 'db';
+import fake from 'tests/fake';
+import {endConnection, truncateAllTables} from 'db/utils';
 import {TForm, dbInsertForm} from 'components/forms';
 import {dbInsertOrganization} from 'components/organizations';
 import {dbInsertJob} from 'components/jobs';
 import {dbInsertApplicant} from 'components/applicants';
-import fake from './fake';
-import faker from 'faker';
 import {TApplicant} from 'components/applicants';
-import {TFormSubmission} from 'controllers/formSubmissions';
-import {insertFormSubmission} from '../db/formSubmissions.db';
+import {TFormSubmission} from './types';
+import {dbInsertFormSubmission} from './database';
 
 const mockUser = fake.user();
-jest.mock('../middlewares/auth', () => ({
+jest.mock('middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     res.locals.user = mockUser;
@@ -134,7 +134,7 @@ describe('form-submissions', () => {
     afterEach(async () => await db.none('TRUNCATE form_submission'));
 
     it('Returns 201 json response', async (done) => {
-      await insertFormSubmission(formSubmission);
+      await dbInsertFormSubmission(formSubmission);
       request(app)
         .put(
           `/form-submissions/${formSubmission.form_id}/${formSubmission.applicant_id}`,
@@ -146,7 +146,7 @@ describe('form-submissions', () => {
     });
 
     it('Returns updated entity', async () => {
-      await insertFormSubmission(formSubmission);
+      await dbInsertFormSubmission(formSubmission);
       const newVals = {comment: faker.random.words()};
       const resp = await request(app)
         .put(
@@ -198,7 +198,7 @@ describe('form-submissions', () => {
           comment: faker.random.words(),
         };
 
-        return await insertFormSubmission(formSubmission);
+        return await dbInsertFormSubmission(formSubmission);
       });
 
       done();
