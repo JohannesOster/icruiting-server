@@ -8,7 +8,7 @@ import {dbInsertApplicant} from 'components/applicants';
 import fake from './fake';
 import faker from 'faker';
 import {dbInsertOrganization} from 'components/organizations';
-import {insertJob} from '../db/jobs.db';
+import {dbInsertJob} from 'components/jobs';
 import {TApplicant} from 'components/applicants';
 
 const mockUser = fake.user();
@@ -26,7 +26,7 @@ beforeAll(async (done) => {
   const {organization_id} = await dbInsertOrganization(organization);
 
   const job = fake.job(organization_id);
-  const {job_id} = await insertJob(job);
+  const {job_id} = await dbInsertJob(job);
   jobId = job_id;
 
   done();

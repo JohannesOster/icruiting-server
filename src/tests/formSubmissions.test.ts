@@ -4,7 +4,7 @@ import db from '../db';
 import {endConnection, truncateAllTables} from '../db/utils';
 import {TForm, dbInsertForm} from 'components/forms';
 import {dbInsertOrganization} from 'components/organizations';
-import {insertJob} from '../db/jobs.db';
+import {dbInsertJob} from 'components/jobs';
 import {dbInsertApplicant} from 'components/applicants';
 import fake from './fake';
 import faker from 'faker';
@@ -27,7 +27,7 @@ beforeAll(async () => {
   await dbInsertOrganization(organization);
 
   const job = fake.job(mockUser.orgID);
-  const {job_id} = await insertJob(job);
+  const {job_id} = await dbInsertJob(job);
   jobId = job_id;
 });
 

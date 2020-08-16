@@ -1,13 +1,13 @@
-import request from 'supertest';
-import app from '../app';
-import fake from './fake';
-import {endConnection, truncateAllTables} from '../db/utils';
-import {insertJob} from '../db/jobs.db';
-import db from '../db';
 import faker from 'faker';
+import request from 'supertest';
+import app from 'app';
+import db from 'db';
+import fake from 'tests/fake';
+import {endConnection, truncateAllTables} from 'db/utils';
+import {dbInsertJob} from './database';
 import {dbInsertOrganization} from 'components/organizations';
 
-jest.mock('../middlewares/auth');
+jest.mock('middlewares/auth');
 
 beforeAll(async (done) => {
   const fakeOrg = fake.organization(process.env.TEST_ORG_ID);
@@ -118,7 +118,7 @@ describe('jobs', () => {
 
     it('Returns arra of jobs with its job_requirements', async (done) => {
       const job = fake.job(process.env.TEST_ORG_ID || '');
-      await insertJob(job);
+      await dbInsertJob(job);
 
       const resp = await request(app)
         .get('/jobs')
@@ -142,7 +142,7 @@ describe('jobs', () => {
     let job: any;
     beforeEach(async (done) => {
       const fakeJob = fake.job(process.env.TEST_ORG_ID || '');
-      job = await insertJob(fakeJob);
+      job = await dbInsertJob(fakeJob);
       done();
     });
 

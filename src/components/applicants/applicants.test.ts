@@ -7,7 +7,7 @@ import {dbInsertApplicant} from './database';
 import {TForm, dbInsertForm} from 'components/forms';
 import {insertFormSubmission} from 'db/formSubmissions.db';
 import {dbInsertOrganization} from 'components/organizations';
-import {insertJob} from 'db/jobs.db';
+import {dbInsertJob} from 'components/jobs';
 import fake from 'tests/fake';
 
 const mockUser = fake.user();
@@ -38,7 +38,7 @@ beforeAll(async () => {
     fake.job(mockUser.orgID),
     fake.job(mockUser.orgID),
   ];
-  const promises = fakeJobs.map((job) => insertJob(job));
+  const promises = fakeJobs.map((job) => dbInsertJob(job));
 
   await Promise.all(promises).then((res) => {
     jobIds = res.map(({job_id}) => job_id);

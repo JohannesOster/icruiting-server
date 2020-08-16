@@ -6,7 +6,7 @@ import {dbInsertForm} from './database';
 import {TForm} from './types';
 import {endConnection, truncateAllTables} from 'db/utils';
 import {dbInsertOrganization} from 'components/organizations';
-import {insertJob} from 'db/jobs.db';
+import {dbInsertJob} from 'components/jobs';
 import fake from 'tests/fake';
 
 const mockUser = fake.user();
@@ -24,7 +24,7 @@ beforeAll(async () => {
   await dbInsertOrganization(organization);
 
   const job = fake.job(mockUser.orgID);
-  const {job_id} = await insertJob(job);
+  const {job_id} = await dbInsertJob(job);
   jobId = job_id;
 });
 

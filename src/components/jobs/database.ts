@@ -1,8 +1,8 @@
-import db from '.';
+import db from 'db';
 import {selectJobs as selectJobsSQL} from './sql';
-import {TJob} from 'controllers/jobs/types';
+import {TJob} from './types';
 
-export const insertJob = async ({job_requirements, ...job}: TJob) => {
+export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
   const helpers = db.$config.pgp.helpers;
 
   const insertJobStmt = helpers.insert(job, null, 'job') + ' RETURNING *';
@@ -26,11 +26,11 @@ export const insertJob = async ({job_requirements, ...job}: TJob) => {
     .then((job_requirements) => ({job_requirements, ...insertedJob}));
 };
 
-export const selectJobs = (organization_id: string) => {
+export const dbSelectJobs = (organization_id: string) => {
   return db.any(selectJobsSQL, {organization_id});
 };
 
-export const updateJob = (job_id: string, body: any) => {
+export const dbUpdateJob = (job_id: string, body: any) => {
   return db
     .tx((t) => {
       const promises = [];
