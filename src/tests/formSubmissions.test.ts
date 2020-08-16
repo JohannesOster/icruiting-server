@@ -3,7 +3,7 @@ import app from '../app';
 import db from '../db';
 import {endConnection, truncateAllTables} from '../db/utils';
 import {TForm, dbInsertForm} from 'components/forms';
-import {insertOrganization} from '../db/organizations.db';
+import {dbInsertOrganization} from 'components/organizations';
 import {insertJob} from '../db/jobs.db';
 import {dbInsertApplicant} from 'components/applicants';
 import fake from './fake';
@@ -24,7 +24,7 @@ jest.mock('../middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   const organization = fake.organization(mockUser.orgID);
-  await insertOrganization(organization);
+  await dbInsertOrganization(organization);
 
   const job = fake.job(mockUser.orgID);
   const {job_id} = await insertJob(job);

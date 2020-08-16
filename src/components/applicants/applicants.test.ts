@@ -6,7 +6,7 @@ import {TApplicant} from './types';
 import {dbInsertApplicant} from './database';
 import {TForm, dbInsertForm} from 'components/forms';
 import {insertFormSubmission} from 'db/formSubmissions.db';
-import {insertOrganization} from 'db/organizations.db';
+import {dbInsertOrganization} from 'components/organizations';
 import {insertJob} from 'db/jobs.db';
 import fake from 'tests/fake';
 
@@ -30,7 +30,7 @@ const getRandomJobId = () => {
 beforeAll(async () => {
   // insert organization
   const fakeOrg = fake.organization(mockUser.orgID);
-  await insertOrganization(fakeOrg);
+  await dbInsertOrganization(fakeOrg);
 
   // insert jobs
   const fakeJobs = [

@@ -5,13 +5,13 @@ import {endConnection, truncateAllTables} from '../db/utils';
 import {insertJob} from '../db/jobs.db';
 import db from '../db';
 import faker from 'faker';
-import {insertOrganization} from '../db/organizations.db';
+import {dbInsertOrganization} from 'components/organizations';
 
 jest.mock('../middlewares/auth');
 
 beforeAll(async (done) => {
   const fakeOrg = fake.organization(process.env.TEST_ORG_ID);
-  insertOrganization(fakeOrg);
+  dbInsertOrganization(fakeOrg);
   done();
 });
 

@@ -1,6 +1,5 @@
 import express from 'express';
 import {
-  organizationsController,
   employeesController,
   jobsController,
   rankingsController,
@@ -9,15 +8,11 @@ import {
 import {requireAuth, requireAdmin, catchValidationErrors} from '../middlewares';
 import {routes as applicants} from 'components/applicants';
 import {routes as forms} from 'components/forms';
+import {routes as organizations} from 'components/organizations';
 
 const router = express.Router();
 
-router.post(
-  '/organizations',
-  organizationsController.validateCreateOrganization,
-  organizationsController.createOrganization,
-);
-
+router.use('/organizations', organizations);
 router.use('/applicants', applicants);
 router.use('/forms', forms);
 

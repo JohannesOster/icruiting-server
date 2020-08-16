@@ -1,8 +1,8 @@
 import request from 'supertest';
-import app from '../app';
-import fake from './fake';
-import {endConnection, truncateAllTables} from '../db/utils';
-import db from '../db';
+import app from 'app';
+import db from 'db';
+import {endConnection, truncateAllTables} from 'db/utils';
+import fake from 'tests/fake';
 
 afterAll(async () => {
   await truncateAllTables();
