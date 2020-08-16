@@ -3,35 +3,32 @@ import app from '../app';
 import {endConnection, truncateAllTables} from '../db/utils';
 import db from '../db';
 import {insertForm} from '../db/forms.db';
-import {insertScreening} from '../db/screenings.db';
+import {insertFormSubmission} from '../db/formSubmissions.db';
 import {insertApplicant} from '../db/applicants.db';
+import {TForm} from 'controllers/forms';
 import fake from './fake';
 import faker from 'faker';
+import {insertOrganization} from '../db/organizations.db';
+import {insertJob} from '../db/jobs.db';
+import {TApplicant} from 'controllers/applicants';
 
-jest.mock('../middlewares/auth');
+const mockUser = fake.user();
+jest.mock('../middlewares/auth', () => ({
+  requireAdmin: jest.fn((req, res, next) => next()),
+  requireAuth: jest.fn((req, res, next) => {
+    res.locals.user = mockUser;
+    next();
+  }),
+}));
 
 let jobId: string;
 beforeAll(async (done) => {
-  const insert = db.$config.pgp.helpers.insert;
+  const organization = fake.organization(mockUser.orgID);
+  const {organization_id} = await insertOrganization(organization);
 
-  const organization = fake.organization(process.env.TEST_ORG_ID);
-  const insOrg = insert(organization, null, 'organization');
-  await db.none(insOrg);
-
-  const job = fake.job(organization.organization_id);
-  const params = {
-    organization_id: job.organization_id,
-    job_title: job.job_title,
-  };
-
-  const insJob = insert(params, null, 'job') + ' RETURNING *';
-  const {job_id} = await db.one(insJob);
-
-  const req = {job_id, ...job.job_requirements[0]};
-  const insReq = insert(req, null, 'job_requirement');
-  await db.none(insReq);
-
-  jobId = job_id; // set jobId for "global" access in test file
+  const job = fake.job(organization_id);
+  const {job_id} = await insertJob(job);
+  jobId = job_id;
 
   done();
 });
@@ -48,48 +45,45 @@ describe('rankings', () => {
       await db.none('DELETE FROM form');
 
       const promises = [];
-      const orgId = process.env.TEST_ORG_ID || '';
 
-      promises.push(insertForm(fake.screeningForm(orgId, jobId) as any));
+      const screeningForm = fake.screeningForm(mockUser.orgID, jobId);
+      promises.push(insertForm(screeningForm));
 
-      applicantsCount = 4;
+      applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
-          promises.push(insertApplicant(fake.applicant(orgId, jobId) as any));
+          const applicant = fake.applicant(mockUser.orgID, jobId);
+          promises.push(insertApplicant(applicant));
         });
 
-      Promise.all(promises)
-        .then((data: any) => {
-          const promises: any = [];
+      Promise.all(promises).then((data) => {
+        const promises: Array<Promise<any>> = [];
+        const [form, ...applicants] = data as [TForm, ...Array<TApplicant>];
 
-          const form = data[0];
-          /*  insertApplicant returns array in form of [{applicant_id: ...}] */
-          const applicants = data.slice(1).map((appl: any) => appl[0]);
-
-          const range = {min: 0, max: 5};
-
-          applicants.forEach((appl: any) => {
-            const screening = {
-              applicant_id: appl.applicant_id,
-              submitter_id: faker.random.uuid(),
-              form_id: form.form_id,
-              submission: {
-                [faker.random.alphaNumeric()]: faker.random.number(range),
-                [faker.random.alphaNumeric()]: faker.random.number(range),
-                [faker.random.alphaNumeric()]: faker.random.number(range),
-                [faker.random.alphaNumeric()]: faker.random.number(range),
+        applicants.forEach((appl: TApplicant) => {
+          const screening = {
+            applicant_id: appl.applicant_id!,
+            submitter_id: mockUser.sub,
+            organization_id: mockUser.orgID,
+            form_id: form.form_id!,
+            submission: form.form_items.reduce(
+              (acc: {[form_item_id: string]: string}, item) => {
+                acc[item.form_item_id!] = faker.random
+                  .number({min: 0, max: 5})
+                  .toString();
+                return acc;
               },
-            };
+              {},
+            ),
+            comment: faker.random.words(),
+          };
 
-            promises.push(insertScreening(screening));
-          });
-
-          Promise.all(promises).finally(done);
-        })
-        .catch((err) => {
-          console.error(err);
+          promises.push(insertFormSubmission(screening));
         });
+
+        Promise.all(promises).finally(done);
+      });
     });
 
     it('Returns 200 json response', (done) => {
@@ -124,57 +118,52 @@ describe('rankings', () => {
       done();
     });
   });
-});
 
-describe('rankings', () => {
   describe('GET assessment rankings', () => {
     let applicantsCount: number;
     beforeAll(async (done) => {
       await db.none('DELETE FROM form');
 
       const promises = [];
-      const orgId = process.env.TEST_ORG_ID || '';
 
-      promises.push(insertForm(fake.screeningForm(orgId, jobId) as any));
+      const screeningForm = fake.screeningForm(mockUser.orgID, jobId);
+      promises.push(insertForm(screeningForm));
 
-      applicantsCount = 4;
+      applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
-          promises.push(insertApplicant(fake.applicant(orgId, jobId) as any));
+          const applicant = fake.applicant(mockUser.orgID, jobId);
+          promises.push(insertApplicant(applicant));
         });
 
-      Promise.all(promises)
-        .then((data: any) => {
-          const promises: any = [];
+      Promise.all(promises).then((data) => {
+        const promises: Array<Promise<any>> = [];
+        const [form, ...applicants] = data as [TForm, ...Array<TApplicant>];
 
-          const form = data[0];
-          /*  insertApplicant returns array in form of [{applicant_id: ...}] */
-          const applicants = data.slice(1).map((appl: any) => appl[0]);
-
-          const range = {min: 0, max: 5};
-
-          applicants.forEach((appl: any) => {
-            const screening = {
-              applicant_id: appl.applicant_id,
-              submitter_id: faker.random.uuid(),
-              form_id: form.form_id,
-              submission: {
-                [faker.random.alphaNumeric()]: faker.random.number(range),
-                [faker.random.alphaNumeric()]: faker.random.number(range),
-                [faker.random.alphaNumeric()]: faker.random.number(range),
-                [faker.random.alphaNumeric()]: faker.random.number(range),
+        applicants.forEach((appl: TApplicant) => {
+          const screening = {
+            applicant_id: appl.applicant_id!,
+            submitter_id: mockUser.sub,
+            organization_id: mockUser.orgID,
+            form_id: form.form_id!,
+            submission: form.form_items.reduce(
+              (acc: {[form_item_id: string]: string}, item) => {
+                acc[item.form_item_id!] = faker.random
+                  .number({min: 0, max: 5})
+                  .toString();
+                return acc;
               },
-            };
+              {},
+            ),
+            comment: faker.random.words(),
+          };
 
-            promises.push(insertScreening(screening));
-          });
-
-          Promise.all(promises).finally(done);
-        })
-        .catch((err) => {
-          console.error(err);
+          promises.push(insertFormSubmission(screening));
         });
+
+        Promise.all(promises).finally(done);
+      });
     });
 
     it('Returns 200 json response', (done) => {

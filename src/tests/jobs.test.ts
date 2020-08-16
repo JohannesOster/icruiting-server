@@ -5,20 +5,13 @@ import {endConnection, truncateAllTables} from '../db/utils';
 import {insertJob} from '../db/jobs.db';
 import db from '../db';
 import faker from 'faker';
+import {insertOrganization} from '../db/organizations.db';
 
 jest.mock('../middlewares/auth');
 
 beforeAll(async (done) => {
-  /* Insert organization with the id set in .env file 
-     This is neccessary since all routes get their orgID
-     from the token payload in the auth middleware. The mock
-     of this middleware also accesses process.env.TEST_ORG_ID
-  */
-  const organization = fake.organization(process.env.TEST_ORG_ID);
-  await db.none('INSERT INTO organization VALUES ($1, $2)', [
-    organization.organization_id,
-    organization.organization_name,
-  ]);
+  const fakeOrg = fake.organization(process.env.TEST_ORG_ID);
+  insertOrganization(fakeOrg);
   done();
 });
 

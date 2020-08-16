@@ -2,7 +2,7 @@ import * as organizationsController from './organizations';
 import * as employeesController from './employees';
 import * as jobsController from './jobs';
 import * as formsController from './forms';
-import * as screeningsController from './screenings';
+import * as formSubmissionsController from './formSubmissions';
 import * as applicantsController from './applicants';
 import * as rankingsController from './rankings';
 
@@ -13,5 +13,5 @@ export {
   formsController,
   applicantsController,
   rankingsController,
-  screeningsController,
+  formSubmissionsController,
 };

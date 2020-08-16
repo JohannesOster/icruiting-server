@@ -5,14 +5,12 @@ import {
   selectForm,
   deleteForm as deleteFormDb,
   updateForm as updateFormDb,
-  insertFormSubmission,
 } from '../../db/forms.db';
 import {insertApplicant} from '../../db/applicants.db';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import fs from 'fs';
 import {TForm} from './types';
-import {json} from 'body-parser';
 
 export const createForm: RequestHandler = (req, res, next) => {
   const orgId = res.locals.user.orgID;
@@ -140,8 +138,8 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
         {attributes: [], files: []},
       );
 
-      applicant.files = !!map.files && JSON.stringify(map.files);
-      applicant.attributes = !!map.attributes && JSON.stringify(map.attributes);
+      applicant.files = !!map.files && map.files;
+      applicant.attributes = !!map.attributes && map.attributes;
 
       promises.push(insertApplicant(applicant));
 
@@ -169,13 +167,5 @@ export const updateForm: RequestHandler = (req, res, next) => {
   const {form_id} = req.params;
   updateFormDb(form_id, req.body)
     .then((result) => res.status(200).json(result))
-    .catch(next);
-};
-
-export const submitForm: RequestHandler = (req, res, next) => {
-  const {sub, orgID} = res.locals.user;
-  const params = {...req.body, submitter_id: sub, organization_id: orgID};
-  insertFormSubmission(params)
-    .then((data) => res.status(201).json(data))
     .catch(next);
 };

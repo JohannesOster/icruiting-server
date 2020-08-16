@@ -22,9 +22,3 @@ export const createFormValidationRules = [
   body('form_items[*].editable').optional().isBoolean(),
   body('form_items[*].deletable').optional().isBoolean(),
 ];
-
-export const submitFormValidationRules = [
-  body('form_id').isUUID(),
-  body('applicant_id').isUUID(),
-  body('submission').exists(),
-];

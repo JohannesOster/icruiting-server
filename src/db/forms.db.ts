@@ -3,7 +3,7 @@ import {
   selectForms as selectFormsSQL,
   selectForm as selectFormSQL,
 } from './sql';
-import {TForm, TFormSubmission} from 'controllers/forms';
+import {TForm} from 'controllers/forms';
 
 export const insertForm = async ({form_items, ...form}: TForm) => {
   const helpers = db.$config.pgp.helpers;
@@ -101,24 +101,4 @@ export const updateForm = async (
     }
   });
   return selectForm(form_id).then((resp) => resp[0]);
-};
-
-export const insertFormSubmission = (submission: TFormSubmission) => {
-  const helpers = db.$config.pgp.helpers;
-
-  const cs = new helpers.ColumnSet(
-    [
-      'applicant_id',
-      'submitter_id',
-      'form_id',
-      'organization_id',
-      {name: 'submission', mod: ':json', cast: 'jsonb'},
-      {name: 'comment', def: null},
-    ],
-    {table: 'form_submission'},
-  );
-
-  const stmt = helpers.insert(submission, cs) + ' RETURNING *';
-
-  return db.one(stmt);
 };

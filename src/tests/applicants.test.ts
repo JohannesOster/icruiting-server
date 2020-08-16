@@ -5,9 +5,13 @@ import fake from './fake';
 import {endConnection, truncateAllTables} from '../db/utils';
 import {random} from 'faker';
 import {TApplicant} from 'controllers/applicants';
+import {TForm} from 'controllers/forms';
 import {insertForm} from '../db/forms.db';
-import {insertScreening} from '../db/screenings.db';
+import {insertFormSubmission} from '../db/formSubmissions.db';
 import faker from 'faker';
+import {insertApplicant} from '../db/applicants.db';
+import {insertOrganization} from '../db/organizations.db';
+import {insertJob} from '../db/jobs.db';
 
 const mockUser = fake.user();
 jest.mock('../middlewares/auth', () => ({
@@ -21,7 +25,6 @@ jest.mock('../middlewares/auth', () => ({
 let jobIds: string[];
 
 /* HELPER FUNCTIONS */
-const insert = db.$config.pgp.helpers.insert;
 const randomJobId = () => {
   const randomIdx = random.number({min: 0, max: jobIds.length - 1});
   const randomJobId = jobIds[randomIdx];
@@ -31,8 +34,7 @@ const randomJobId = () => {
 beforeAll(async () => {
   // insert organization
   const fakeOrg = fake.organization(mockUser.orgID);
-  const orgStmt = insert(fakeOrg, null, 'organization');
-  await db.none(orgStmt);
+  await insertOrganization(fakeOrg);
 
   // insert jobs
   const fakeJobs = [
@@ -40,15 +42,10 @@ beforeAll(async () => {
     fake.job(mockUser.orgID),
     fake.job(mockUser.orgID),
   ];
-  const columns = ['job_title', 'organization_id']; // requirements are irrelevant for these tests
-  const returning = ' RETURNING job_id';
-  const promises = fakeJobs.map((job) => {
-    const stmt = insert(job, columns, 'job') + returning;
-    return db.one(stmt);
-  });
+  const promises = fakeJobs.map((job) => insertJob(job));
 
   await Promise.all(promises).then((res) => {
-    jobIds = res.map((job) => job.job_id);
+    jobIds = res.map(({job_id}) => job_id);
   });
 });
 
@@ -63,15 +60,9 @@ describe('GET /applicants', () => {
     const applicantsCount = faker.random.number({min: 50, max: 100});
     const fakeApplicants = Array(applicantsCount)
       .fill(0)
-      .map(() => {
-        return fake.applicant(mockUser.orgID, randomJobId());
-      });
+      .map(() => fake.applicant(mockUser.orgID, randomJobId()));
 
-    const returning = ' RETURNING *';
-    const promises = fakeApplicants.map((applicant) => {
-      const stmt = insert(applicant, null, 'applicant') + returning;
-      return db.one(stmt);
-    });
+    const promises = fakeApplicants.map((appl) => insertApplicant(appl));
 
     applicants = await Promise.all(promises);
   });
@@ -108,29 +99,29 @@ describe('GET /applicants', () => {
   });
 
   it('Includes boolean weather screening exists or not', async (done) => {
-    const {form_id} = await insertForm(
-      fake.screeningForm(mockUser.orgID, randomJobId()),
-    );
+    const fakeForm = fake.screeningForm(mockUser.orgID, randomJobId());
+    const form: TForm = await insertForm(fakeForm);
 
     // insert screening for single applicant
     const randomApplIdx = random.number({min: 0, max: applicants.length - 1});
     const randomApplId = applicants[randomApplIdx].applicant_id;
 
-    const range = {min: 0, max: 5};
     const screening = {
-      form_id,
-      applicant_id: randomApplId,
+      form_id: form.form_id!,
+      applicant_id: randomApplId!,
       submitter_id: mockUser.sub,
       organization_id: mockUser.orgID,
       comment: random.words(),
-      submission: {
-        [random.uuid()]: random.number(range),
-        [random.uuid()]: random.number(range),
-        [random.uuid()]: random.number(range),
-        [random.uuid()]: random.number(range),
-      },
+      submission: form.form_items.reduce(
+        (acc: {[form_item_id: string]: string}, item) => {
+          acc[item.form_item_id!] = random.number({min: 0, max: 5}).toString();
+          return acc;
+        },
+        {},
+      ),
     };
-    await insertScreening(screening);
+
+    await insertFormSubmission(screening);
 
     const res = await request(app)
       .get('/applicants')

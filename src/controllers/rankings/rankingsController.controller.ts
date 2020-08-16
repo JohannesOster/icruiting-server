@@ -10,17 +10,18 @@ export const getRanking: RequestHandler = (req, res, next) => {
   if (!errors.isEmpty()) return res.status(422).json({errors: errors.array()});
 
   const jobId = req.params.job_id;
+  const {orgID: organization_id} = res.locals.user;
 
   const formCategory = req.query.form_category;
   if (!formCategory) throw new Error('Missing form_category');
   if (formCategory === 'screening') {
-    selectScreeningRanking(jobId)
+    selectScreeningRanking(jobId, organization_id)
       .then((result) => {
         res.status(200).json(result);
       })
       .catch(next);
   } else if (formCategory === 'assessment') {
-    selectAssessmentRanking(jobId)
+    selectAssessmentRanking(jobId, organization_id)
       .then((result) => {
         /* Turn requirement_sums_array of objects into object of sums
            {[job_requirement_id]: sum} */

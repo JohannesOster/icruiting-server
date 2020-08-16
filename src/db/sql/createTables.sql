@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS form_submission (
   submission JSONB NOT NULL, -- {form_item_id,value}
   comment TEXT,
   CONSTRAINT applicant_id_submitter_id_form_id_pk PRIMARY KEY (applicant_id, submitter_id, form_id),
-  CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE SET NULL,
+  CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE,
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE
 );
