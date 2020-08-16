@@ -1,5 +1,5 @@
 import faker from 'faker';
-import {EFormCategory} from '../controllers/forms';
+import {EFormCategory} from 'components/forms';
 
 const fake = {
   user: (user_role: 'admin' | 'user' = 'admin') => ({
