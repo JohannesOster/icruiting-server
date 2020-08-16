@@ -1,22 +1,20 @@
+import app from 'app';
 import request from 'supertest';
-import app from '../app';
-import db from '../db';
-import fake from './fake';
-import {endConnection, truncateAllTables} from '../db/utils';
 import {random} from 'faker';
-import {TApplicant} from 'controllers/applicants';
+import {endConnection, truncateAllTables} from 'db/utils';
+import {TApplicant} from './types';
+import {insertApplicant} from './database';
 import {TForm} from 'controllers/forms';
-import {insertForm} from '../db/forms.db';
-import {insertFormSubmission} from '../db/formSubmissions.db';
-import faker from 'faker';
-import {insertApplicant} from '../db/applicants.db';
-import {insertOrganization} from '../db/organizations.db';
-import {insertJob} from '../db/jobs.db';
+import {insertForm} from 'db/forms.db';
+import {insertFormSubmission} from 'db/formSubmissions.db';
+import {insertOrganization} from 'db/organizations.db';
+import {insertJob} from 'db/jobs.db';
+import fake from 'tests/fake';
 
 const mockUser = fake.user();
-jest.mock('../middlewares/auth', () => ({
+jest.mock('middlewares/auth', () => ({
   requireAdmin: jest.fn(),
-  requireAuth: jest.fn((_, res, next) => {
+  requireAuth: jest.fn((req, res, next) => {
     res.locals.user = mockUser;
     next();
   }),
@@ -24,8 +22,7 @@ jest.mock('../middlewares/auth', () => ({
 
 let jobIds: string[];
 
-/* HELPER FUNCTIONS */
-const randomJobId = () => {
+const getRandomJobId = () => {
   const randomIdx = random.number({min: 0, max: jobIds.length - 1});
   const randomJobId = jobIds[randomIdx];
   return randomJobId;
@@ -57,10 +54,10 @@ afterAll(async () => {
 describe('GET /applicants', () => {
   let applicants: TApplicant[] = [];
   beforeAll(async () => {
-    const applicantsCount = faker.random.number({min: 50, max: 100});
+    const applicantsCount = random.number({min: 50, max: 100});
     const fakeApplicants = Array(applicantsCount)
       .fill(0)
-      .map(() => fake.applicant(mockUser.orgID, randomJobId()));
+      .map(() => fake.applicant(mockUser.orgID, getRandomJobId()));
 
     const promises = fakeApplicants.map((appl) => insertApplicant(appl));
 
@@ -85,7 +82,7 @@ describe('GET /applicants', () => {
   });
 
   it('Filters by job_id using query', async (done) => {
-    const jobId = randomJobId();
+    const jobId = getRandomJobId();
     const res = await request(app)
       .get('/applicants?job_id=' + jobId)
       .set('Accept', 'application/json')
@@ -99,7 +96,7 @@ describe('GET /applicants', () => {
   });
 
   it('Includes boolean weather screening exists or not', async (done) => {
-    const fakeForm = fake.screeningForm(mockUser.orgID, randomJobId());
+    const fakeForm = fake.screeningForm(mockUser.orgID, getRandomJobId());
     const form: TForm = await insertForm(fakeForm);
 
     // insert screening for single applicant

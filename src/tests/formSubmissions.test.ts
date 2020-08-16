@@ -5,11 +5,11 @@ import {endConnection, truncateAllTables} from '../db/utils';
 import {insertForm} from '../db/forms.db';
 import {insertOrganization} from '../db/organizations.db';
 import {insertJob} from '../db/jobs.db';
-import {insertApplicant} from '../db/applicants.db';
+import {insertApplicant} from 'components/applicants';
 import {TForm} from 'controllers/forms';
 import fake from './fake';
 import faker from 'faker';
-import {TApplicant} from 'controllers/applicants';
+import {TApplicant} from 'components/applicants';
 import {TFormSubmission} from 'controllers/formSubmissions';
 import {insertFormSubmission} from '../db/formSubmissions.db';
 

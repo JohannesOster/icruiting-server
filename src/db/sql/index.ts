@@ -14,4 +14,3 @@ export const selectForms = queryFile('selectForms.sql');
 export const selectForm = queryFile('selectForm.sql');
 export const selectScreeningRanking = queryFile('selectScreeningRanking.sql');
 export const selectAssessmentRanking = queryFile('selectAssessmentRanking.sql');
-export const selectApplicants = queryFile('selectApplicants.sql');

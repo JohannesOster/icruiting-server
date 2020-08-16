@@ -1,6 +1,6 @@
-import db from '.';
+import db from '../../db';
 import {selectApplicants as selectApplicantsSQL} from './sql';
-import {TApplicant} from 'controllers/applicants';
+import {TApplicant} from './types';
 
 export const insertApplicant = (applicant: TApplicant) => {
   const helpers = db.$config.pgp.helpers;
@@ -19,11 +19,10 @@ export const insertApplicant = (applicant: TApplicant) => {
   return db.one(stmt);
 };
 
-type TSelectParams = {
-  organization_id: string;
+export const selectApplicants = (params: {
   job_id?: string;
+  organization_id: string;
   user_id: string;
-};
-export const selectApplicants = (params: TSelectParams) => {
+}) => {
   return db.any(selectApplicantsSQL, params);
 };

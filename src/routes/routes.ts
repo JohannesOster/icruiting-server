@@ -4,11 +4,11 @@ import {
   employeesController,
   jobsController,
   formsController,
-  applicantsController,
   rankingsController,
   formSubmissionsController,
 } from '../controllers';
 import {requireAuth, requireAdmin, catchValidationErrors} from '../middlewares';
+import {routes as applicants} from 'components/applicants';
 
 const router = express.Router();
 
@@ -37,11 +37,8 @@ router.get(
   formSubmissionsController.getFormSubmissions,
 );
 
-router.get(
-  '/applicants',
-  applicantsController.validateGetApplicants,
-  applicantsController.getApplicants,
-);
+router.use('/applicants', applicants);
+
 router.get('/jobs', jobsController.getJobs);
 router.get('/forms', formsController.getForms);
 

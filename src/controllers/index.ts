@@ -3,7 +3,6 @@ import * as employeesController from './employees';
 import * as jobsController from './jobs';
 import * as formsController from './forms';
 import * as formSubmissionsController from './formSubmissions';
-import * as applicantsController from './applicants';
 import * as rankingsController from './rankings';
 
 export {
@@ -11,7 +10,6 @@ export {
   employeesController,
   jobsController,
   formsController,
-  applicantsController,
   rankingsController,
   formSubmissionsController,
 };

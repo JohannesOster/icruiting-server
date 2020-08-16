@@ -6,7 +6,7 @@ import {
   deleteForm as deleteFormDb,
   updateForm as updateFormDb,
 } from '../../db/forms.db';
-import {insertApplicant} from '../../db/applicants.db';
+import {insertApplicant} from 'components/applicants';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import fs from 'fs';

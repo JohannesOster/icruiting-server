@@ -1,5 +1,5 @@
 import {RequestHandler} from 'express';
-import {selectApplicants} from '../../db/applicants.db';
+import {selectApplicants} from './database';
 import {S3} from 'aws-sdk';
 
 export const getApplicants: RequestHandler = (req, res, next) => {

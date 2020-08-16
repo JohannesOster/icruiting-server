@@ -4,13 +4,13 @@ import {endConnection, truncateAllTables} from '../db/utils';
 import db from '../db';
 import {insertForm} from '../db/forms.db';
 import {insertFormSubmission} from '../db/formSubmissions.db';
-import {insertApplicant} from '../db/applicants.db';
+import {insertApplicant} from 'components/applicants';
 import {TForm} from 'controllers/forms';
 import fake from './fake';
 import faker from 'faker';
 import {insertOrganization} from '../db/organizations.db';
 import {insertJob} from '../db/jobs.db';
-import {TApplicant} from 'controllers/applicants';
+import {TApplicant} from 'components/applicants';
 
 const mockUser = fake.user();
 jest.mock('../middlewares/auth', () => ({
