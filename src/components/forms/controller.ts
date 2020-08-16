@@ -1,35 +1,35 @@
 import {RequestHandler} from 'express';
-import {
-  insertForm,
-  selectForms,
-  selectForm,
-  deleteForm as deleteFormDb,
-  updateForm as updateFormDb,
-} from '../../db/forms.db';
-import {insertApplicant} from 'components/applicants';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import fs from 'fs';
+import {dbInsertApplicant} from 'components/applicants';
+import {
+  dbInsertForm,
+  dbSelectForms,
+  dbSelectForm,
+  dbDeleteForm,
+  dbUpdateForm,
+} from './database';
 import {TForm} from './types';
 
 export const createForm: RequestHandler = (req, res, next) => {
   const orgId = res.locals.user.orgID;
   const params: TForm = {...req.body, organization_id: orgId};
-  insertForm(params)
+  dbInsertForm(params)
     .then((data) => res.status(201).json(data))
     .catch(next);
 };
 
 export const getForms: RequestHandler = (req, res, next) => {
   const orgId = res.locals.user.orgID;
-  selectForms(orgId)
+  dbSelectForms(orgId)
     .then((forms) => res.status(200).json(forms))
     .catch(next);
 };
 
 export const renderHTMLForm: RequestHandler = (req, res, next) => {
   const {form_id} = req.params;
-  selectForm(form_id)
+  dbSelectForm(form_id)
     .then((result) => {
       if (!result.length) return res.sendStatus(404);
       const form = result[0];
@@ -46,7 +46,7 @@ export const renderHTMLForm: RequestHandler = (req, res, next) => {
 
 export const submitHTMLForm: RequestHandler = (req, res, next) => {
   const {form_id} = req.params;
-  selectForm(form_id).then((result) => {
+  dbSelectForm(form_id).then((result) => {
     if (!result.length) return res.sendStatus(404);
     const form = result[0];
 
@@ -141,7 +141,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
       applicant.files = !!map.files && map.files;
       applicant.attributes = !!map.attributes && map.attributes;
 
-      promises.push(insertApplicant(applicant));
+      promises.push(dbInsertApplicant(applicant));
 
       Promise.all(promises)
         .then(() => {
@@ -158,14 +158,14 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
 
 export const deleteForm: RequestHandler = (req, res, next) => {
   const {form_id} = req.params;
-  deleteFormDb(form_id)
+  dbDeleteForm(form_id)
     .then(() => res.status(200).json({}))
     .catch(next);
 };
 
 export const updateForm: RequestHandler = (req, res, next) => {
   const {form_id} = req.params;
-  updateFormDb(form_id, req.body)
+  dbUpdateForm(form_id, req.body)
     .then((result) => res.status(200).json(result))
     .catch(next);
 };

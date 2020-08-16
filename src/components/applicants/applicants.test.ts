@@ -1,11 +1,10 @@
-import app from 'app';
 import request from 'supertest';
 import {random} from 'faker';
+import app from 'app';
 import {endConnection, truncateAllTables} from 'db/utils';
 import {TApplicant} from './types';
-import {insertApplicant} from './database';
-import {TForm} from 'controllers/forms';
-import {insertForm} from 'db/forms.db';
+import {dbInsertApplicant} from './database';
+import {TForm, dbInsertForm} from 'components/forms';
 import {insertFormSubmission} from 'db/formSubmissions.db';
 import {insertOrganization} from 'db/organizations.db';
 import {insertJob} from 'db/jobs.db';
@@ -59,7 +58,7 @@ describe('GET /applicants', () => {
       .fill(0)
       .map(() => fake.applicant(mockUser.orgID, getRandomJobId()));
 
-    const promises = fakeApplicants.map((appl) => insertApplicant(appl));
+    const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
 
     applicants = await Promise.all(promises);
   });
@@ -97,7 +96,7 @@ describe('GET /applicants', () => {
 
   it('Includes boolean weather screening exists or not', async (done) => {
     const fakeForm = fake.screeningForm(mockUser.orgID, getRandomJobId());
-    const form: TForm = await insertForm(fakeForm);
+    const form: TForm = await dbInsertForm(fakeForm);
 
     // insert screening for single applicant
     const randomApplIdx = random.number({min: 0, max: applicants.length - 1});

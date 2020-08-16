@@ -2,10 +2,9 @@ import request from 'supertest';
 import app from '../app';
 import {endConnection, truncateAllTables} from '../db/utils';
 import db from '../db';
-import {insertForm} from '../db/forms.db';
+import {TForm, dbInsertForm} from 'components/forms';
 import {insertFormSubmission} from '../db/formSubmissions.db';
-import {insertApplicant} from 'components/applicants';
-import {TForm} from 'controllers/forms';
+import {dbInsertApplicant} from 'components/applicants';
 import fake from './fake';
 import faker from 'faker';
 import {insertOrganization} from '../db/organizations.db';
@@ -47,14 +46,14 @@ describe('rankings', () => {
       const promises = [];
 
       const screeningForm = fake.screeningForm(mockUser.orgID, jobId);
-      promises.push(insertForm(screeningForm));
+      promises.push(dbInsertForm(screeningForm));
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
           const applicant = fake.applicant(mockUser.orgID, jobId);
-          promises.push(insertApplicant(applicant));
+          promises.push(dbInsertApplicant(applicant));
         });
 
       Promise.all(promises).then((data) => {
@@ -127,14 +126,14 @@ describe('rankings', () => {
       const promises = [];
 
       const screeningForm = fake.screeningForm(mockUser.orgID, jobId);
-      promises.push(insertForm(screeningForm));
+      promises.push(dbInsertForm(screeningForm));
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
           const applicant = fake.applicant(mockUser.orgID, jobId);
-          promises.push(insertApplicant(applicant));
+          promises.push(dbInsertApplicant(applicant));
         });
 
       Promise.all(promises).then((data) => {

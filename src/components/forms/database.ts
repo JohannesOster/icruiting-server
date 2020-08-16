@@ -1,11 +1,11 @@
-import db from '.';
+import db from 'db';
 import {
   selectForms as selectFormsSQL,
   selectForm as selectFormSQL,
 } from './sql';
-import {TForm} from 'controllers/forms';
+import {TForm} from './types';
 
-export const insertForm = async ({form_items, ...form}: TForm) => {
+export const dbInsertForm = async ({form_items, ...form}: TForm) => {
   const helpers = db.$config.pgp.helpers;
 
   // - insert form
@@ -42,20 +42,20 @@ export const insertForm = async ({form_items, ...form}: TForm) => {
   return db.any(stmt).then((items) => ({...insertedForm, form_items: items}));
 };
 
-export const selectForms = (organization_id: string) => {
+export const dbSelectForms = (organization_id: string) => {
   return db.any(selectFormsSQL, {organization_id});
 };
 
-export const selectForm = (form_id: string) => {
+export const dbSelectForm = (form_id: string) => {
   return db.any(selectFormSQL, {form_id});
 };
 
-export const deleteForm = (form_id: string) => {
+export const dbDeleteForm = (form_id: string) => {
   const stmt = 'DELETE FROM form WHERE form_id=$1';
   return db.none(stmt, form_id);
 };
 
-export const updateForm = async (
+export const dbUpdateForm = async (
   form_id: string,
   {form_items, ...form}: TForm,
 ) => {
@@ -100,5 +100,5 @@ export const updateForm = async (
       await t.any(stmt);
     }
   });
-  return selectForm(form_id).then((resp) => resp[0]);
+  return dbSelectForm(form_id).then((resp) => resp[0]);
 };

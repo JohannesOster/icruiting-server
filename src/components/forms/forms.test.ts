@@ -1,16 +1,16 @@
-import request from 'supertest';
-import app from '../app';
-import db from '../db';
-import {endConnection, truncateAllTables} from '../db/utils';
-import {insertForm} from '../db/forms.db';
-import {insertOrganization} from '../db/organizations.db';
-import {insertJob} from '../db/jobs.db';
-import {TForm} from 'controllers/forms';
-import fake from './fake';
 import faker from 'faker';
+import request from 'supertest';
+import app from 'app';
+import db from 'db';
+import {dbInsertForm} from './database';
+import {TForm} from './types';
+import {endConnection, truncateAllTables} from 'db/utils';
+import {insertOrganization} from 'db/organizations.db';
+import {insertJob} from 'db/jobs.db';
+import fake from 'tests/fake';
 
 const mockUser = fake.user();
-jest.mock('../middlewares/auth', () => ({
+jest.mock('middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     res.locals.user = mockUser;
@@ -82,11 +82,11 @@ describe('forms', () => {
 
     it('Returns array of forms', async (done) => {
       const promises = [
-        insertForm(fake.applicationForm(mockUser.orgID, jobId)),
-        insertForm(fake.screeningForm(mockUser.orgID, jobId)),
-        insertForm(fake.assessmentForm(mockUser.orgID, jobId)),
-        insertForm(fake.assessmentForm(mockUser.orgID, jobId)),
-        insertForm(fake.assessmentForm(mockUser.orgID, jobId)),
+        dbInsertForm(fake.applicationForm(mockUser.orgID, jobId)),
+        dbInsertForm(fake.screeningForm(mockUser.orgID, jobId)),
+        dbInsertForm(fake.assessmentForm(mockUser.orgID, jobId)),
+        dbInsertForm(fake.assessmentForm(mockUser.orgID, jobId)),
+        dbInsertForm(fake.assessmentForm(mockUser.orgID, jobId)),
       ];
 
       await Promise.all(promises);
@@ -105,7 +105,7 @@ describe('forms', () => {
     let form: TForm;
     beforeAll(async () => {
       const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
-      form = await insertForm(fakeForm);
+      form = await dbInsertForm(fakeForm);
     });
 
     it('Renders html without crashing', (done) => {
@@ -121,7 +121,7 @@ describe('forms', () => {
     let form: TForm;
     beforeEach(async () => {
       const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
-      form = await insertForm(fakeForm);
+      form = await dbInsertForm(fakeForm);
     });
 
     it('Returns json 200 response', (done) => {
@@ -159,7 +159,7 @@ describe('forms', () => {
   describe('PUT /forms/:form_id', () => {
     it('Returns json 200 response', async (done) => {
       const fakeForm = fake.applicationForm(mockUser.orgID, jobId);
-      const form = await insertForm(fakeForm);
+      const form = await dbInsertForm(fakeForm);
 
       request(app)
         .put(`/forms/${form.form_id}`)
@@ -171,7 +171,7 @@ describe('forms', () => {
 
     it('Returns updated form entity', async (done) => {
       const fakeForm = fake.applicationForm(mockUser.orgID, jobId);
-      const form: TForm = await insertForm(fakeForm);
+      const form: TForm = await dbInsertForm(fakeForm);
 
       const updateVals = {...form};
       updateVals.form_items = updateVals.form_items.map((item) => ({

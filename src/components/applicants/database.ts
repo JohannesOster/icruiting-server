@@ -2,7 +2,7 @@ import db from '../../db';
 import {selectApplicants as selectApplicantsSQL} from './sql';
 import {TApplicant} from './types';
 
-export const insertApplicant = (applicant: TApplicant) => {
+export const dbInsertApplicant = (applicant: TApplicant) => {
   const helpers = db.$config.pgp.helpers;
 
   const cs = new helpers.ColumnSet(
@@ -19,7 +19,7 @@ export const insertApplicant = (applicant: TApplicant) => {
   return db.one(stmt);
 };
 
-export const selectApplicants = (params: {
+export const dbSelectApplicants = (params: {
   job_id?: string;
   organization_id: string;
   user_id: string;

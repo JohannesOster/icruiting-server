@@ -1,11 +1,11 @@
 import {RequestHandler} from 'express';
-import {selectApplicants} from './database';
+import {dbSelectApplicants} from './database';
 import {S3} from 'aws-sdk';
 
 export const getApplicants: RequestHandler = (req, res, next) => {
   const job_id = req.query.job_id as string;
 
-  selectApplicants({
+  dbSelectApplicants({
     organization_id: res.locals.user.orgID,
     job_id,
     user_id: res.locals.user.sub,

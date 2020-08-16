@@ -2,11 +2,10 @@ import request from 'supertest';
 import app from '../app';
 import db from '../db';
 import {endConnection, truncateAllTables} from '../db/utils';
-import {insertForm} from '../db/forms.db';
+import {TForm, dbInsertForm} from 'components/forms';
 import {insertOrganization} from '../db/organizations.db';
 import {insertJob} from '../db/jobs.db';
-import {insertApplicant} from 'components/applicants';
-import {TForm} from 'controllers/forms';
+import {dbInsertApplicant} from 'components/applicants';
 import fake from './fake';
 import faker from 'faker';
 import {TApplicant} from 'components/applicants';
@@ -44,10 +43,10 @@ describe('form-submissions', () => {
       const promises = [];
 
       const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
-      promises.push(insertForm(fakeForm));
+      promises.push(dbInsertForm(fakeForm));
 
       const fakeApplicant = fake.applicant(mockUser.orgID, jobId);
-      promises.push(insertApplicant(fakeApplicant));
+      promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then((data) => {
         const [form, applicant] = data as [TForm, TApplicant];
@@ -103,10 +102,10 @@ describe('form-submissions', () => {
       const promises = [];
 
       const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
-      promises.push(insertForm(fakeForm));
+      promises.push(dbInsertForm(fakeForm));
 
       const fakeApplicant = fake.applicant(mockUser.orgID, jobId);
-      promises.push(insertApplicant(fakeApplicant));
+      promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then((data) => {
         const [form, applicant] = data as [TForm, TApplicant];
@@ -174,10 +173,10 @@ describe('form-submissions', () => {
       const promises = [];
 
       const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
-      promises.push(insertForm(fakeForm));
+      promises.push(dbInsertForm(fakeForm));
 
       const fakeApplicant = fake.applicant(mockUser.orgID, jobId);
-      promises.push(insertApplicant(fakeApplicant));
+      promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then(async (data) => {
         const [form, applicant] = data as [TForm, TApplicant];
