@@ -9,6 +9,7 @@ import {dbInsertFormSubmission} from 'components/formSubmissions';
 import {dbInsertOrganization} from 'components/organizations';
 import {dbInsertJob} from 'components/jobs';
 import fake from 'tests/fake';
+import {randomElement} from 'utils';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -20,28 +21,22 @@ jest.mock('middlewares/auth', () => ({
 }));
 
 let jobIds: string[];
-
-const getRandomJobId = () => {
-  const randomIdx = random.number({min: 0, max: jobIds.length - 1});
-  const randomJobId = jobIds[randomIdx];
-  return randomJobId;
-};
-
 beforeAll(async () => {
   // insert organization
   const fakeOrg = fake.organization(mockUser.orgID);
   await dbInsertOrganization(fakeOrg);
 
   // insert jobs
-  const fakeJobs = Array(random.number({min: 5, max: 20}))
+  const jobsCount = random.number({min: 5, max: 20});
+  const fakeJobs = Array(jobsCount)
     .fill(0)
     .map(() => fake.job(mockUser.orgID));
 
   const promises = fakeJobs.map((job) => dbInsertJob(job));
 
-  await Promise.all(promises).then((res) => {
-    jobIds = res.map(({job_id}) => job_id);
-  });
+  jobIds = await Promise.all(promises).then((res) =>
+    res.map(({job_id}) => job_id),
+  );
 });
 
 afterAll(async () => {
@@ -51,15 +46,13 @@ afterAll(async () => {
 
 describe('applicants', () => {
   describe('GET /applicants', () => {
-    let applicants: TApplicant[] = [];
+    let applicants: TApplicant[];
     beforeAll(async () => {
       const applicantsCount = random.number({min: 50, max: 100});
       const fakeApplicants = Array(applicantsCount)
         .fill(0)
-        .map(() => fake.applicant(mockUser.orgID, getRandomJobId()));
-
+        .map(() => fake.applicant(mockUser.orgID, randomElement(jobIds)));
       const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
-
       applicants = await Promise.all(promises);
     });
 
@@ -76,12 +69,67 @@ describe('applicants', () => {
         .get('/applicants')
         .set('Accept', 'application/json')
         .expect(200);
+
       expect(res.body.length).toBe(applicants.length);
+
       done();
     });
 
+    it('Isloates organization applicants', async () => {
+      const fakeOrg = fake.organization(random.uuid());
+      const {organization_id} = await dbInsertOrganization(fakeOrg);
+
+      const fakeJob = fake.job(organization_id);
+      const {job_id} = await dbInsertJob(fakeJob);
+
+      const applicantsCount = random.number({min: 50, max: 100});
+      const fakeApplicants = Array(applicantsCount)
+        .fill(0)
+        .map(() => fake.applicant(organization_id, job_id));
+      const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
+      await Promise.all(promises);
+
+      const res = await request(app)
+        .get('/applicants')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body.length).toBe(applicants.length);
+
+      // applicant of different organiyation
+      const foreignApplicant = res.body.find(
+        (appl: TApplicant) => appl.organization_id !== mockUser.orgID,
+      );
+
+      expect(foreignApplicant).toBeUndefined();
+    });
+
     it('Filters by job_id using query', async (done) => {
-      const jobId = getRandomJobId();
+      const fakeOrg = fake.organization(random.uuid());
+      const {organization_id} = await dbInsertOrganization(fakeOrg);
+
+      const fakeJob = fake.job(organization_id);
+      const {job_id} = await dbInsertJob(fakeJob);
+
+      const applicantsCount = random.number({min: 50, max: 100});
+      const fakeApplicants = Array(applicantsCount)
+        .fill(0)
+        .map(() => fake.applicant(organization_id, job_id));
+      const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
+      await Promise.all(promises);
+
+      const res = await request(app)
+        .get('/applicants?job_id=' + job_id)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body.length).toBe(0);
+
+      done();
+    });
+
+    it('Isloates organization applicants with job_id query', async (done) => {
+      const jobId = randomElement(jobIds);
       const res = await request(app)
         .get('/applicants?job_id=' + jobId)
         .set('Accept', 'application/json')
@@ -95,7 +143,10 @@ describe('applicants', () => {
     });
 
     it('Includes boolean weather screening exists or not', async (done) => {
-      const fakeForm = fake.screeningForm(mockUser.orgID, getRandomJobId());
+      const fakeForm = fake.screeningForm(
+        mockUser.orgID,
+        randomElement(jobIds),
+      );
       const form: TForm = await dbInsertForm(fakeForm);
 
       // insert screening for single applicant
