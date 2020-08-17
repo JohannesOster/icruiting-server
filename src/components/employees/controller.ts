@@ -1,5 +1,6 @@
 import {RequestHandler} from 'express';
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
+import {removePrefixFromUserAttribute} from './utils';
 
 export const createEmployee: RequestHandler = (req, res, next) => {
   const cIdp = new CognitoIdentityServiceProvider();
@@ -26,8 +27,9 @@ export const createEmployee: RequestHandler = (req, res, next) => {
 
 export const getEmployees: RequestHandler = (req, res, next) => {
   const cIdp = new CognitoIdentityServiceProvider();
+  const {userPoolID, orgID} = res.locals.user;
   const params = {
-    UserPoolId: res.locals.user.userPoolID,
+    UserPoolId: userPoolID,
     Filter: 'cognito:user_status="CONFIRMED"',
     AttributesToGet: [
       'email',
@@ -42,20 +44,20 @@ export const getEmployees: RequestHandler = (req, res, next) => {
     .promise()
     .then((resp) => {
       const userMaps = resp['Users']?.map((user) => {
-        const map = user['Attributes']?.reduce((acc: any, curr) => {
-          const attrName = curr['Name'].split(':').slice(-1)[0];
+        // remove "custom:" prefix of Attributes (if it exists)
+        const map = user['Attributes']?.reduce((acc, curr) => {
+          const attrName = removePrefixFromUserAttribute(curr['Name']);
           acc[attrName] = curr['Value'];
           return acc;
-        }, {});
+        }, {} as any);
 
         return map;
       });
 
-      res
-        .status(200)
-        .json(
-          userMaps?.filter((user) => user['orgID'] === res.locals.user.orgID),
-        );
+      // filter out foreign orgs
+      const filtered = userMaps?.filter((user) => user['orgID'] === orgID);
+
+      res.status(200).json(filtered);
     })
     .catch(next);
 };
