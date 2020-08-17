@@ -1,10 +1,9 @@
 import {S3} from 'aws-sdk';
 
-const s3 = new S3();
-
 export const getApplicantFileURLs = async (
   files: Array<{key: string; value: string}>,
 ) => {
+  const s3 = new S3();
   const promises = files.map((file) => {
     const fileKey = 'applications/' + file.value;
     const params = {

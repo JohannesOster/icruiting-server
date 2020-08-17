@@ -1,13 +1,7 @@
 import {RequestHandler} from 'express';
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
-import {validationResult} from 'express-validator';
 
 export const createEmployee: RequestHandler = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(422).json({errors: errors.array()});
-  }
-
   const cIdp = new CognitoIdentityServiceProvider();
   const {email} = req.body;
 
@@ -26,12 +20,8 @@ export const createEmployee: RequestHandler = (req, res, next) => {
   cIdp
     .adminCreateUser(params)
     .promise()
-    .then((resp) => {
-      res.status(200).json(resp);
-    })
-    .catch((err) => {
-      next(err);
-    });
+    .then((resp) => res.status(201).json(resp))
+    .catch(next);
 };
 
 export const getEmployees: RequestHandler = (req, res, next) => {
@@ -67,7 +57,5 @@ export const getEmployees: RequestHandler = (req, res, next) => {
           userMaps?.filter((user) => user['orgID'] === res.locals.user.orgID),
         );
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch(next);
 };

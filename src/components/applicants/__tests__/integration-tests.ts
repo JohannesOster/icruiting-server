@@ -41,6 +41,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await truncateAllTables();
+  jest.resetAllMocks();
   endConnection();
 });
 
