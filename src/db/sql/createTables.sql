@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS job (
   job_id UUID DEFAULT uuid_generate_v4(),
   organization_id UUID NOT NULL,
   job_title TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT job_id_pk PRIMARY KEY (job_id),
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE
 );

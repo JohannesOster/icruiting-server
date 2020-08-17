@@ -5,18 +5,21 @@ import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/utils';
 import {dbInsertJob} from './database';
+import {TJob} from './types';
 import {dbInsertOrganization} from 'components/organizations';
 
-jest.mock('middlewares/auth');
+const mockUser = fake.user();
+jest.mock('middlewares/auth', () => ({
+  requireAdmin: jest.fn((req, res, next) => next()),
+  requireAuth: jest.fn((req, res, next) => {
+    res.locals.user = mockUser;
+    next();
+  }),
+}));
 
 beforeAll(async (done) => {
-  const fakeOrg = fake.organization(process.env.TEST_ORG_ID);
-  dbInsertOrganization(fakeOrg);
-  done();
-});
-
-beforeEach(async (done) => {
-  await db.none('DELETE FROM job');
+  const fakeOrg = fake.organization(mockUser.orgID);
+  await dbInsertOrganization(fakeOrg);
   done();
 });
 
@@ -27,9 +30,8 @@ afterAll(async () => {
 
 describe('jobs', () => {
   describe('POST /jobs', () => {
-    const organizationId = process.env.TEST_ORG_ID || '';
     it('Returns 202 json response', (done) => {
-      const job = fake.job(organizationId);
+      const job = fake.job(mockUser.orgID);
       request(app)
         .post('/jobs')
         .set('Accept', 'application/json')
@@ -39,7 +41,7 @@ describe('jobs', () => {
     });
 
     it('Returns created job entity as json object', async (done) => {
-      const job = fake.job(organizationId);
+      const job = fake.job(mockUser.orgID);
       const resp = await request(app)
         .post('/jobs')
         .set('Accept', 'application/json')
@@ -63,7 +65,7 @@ describe('jobs', () => {
     });
 
     it('Actually inserts job enitity', async (done) => {
-      const job = fake.job(organizationId);
+      const job = fake.job(mockUser.orgID);
       const resp = await request(app)
         .post('/jobs')
         .set('Accept', 'application/json')
@@ -79,7 +81,7 @@ describe('jobs', () => {
     });
 
     it('Actually inserts job_requirement enitities', async (done) => {
-      const job = fake.job(organizationId);
+      const job = fake.job(mockUser.orgID);
       const resp = await request(app)
         .post('/jobs')
         .set('Accept', 'application/json')
@@ -97,6 +99,8 @@ describe('jobs', () => {
   });
 
   describe('GET /jobs', () => {
+    afterEach(async () => await db.none('TRUNCATE job CASCADE'));
+
     it('Returns 200 json response', async (done) => {
       request(app)
         .get('/jobs')
@@ -116,8 +120,64 @@ describe('jobs', () => {
       done();
     });
 
+    it('Orders jobs by created_at', async (done) => {
+      const jobsCount = faker.random.number({min: 5, max: 20});
+      const fakeJobs = Array(jobsCount)
+        .fill(0)
+        .map(() => fake.job(mockUser.orgID));
+
+      const promises = fakeJobs.map((job) => dbInsertJob(job));
+      await Promise.all(promises);
+
+      const resp = await request(app)
+        .get('/jobs')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(resp.body.length).toBe(jobsCount);
+      for (let i = 0; i < jobsCount - 1; ++i) {
+        const curr = new Date(resp.body[i].created_at);
+        const following = new Date(resp.body[i + 1].created_at);
+        expect(curr.valueOf()).toBeGreaterThanOrEqual(following.valueOf());
+      }
+
+      done();
+    });
+
+    it('Isolates organization jobs', async (done) => {
+      const {organization_id} = await dbInsertOrganization({
+        organization_name: fake.organization().organization_name,
+      });
+
+      // jobs for own organization
+      const jobsCount = faker.random.number({min: 1, max: 10});
+      const fakeJobs = Array(jobsCount)
+        .fill(0)
+        .map(() => fake.job(mockUser.orgID));
+      const promises = fakeJobs.map((job) => dbInsertJob(job));
+
+      // jobs of foreign organizations
+      const fakeJobsForeign = Array(jobsCount)
+        .fill(0)
+        .map(() => fake.job(organization_id));
+      promises.concat(fakeJobsForeign.map((job) => dbInsertJob(job)));
+
+      await Promise.all(promises);
+
+      const resp = await request(app)
+        .get('/jobs')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      resp.body.forEach((job: TJob) =>
+        expect(job.organization_id).toBe(mockUser.orgID),
+      );
+
+      done();
+    });
+
     it('Returns arra of jobs with its job_requirements', async (done) => {
-      const job = fake.job(process.env.TEST_ORG_ID || '');
+      const job = fake.job(mockUser.orgID);
       await dbInsertJob(job);
 
       const resp = await request(app)
@@ -141,7 +201,7 @@ describe('jobs', () => {
   describe('PUT /jobs/:job_id', () => {
     let job: any;
     beforeEach(async (done) => {
-      const fakeJob = fake.job(process.env.TEST_ORG_ID || '');
+      const fakeJob = fake.job(mockUser.orgID);
       job = await dbInsertJob(fakeJob);
       done();
     });

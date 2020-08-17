@@ -15,7 +15,7 @@ export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
 
   const requirements = job_requirements.map((req) => ({
     job_id: insertedJob.job_id,
-    organization_id: job.organization_id,
+    organization_id: insertedJob.organization_id,
     requirement_label: req.requirement_label,
   }));
 
