@@ -30,6 +30,7 @@ export const createFormSubmission: RequestHandler = (req, res, next) => {
 export const updateFormSubmission: RequestHandler = (req, res, next) => {
   const {sub, orgID} = res.locals.user;
   const {form_id, applicant_id} = req.params;
+
   const params = {
     ...req.body,
     form_id,

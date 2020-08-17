@@ -165,7 +165,11 @@ export const deleteForm: RequestHandler = (req, res, next) => {
 
 export const updateForm: RequestHandler = (req, res, next) => {
   const {form_id} = req.params;
-  dbUpdateForm(form_id, req.body)
+  const {orgID} = res.locals.user;
+
+  const params = {...req.body, organization_id: orgID};
+
+  dbUpdateForm(form_id, params)
     .then((result) => res.status(200).json(result))
     .catch(next);
 };

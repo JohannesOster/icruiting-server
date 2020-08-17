@@ -7,7 +7,7 @@ const fake = {
     sub: faker.random.uuid(),
     user_role: user_role,
   }),
-  organization: (organization_id: string = '') => ({
+  organization: (organization_id?: string) => ({
     organization_id,
     organization_name: faker.company.companyName(),
   }),

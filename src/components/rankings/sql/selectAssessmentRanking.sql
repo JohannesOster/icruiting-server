@@ -29,13 +29,14 @@ FROM
 				FROM form_submission, jsonb_each_text(submission) sub
 				LEFT JOIN form
 				ON form.form_id=form_id
+				LEFT JOIN form_item
+				ON form_item.form_item_id = sub.key::UUID
 				WHERE form.form_category='assessment'
 					AND form.organization_id=${organization_id}
-				JOIN form_item
-				ON form_item.form_item_id = sub.key::UUID
 				GROUP BY
-					assessment.submitter_id,
-					assessment.applicant_id,
+					form_submission.submitter_id,
+					form_submission.applicant_id,
+					form_submission.comment,
 					form_item.job_requirement_id
 			) AS SUB_QUERY
 		GROUP BY 
