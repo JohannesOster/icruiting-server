@@ -1,52 +1,36 @@
-SELECT
-	s.applicant_id,
-	ARRAY_AGG(s.comment) FILTER (WHERE s.comment IS NOT NULL) AS comments,
-	STDDEV_POP(s.submission_score) AS standard_deviation,
-	SUM(s.submission_score) AS score,
-	COUNT(DISTINCT s.submitter_id) AS submissions_count,
-	json_object_agg(s.submitter_id, s.submission) AS submissions,
-	array_agg(s.job_requirement_sums) AS requirement_sums_array
+
+SELECT 
+	applicant_id,
+	COUNT(DISTINCT submitter_id) AS submissions_count,
+	ARRAY_AGG(comment) FILTER (WHERE comment IS NOT NULL) AS comments,
+	STDDEV_POP(form_submission_score) AS standard_deviation,
+	SUM(form_submission_score) AS score,
+	ARRAY_AGG(form_submission.submission) AS submissions
 FROM
-	(SELECT applicant_id,
-					submitter_id,
-					comment,
-					json_object_agg(job_requirement_id, vals) AS submission,
-					SUM(job_requirement_sum) AS submission_score,
-					json_object_agg(job_requirement_id, job_requirement_sum) AS job_requirement_sums
-		FROM
-			(SELECT applicant_id,
-							submitter_id,
-							comment,
-							array_agg(
-								json_build_object('form_item_id', form_item.form_item_id,
-																	'job_requirement_id', form_item.job_requirement_id,
-																	'value', sub.value::NUMERIC,
-																	'weighing', 1 -- currently weighing is not implemented, therfore default 1 is used
-								)
-							) AS vals,
-							SUM(sub.value::NUMERIC * 1) AS job_requirement_sum, -- 1 is weighing
-							form_item.job_requirement_id
-				FROM form_submission, jsonb_each_text(submission) sub
-				LEFT JOIN form
-				ON form.form_id=form_id
-				LEFT JOIN form_item
-				ON form_item.form_item_id = sub.key::UUID
-				WHERE form.form_category='assessment'
-					AND form.organization_id=${organization_id}
-				GROUP BY
-					form_submission.submitter_id,
-					form_submission.applicant_id,
-					form_submission.comment,
-					form_item.job_requirement_id
-			) AS SUB_QUERY
-		GROUP BY 
-			submitter_id,
-			applicant_id,
-			comment
-	) as s
-JOIN applicant a
-ON a.applicant_id=s.applicant_id
-WHERE a.job_id=${job_id}
-	AND a.organization_id=${organization_id}
-GROUP BY s.applicant_id
-ORDER BY score DESC
+(SELECT
+	submission_field.submitter_id,
+	submission_field.applicant_id,
+	submission_field.comment,
+	ARRAY_AGG(JSON_BUILD_OBJECT(
+		'form_item_id', form_item.form_item_id,
+		'job_requirement_id', form_item.job_requirement_id,
+		'weighing', form_item.weighting,
+		'value', submission_field.value
+	)) submission,
+	SUM(submission_field.value * form_item.weighting) AS form_submission_score
+FROM form
+JOIN form_item
+ON form_item.form_id=form.form_id
+JOIN 
+	(SELECT applicant_id, submitter_id, comment, KEY AS form_item_id, VALUE::NUMERIC
+	 FROM form_submission, jsonb_each_text(submission)) AS submission_field
+ON submission_field.form_item_id::UUID = form_item.form_item_id
+WHERE form.form_category='assessment'
+GROUP BY
+	submission_field.submitter_id,
+	submission_field.applicant_id,
+	submission_field.comment) form_submission
+GROUP BY 
+	applicant_id
+
+

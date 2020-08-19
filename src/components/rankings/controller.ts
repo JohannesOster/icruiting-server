@@ -22,21 +22,22 @@ export const getRanking: RequestHandler = (req, res, next) => {
       .then((result) => {
         /* Turn requirement_sums_array of objects into object of sums
            {[job_requirement_id]: sum} */
-        const tmp = result.map((entry) => {
-          const {requirement_sums_array, ...rest} = entry;
+        const tmp = result.map((applicantEntry) => {
+          const {submissions, ...rest} = applicantEntry;
 
-          const sumsObj = requirement_sums_array.reduce(
-            (acc: any, obj: any) => {
-              Object.entries(obj).forEach(([key, value]) => {
-                acc[key] = !!acc[key] ? acc[key] + value : value;
-              });
+          const sumsObj = submissions.reduce((acc: any, submission: any) => {
+            submission.forEach((submissionField: any) => {
+              const val = submissionField.value * submissionField.weighing;
+              const key = submissionField.job_requirement_id;
+              acc[key] = acc[key] ? acc[key] + val : val;
+            });
 
-              return acc;
-            },
-          );
+            return acc;
+          }, {});
 
           return {...rest, job_requirements_sum: sumsObj};
         });
+
         res.status(200).json(tmp);
       })
       .catch(next);
