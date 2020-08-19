@@ -1,6 +1,8 @@
 import {RequestHandler} from 'express';
 import {validationResult} from 'express-validator';
 import {dbSelectScreeningRanking, dbSelectAssessmentRanking} from './database';
+import {TRanking} from './types';
+import {sumUpjobRequirementsScore} from './utils';
 
 export const getRanking: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
@@ -19,22 +21,12 @@ export const getRanking: RequestHandler = (req, res, next) => {
       .catch(next);
   } else if (formCategory === 'assessment') {
     dbSelectAssessmentRanking(jobId, organization_id)
-      .then((result) => {
+      .then((result: TRanking) => {
         /* Turn requirement_sums_array of objects into object of sums
            {[job_requirement_id]: sum} */
-        const tmp = result.map((applicantEntry) => {
-          const {submissions, ...rest} = applicantEntry;
-
-          const sumsObj = submissions.reduce((acc: any, submission: any) => {
-            submission.forEach((submissionField: any) => {
-              const val = submissionField.value * submissionField.weighing;
-              const key = submissionField.job_requirement_id;
-              acc[key] = acc[key] ? acc[key] + val : val;
-            });
-
-            return acc;
-          }, {});
-
+        const tmp = result.map((rankingRow) => {
+          const {submissions, ...rest} = rankingRow;
+          const sumsObj = sumUpjobRequirementsScore(submissions);
           return {...rest, job_requirements_sum: sumsObj};
         });
 
