@@ -22,6 +22,7 @@ export const dbInsertForm = async ({form_items, ...form}: TForm) => {
       'row_index',
       'label',
       {name: 'placeholder', def: null},
+      {name: 'description', def: null},
       {name: 'default_value', def: null},
       {name: 'validation', mod: ':json', cast: 'jsonb', def: null},
       {name: 'options', mod: ':json', cast: 'jsonb', def: null},
@@ -59,7 +60,19 @@ export const dbUpdateForm = async (
   form_id: string,
   {form_items, ...form}: TForm,
 ) => {
+  const helpers = db.$config.pgp.helpers;
+  const condition =
+    ' WHERE form_id=${form_id} AND organization_id=${organization_id}';
+
   await db.tx(async (t) => {
+    if (form.form_title) {
+      await t.none('UPDATE form SET form_title=${form_title}' + condition, {
+        form_id,
+        form_title: form.form_title,
+        organization_id: form.organization_id,
+      });
+    }
+
     if (form_items) {
       await t.none('DELETE FROM form_item WHERE form_id=$1', form_id);
 
@@ -68,7 +81,7 @@ export const dbUpdateForm = async (
         rawType: true,
       });
 
-      const cs = new db.$config.pgp.helpers.ColumnSet(
+      const cs = new helpers.ColumnSet(
         [
           {
             name: 'form_item_id',
@@ -82,6 +95,7 @@ export const dbUpdateForm = async (
           'label',
           {name: 'placeholder', def: null},
           {name: 'default_value', def: null},
+          {name: 'description', def: null},
           {name: 'validation', mod: ':json', cast: 'jsonb', def: null},
           {name: 'options', mod: ':json', cast: 'jsonb', def: null},
           {name: 'editable', def: false},
@@ -96,7 +110,7 @@ export const dbUpdateForm = async (
         form_id,
       }));
 
-      const stmt = db.$config.pgp.helpers.insert(values, cs);
+      const stmt = helpers.insert(values, cs);
       await t.any(stmt);
     }
   });

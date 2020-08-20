@@ -31,9 +31,11 @@ CREATE TABLE IF NOT EXISTS form (
   organization_id UUID NOT NULL,
   job_id UUID NOT NULL,
   form_category FORM_CATEGORY NOT NULL,
+  form_title TEXT DEFAULT NULL,
   CONSTRAINT form_id_pk PRIMARY KEY (form_id),
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
-  CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
+  CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
+  CONSTRAINT form_title_assessment_form_not_null CHECK(form_title IS NOT NULL OR form_category != 'assessment')
 );
 
 CREATE TYPE FORM_COMPONENT AS ENUM ('input', 'textarea', 'select', 'radio', 'file_upload', 'rating_group');
@@ -46,6 +48,7 @@ CREATE TABLE IF NOT EXISTS form_item (
   row_index INTEGER NOT NULL,
   label TEXT NOT NULL,
   placeholder TEXT,
+  description TEXT,
   default_value TEXT,
   validation JSONB,    -- validation object for form item
   options JSONB,       -- array of options if componen is select, radio, etc.

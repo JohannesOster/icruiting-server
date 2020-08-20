@@ -177,8 +177,25 @@ describe('forms', () => {
       updateVals.form_items = updateVals.form_items.map((item) => ({
         ...item,
         placeholder: faker.random.words(),
+        description: faker.random.words(),
       }));
 
+      const resp = await request(app)
+        .put(`/forms/${form.form_id}`)
+        .set('Accept', 'application/json')
+        .send(updateVals)
+        .expect(200);
+
+      expect(resp.body).toStrictEqual(updateVals);
+
+      done();
+    });
+
+    it('Updates form_title', async (done) => {
+      const fakeForm = fake.assessmentForm(mockUser.orgID, jobId);
+      const form: TForm = await dbInsertForm(fakeForm);
+
+      const updateVals = {...form, form_title: faker.random.words()};
       const resp = await request(app)
         .put(`/forms/${form.form_id}`)
         .set('Accept', 'application/json')

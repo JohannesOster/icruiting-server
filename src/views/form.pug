@@ -27,6 +27,7 @@ html
       each formItem in formItems
         div(class="ic-form-field-container")
           label(for=formItem.form_item_id) #{formItem.label}
+          span(class="ic-description") #{formItem.description}
           case formItem.component
             when "input" 
               input(

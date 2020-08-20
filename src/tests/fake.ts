@@ -45,11 +45,13 @@ const fake = {
         placeholder: faker.random.word(),
         row_index: 0,
         validation: {required: true},
+        description: faker.random.words(),
       },
       {
         component: 'select',
         label: faker.random.word(),
         row_index: 1,
+        description: faker.random.words(),
         options: [
           {label: faker.random.word(), value: faker.random.alphaNumeric()},
           {label: faker.random.word(), value: faker.random.alphaNumeric()},
@@ -69,6 +71,7 @@ const fake = {
         component: 'rating_group',
         label: faker.random.word(),
         placeholder: faker.random.word(),
+        description: faker.random.words(),
         row_index: 0,
         default_value: '1',
         options: [
@@ -87,6 +90,7 @@ const fake = {
     organization_id,
     job_id: job_id,
     form_category: EFormCategory.assessment,
+    form_title: faker.random.words(),
     form_items: [
       {
         component: 'rating_group',

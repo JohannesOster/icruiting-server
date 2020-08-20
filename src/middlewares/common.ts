@@ -1,5 +1,5 @@
 import {RequestHandler, ErrorRequestHandler} from 'express';
-import {validationResult, matchedData} from 'express-validator';
+import {validationResult} from 'express-validator';
 
 export const notFound: RequestHandler = (req, res, next) => {
   res.status(404);

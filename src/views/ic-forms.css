@@ -10,7 +10,7 @@ body {
 
 .ic-form {
   display: grid;
-  grid-row-gap: 10px;
+  grid-row-gap: 15px;
 }
 .ic-submit-button {
   background: none;
@@ -24,6 +24,9 @@ body {
 .ic-form-field-container {
   display: grid;
   grid-row-gap: 5px;
+}
+.ic-description {
+  opacity: 0.6;
 }
 .ic-input {
   background: white;

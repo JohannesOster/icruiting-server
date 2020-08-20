@@ -3,6 +3,7 @@ import {body} from 'express-validator';
 export const createFormValidationRules = [
   body('job_id').isUUID(),
   body('form_category').isIn(['application', 'screening', 'assessment']),
+  body('form_title').optional().isString(),
   body('form_items').isArray({min: 1}),
   body('form_items[*].component').isIn([
     'input',

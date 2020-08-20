@@ -2,7 +2,7 @@ import express from 'express';
 import {
   createFormSubmission,
   updateFormSubmission,
-  getFormSubmissions,
+  getFormSubmission,
 } from './controller';
 import {createFormSubmissionValidationRules} from './validation';
 import {catchValidationErrors} from 'middlewares/common';
@@ -18,6 +18,6 @@ router.post(
   createFormSubmission,
 );
 router.put('/:form_id/:applicant_id', updateFormSubmission);
-router.get('/:form_id/:applicant_id', getFormSubmissions);
+router.get('/:form_id/:applicant_id', getFormSubmission);
 
 export {router as routes};
