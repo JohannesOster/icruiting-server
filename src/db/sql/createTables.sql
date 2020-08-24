@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS form (
   CONSTRAINT form_title_assessment_form_not_null CHECK(form_title IS NOT NULL OR form_category != 'assessment')
 );
 
-CREATE TYPE FORM_COMPONENT AS ENUM ('input', 'textarea', 'select', 'radio', 'file_upload', 'rating_group');
+CREATE TYPE form_component AS ENUM ('input', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group');
 CREATE TABLE IF NOT EXISTS form_item (
   form_item_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS form_item (
   CONSTRAINT row_index_check CHECK (row_index >= 0),
   CONSTRAINT form_id_row_index_unique UNIQUE (form_id, row_index), -- make shure the index inside of the form is unique
   CONSTRAINT options_conditional_not_null CHECK(
-    NOT (component='select' OR component='radio' OR component='rating_group')
+    NOT (component='select' OR component='radio' OR component='rating_group' OR component='checkbox')
     OR options IS NOT NULL)
 );
 

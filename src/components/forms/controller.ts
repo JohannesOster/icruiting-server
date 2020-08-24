@@ -71,6 +71,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
 
       const map = form.form_items.reduce(
         (acc: any, item: any) => {
+          console.log(item.component, item.component === 'checkbox');
           // !> filter out non submitted values
           if (
             !fields[item.form_item_id] &&
@@ -103,6 +104,19 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
               key: item.label,
               value: options[0].label,
             });
+          } else if (item.component === 'checkbox') {
+            console.log(
+              `Got ${item.component} join selected values by comma (,).`,
+            );
+            console.log(fields[item.form_item_id], {
+              key: item.label,
+              value: fields[item.form_item_id].join(', '),
+            });
+
+            acc.attributes.push({
+              key: item.label,
+              value: fields[item.form_item_id].join(','),
+            });
           } else if (item.component === 'file_upload') {
             console.log(
               `Got ${item.component}. Upload file to S3 bucket and map value to {label, fileURL}`,
@@ -131,6 +145,8 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
 
             promises.push(s3.upload(params).promise());
             acc.files.push({key: item.label, value: fileKey});
+          } else {
+            console.log('got nothing', item.component);
           }
 
           return acc;

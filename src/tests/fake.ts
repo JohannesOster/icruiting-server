@@ -48,9 +48,22 @@ const fake = {
         description: faker.random.words(),
       },
       {
+        component: 'checkbox',
+        label: faker.random.word(),
+        description: faker.random.words(),
+        options: [
+          {label: faker.random.word(), value: faker.random.alphaNumeric()},
+          {label: faker.random.word(), value: faker.random.alphaNumeric()},
+          {label: faker.random.word(), value: faker.random.alphaNumeric()},
+        ],
+        editable: true,
+        deletable: true,
+        row_index: 1,
+      },
+      {
         component: 'select',
         label: faker.random.word(),
-        row_index: 1,
+        row_index: 2,
         description: faker.random.words(),
         options: [
           {label: faker.random.word(), value: faker.random.alphaNumeric()},
