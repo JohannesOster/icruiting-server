@@ -1,22 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;700&display=swap');
+:root {
+  --typography-primary-color: #1f1f1f;
+  --typography-secondary-color: #545454;
+  --color-primary: black;
+
+  --font-family-primary: system-ui, 'Helvetica Neue', Helvetica, Arial,
+    sans-serif;
+}
 
 body {
-  font-family: 'Source Sans Pro', sans-serif;
-  font-size: 16px;
-  color: #404040;
+  font-family: var(--font-family-primary);
+  color: var(--typography-primary-color);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ic-font-300 {
+  font-family: var(--font-family-primary);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+.ic-font-200 {
+  font-family: var(--font-family-primary);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
 .ic-form {
   display: grid;
-  grid-row-gap: 15px;
+  grid-row-gap: 16px;
 }
 .ic-submit-button {
   background: none;
-  background-color: #0f5ba5;
-  padding: 10px;
-  border-radius: 4px;
+  background-color: var(--color-primary);
+  padding: 8px 16px 10px;
+  border-radius: 2px;
   border: none;
   color: white;
   margin-top: 10px;
@@ -32,9 +51,7 @@ body {
   background: white;
   border: 1px solid #e8e9ec;
   padding: 10px;
-  border-radius: 3px;
-  font: inherit;
-  font-weight: 300;
+  border-radius: 2px;
 }
 .ic-input:focus {
   outline: none !important;
@@ -46,9 +63,7 @@ body {
   background: white;
   border: 1px solid #e8e9ec;
   padding: 10px;
-  border-radius: 3px;
-  font: inherit;
-  font-weight: 300;
+  border-radius: 2px;
 }
 .ic-textarea:focus {
   outline: none !important;
@@ -70,9 +85,6 @@ body {
   outline: none;
   width: 100%;
   padding: 10px;
-
-  font: inherit;
-  font-weight: 300;
 }
 .ic-select:focus {
   outline: none !important;

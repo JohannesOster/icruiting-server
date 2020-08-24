@@ -24,14 +24,15 @@ html
       id=formID,
       action=submitAction,
       enctype="multipart/form-data")
+
       each formItem in formItems
         div(class="ic-form-field-container")
-          label(for=formItem.form_item_id) #{formItem.label}
-          span(class="ic-description") #{formItem.description}
+          label(for=formItem.form_item_id class="ic-font-300") #{formItem.label}
+          span(class="ic-description ic-font-200") #{formItem.description}
           case formItem.component
             when "input" 
               input(
-                class="ic-input",
+                class="ic-input ic-font-200",
                 type="text",
                 id=formItem.form_item_id,
                 name=formItem.form_item_id,
@@ -40,13 +41,13 @@ html
               )
             when "textarea"
               textarea(
-                class="ic-textarea",
+                class="ic-textarea ic-font-200",
                 id=formItem.form_item_id,
                 name=formItem.form_item_id,
                 placeholder=formItem.placeholder
               )
             when "select"
-              div(class="ic-select-container")
+              div(class="ic-select-container ic-font-200")
                 select(
                   class="ic-select",
                   id=formItem.form_item_id,
@@ -64,7 +65,7 @@ html
                     value=option.value
                     checked=formItem.default_value === option.value
                   )
-                  span(style="margin-left: 5px") #{option.label}
+                  span(style="margin-left: 5px" class="ic-font-200") #{option.label}
             when "checkbox"
               each option in formItem.options
                 div(style="display: flex")
@@ -73,8 +74,9 @@ html
                     name=formItem.form_item_id,
                     value=option.value
                     checked=formItem.default_value === option.value
+                    style="margin-top: 3.5px"
                   )
-                  span(style="margin-left: 5px") #{option.label}
+                  span(style="margin-left: 5px" class="ic-font-200") #{option.label}
             when "file_upload"
               input(type="hidden", name=formItem.form_item_id id=`fileKey-${formItem.form_item_id}`)
               input(
@@ -86,5 +88,5 @@ html
               )
             default: span Invalides Formularelement
       div
-        button(class="ic-submit-button" type="submit") Absenden
+        button(class="ic-submit-button ic-font-300" type="submit") Absenden
 
