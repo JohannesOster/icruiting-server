@@ -61,6 +61,13 @@ jest.mock('aws-sdk', () => ({
           ],
         }),
     }),
+    adminUpdateUserAttributes: (params: adminCreateUserParams) => ({
+      promise: () =>
+        Promise.resolve({
+          Username: params.Username,
+          Attributes: params.UserAttributes,
+        }),
+    }),
   })),
 }));
 
@@ -101,6 +108,38 @@ describe('employees', () => {
 
       expect(resp.body.User.Username).toBe(email);
       expect(resp.body.User.Attributes).toStrictEqual(expectAttributes);
+    });
+  });
+
+  describe('PUT /employees/:username', () => {
+    it('Returns 200 json response', (done) => {
+      request(app)
+        .put(`/employees/${internet.email()}`)
+        .set('Accept', 'application/json')
+        .send({user_role: 'admin'})
+        .expect('Content-Type', /json/)
+        .expect(200, done);
+    });
+
+    it('Returns updated User', async () => {
+      const email = internet.email();
+      const resp = await request(app)
+        .put(`/employees/${email}`)
+        .set('Accept', 'application/json')
+        .send({user_role: 'admin'})
+        .expect(200);
+
+      const expectAttributes = [{Name: 'custom:role', Value: 'admin'}];
+
+      expect(resp.body.Attributes).toStrictEqual(expectAttributes);
+    });
+
+    it('Validates user_role param', async () => {
+      const resp = await request(app)
+        .put(`/employees/${internet.email()}`)
+        .set('Accept', 'application/json')
+        .send({user_role: 'invalid role'})
+        .expect(422);
     });
   });
 

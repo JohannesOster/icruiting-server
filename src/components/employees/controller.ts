@@ -61,3 +61,22 @@ export const getEmployees: RequestHandler = (req, res, next) => {
     })
     .catch(next);
 };
+
+export const updateEmployee: RequestHandler = (req, res, next) => {
+  const cIdp = new CognitoIdentityServiceProvider();
+  const {userPoolID, orgID} = res.locals.user;
+  const {user_role} = req.body;
+  const {username} = req.params;
+
+  const params = {
+    UserPoolId: res.locals.user.userPoolID,
+    Username: username,
+    UserAttributes: [{Name: 'custom:role', Value: user_role}],
+  };
+
+  cIdp
+    .adminUpdateUserAttributes(params)
+    .promise()
+    .then((resp) => res.status(200).json(resp))
+    .catch(next);
+};
