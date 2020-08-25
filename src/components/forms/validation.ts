@@ -13,6 +13,7 @@ export const createFormValidationRules = [
     'file_upload',
     'rating_group',
     'checkbox',
+    'date_picker',
   ]),
   body('form_items[*].label').isString(),
   body('form_items[*].placeholder').optional().isString(),

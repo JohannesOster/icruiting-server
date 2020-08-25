@@ -64,12 +64,12 @@ export const getEmployees: RequestHandler = (req, res, next) => {
 
 export const updateEmployee: RequestHandler = (req, res, next) => {
   const cIdp = new CognitoIdentityServiceProvider();
-  const {userPoolID, orgID} = res.locals.user;
+  const {userPoolID} = res.locals.user;
   const {user_role} = req.body;
   const {username} = req.params;
 
   const params = {
-    UserPoolId: res.locals.user.userPoolID,
+    UserPoolId: userPoolID,
     Username: username,
     UserAttributes: [{Name: 'custom:role', Value: user_role}],
   };

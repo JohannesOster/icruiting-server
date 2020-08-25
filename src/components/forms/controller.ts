@@ -71,7 +71,6 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
 
       const map = form.form_items.reduce(
         (acc: any, item: any) => {
-          console.log(item.component, item.component === 'checkbox');
           // !> filter out non submitted values
           if (
             !fields[item.form_item_id] &&
@@ -82,7 +81,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
             return acc;
           }
 
-          if (['input', 'textarea'].includes(item.component)) {
+          if (['input', 'textarea', 'date_picker'].includes(item.component)) {
             console.log(`Got ${item.component}, no mapping required.`);
 
             acc.attributes.push({

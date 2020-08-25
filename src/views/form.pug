@@ -39,6 +39,13 @@ html
                 placeholder=formItem.placeholder
                 required=formItem.validation && formItem.validation.required
               )
+            when "date_picker"
+              input(
+                class="ic-input ic-font-200",
+                type="date",
+                id=formItem.form_item_id,
+                name=formItem.form_item_id,
+              ) 
             when "textarea"
               textarea(
                 class="ic-textarea ic-font-200",

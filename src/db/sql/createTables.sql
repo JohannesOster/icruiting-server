@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS form (
   CONSTRAINT form_title_assessment_form_not_null CHECK(form_title IS NOT NULL OR form_category != 'assessment')
 );
 
-CREATE TYPE form_component AS ENUM ('input', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group');
+CREATE TYPE form_component AS ENUM ('input','date_picker', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group');
 CREATE TABLE IF NOT EXISTS form_item (
   form_item_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
