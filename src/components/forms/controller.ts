@@ -107,14 +107,19 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
             console.log(
               `Got ${item.component} join selected values by comma (,).`,
             );
+
+            const value = Array.isArray(fields[item.form_item_id])
+              ? fields[item.form_item_id].join(', ')
+              : fields[item.form_item_id];
+
             console.log(fields[item.form_item_id], {
               key: item.label,
-              value: fields[item.form_item_id].join(', '),
+              value: value,
             });
 
             acc.attributes.push({
               key: item.label,
-              value: fields[item.form_item_id].join(','),
+              value: value,
             });
           } else if (item.component === 'file_upload') {
             console.log(

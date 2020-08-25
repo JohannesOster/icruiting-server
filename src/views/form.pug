@@ -27,7 +27,7 @@ html
 
       each formItem in formItems
         div(class="ic-form-field-container")
-          label(for=formItem.form_item_id class="ic-font-300") #{formItem.label}
+          label(for=formItem.form_item_id class="ic-font-300") #{formItem.label}#{formItem.validation && formItem.validation.required && '*'}
           span(class="ic-description ic-font-200") #{formItem.description}
           case formItem.component
             when "input" 
@@ -45,6 +45,7 @@ html
                 type="date",
                 id=formItem.form_item_id,
                 name=formItem.form_item_id,
+                required=formItem.validation && formItem.validation.required
               ) 
             when "textarea"
               textarea(
@@ -52,6 +53,7 @@ html
                 id=formItem.form_item_id,
                 name=formItem.form_item_id,
                 placeholder=formItem.placeholder
+                required=formItem.validation && formItem.validation.required
               )
             when "select"
               div(class="ic-select-container ic-font-200")
@@ -59,6 +61,7 @@ html
                   class="ic-select",
                   id=formItem.form_item_id,
                   name=formItem.form_item_id,
+                  required=formItem.validation && formItem.validation.required
                 )
                   each option in formItem.options
                     option(value=option.value) #{option.label}
@@ -71,6 +74,7 @@ html
                     name=formItem.form_item_id,
                     value=option.value
                     checked=formItem.default_value === option.value
+                    required=formItem.validation && formItem.validation.required
                   )
                   span(style="margin-left: 5px" class="ic-font-200") #{option.label}
             when "checkbox"
@@ -82,6 +86,7 @@ html
                     value=option.value
                     checked=formItem.default_value === option.value
                     style="margin-top: 3.5px"
+                    required=formItem.validation && formItem.validation.required
                   )
                   span(style="margin-left: 5px" class="ic-font-200") #{option.label}
             when "file_upload"
