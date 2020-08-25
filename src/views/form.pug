@@ -80,13 +80,14 @@ html
             when "checkbox"
               each option in formItem.options
                 div(style="display: flex")
+                  // required validation currently only works for single option checkbox
                   input(
                     type="checkbox"
                     name=formItem.form_item_id,
                     value=option.value
                     checked=formItem.default_value === option.value
                     style="margin-top: 3.5px"
-                    required=formItem.validation && formItem.validation.required
+                    required=formItem.validation && formItem.validation.required && formItem.options.length === 1
                   )
                   span(style="margin-left: 5px" class="ic-font-200") #{option.label}
             when "file_upload"
