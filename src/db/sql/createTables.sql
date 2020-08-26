@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS form_item (
   options JSONB,       -- array of options if componen is select, radio, etc.
   editable BOOLEAN DEFAULT FALSE,
   deletable BOOLEAN DEFAULT FALSE,
-  weighting INTEGER DEFAULT NULL, -- how the submitted value is weighed
+  weighting INTEGER DEFAULT 1, -- how the submitted value is weighed
   CONSTRAINT form_item_id_pk PRIMARY KEY (form_item_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,

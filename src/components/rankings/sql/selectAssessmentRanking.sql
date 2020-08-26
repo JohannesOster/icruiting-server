@@ -11,7 +11,8 @@ FROM
 	submission_field.submitter_id,
 	submission_field.applicant_id,
 	submission_field.comment,
-	ARRAY_AGG(JSON_BUILD_OBJECT(
+	JSON_AGG(JSON_BUILD_OBJECT(
+		'submitter_id', submission_field.submitter_id,
 		'form_item_id', form_item.form_item_id,
 		'job_requirement_id', form_item.job_requirement_id,
 		'weighing', form_item.weighting,
