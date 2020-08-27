@@ -17,7 +17,7 @@ FROM
 		'job_requirement_id', form_item.job_requirement_id,
 		'value', submission_field.value
 	)) submission,
-	SUM(submission_field.value * form_item.weighting) AS form_submission_score
+	SUM(submission_field.value) AS form_submission_score
 FROM form
 JOIN form_item
 ON form_item.form_id=form.form_id
