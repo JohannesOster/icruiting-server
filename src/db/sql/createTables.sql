@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS job_requirement (
   organization_id UUID NOT NULL,
   job_id UUID NOT NULL,
   requirement_label TEXT NOT NULL,
+  icon TEXT DEFAULT NULL,
+  minimal_score DECIMAL DEFAULT NULL,
   CONSTRAINT job_requirement_id_pk PRIMARY KEY (job_requirement_id),
   CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE
@@ -54,11 +56,10 @@ CREATE TABLE IF NOT EXISTS form_item (
   options JSONB,       -- array of options if componen is select, radio, etc.
   editable BOOLEAN DEFAULT FALSE,
   deletable BOOLEAN DEFAULT FALSE,
-  weighting INTEGER DEFAULT 1, -- how the submitted value is weighed
   CONSTRAINT form_item_id_pk PRIMARY KEY (form_item_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
-  CONSTRAINT job_requirement_id_fk FOREIGN KEY (job_requirement_id) REFERENCES job_requirement(job_requirement_id) ON DELETE NO ACTION,
+  CONSTRAINT job_requirement_id_fk FOREIGN KEY (job_requirement_id) REFERENCES job_requirement(job_requirement_id) ON DELETE NO ACTION DEFERRABLE,
   CONSTRAINT row_index_check CHECK (row_index >= 0),
   CONSTRAINT form_id_row_index_unique UNIQUE (form_id, row_index), -- make shure the index inside of the form is unique
   CONSTRAINT options_conditional_not_null CHECK(

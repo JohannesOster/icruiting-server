@@ -12,6 +12,5 @@ export type TRankingRow = {
 export type TSubmission = Array<{
   form_item_id: string;
   job_requirement_id?: string;
-  weighing: number;
   value: number;
 }>;

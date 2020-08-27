@@ -22,8 +22,9 @@ export const getJobs: RequestHandler = (req, res, next) => {
 
 export const updateJob: RequestHandler = (req, res, next) => {
   const job_id = req.params.job_id;
+  const organization_id = res.locals.user.orgID;
 
-  dbUpdateJob(job_id, req.body)
+  dbUpdateJob(job_id, organization_id, req.body)
     .then((resp) => res.status(200).json(resp))
     .catch(next);
 };

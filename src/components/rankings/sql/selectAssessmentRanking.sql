@@ -15,7 +15,6 @@ FROM
 		'submitter_id', submission_field.submitter_id,
 		'form_item_id', form_item.form_item_id,
 		'job_requirement_id', form_item.job_requirement_id,
-		'weighing', form_item.weighting,
 		'value', submission_field.value
 	)) submission,
 	SUM(submission_field.value * form_item.weighting) AS form_submission_score

@@ -11,7 +11,6 @@ describe('rankings', () => {
       const submissions = randArray.map(() =>
         randArray.map(() => ({
           form_item_id: random.uuid(),
-          weighing: random.number({min: 0, max: 10}),
           value: random.number({min: 1, max: 5}),
           job_requirement_id: randomElement(jobRequirements),
         })),
@@ -20,7 +19,7 @@ describe('rankings', () => {
       const expectedResult = submissions.reduce((acc, curr) => {
         curr.forEach((field) => {
           const key = field.job_requirement_id;
-          const value = field.value * field.weighing;
+          const value = field.value;
           if (!key) return acc;
           acc[key] = acc[key] ? acc[key] + value : value;
           return acc;

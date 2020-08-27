@@ -1,4 +1,4 @@
-import faker from 'faker';
+import faker, {random} from 'faker';
 import request from 'supertest';
 import app from 'app';
 import db from 'db';
@@ -210,19 +210,26 @@ describe('jobs', () => {
       request(app)
         .put(`/jobs/${job.job_id}`)
         .set('Accept', 'application/json')
-        .send({})
+        .send(job)
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
 
     it('Returns updated entity', async (done) => {
       const updateValues = job;
-      updateValues.job_title = faker.random.alphaNumeric();
+      updateValues.job_title = random.alphaNumeric();
       updateValues.job_requirements = updateValues.job_requirements.map(
         (req: any) => {
-          return {...req, requirement_label: faker.random.alphaNumeric()};
+          return {
+            ...req,
+            requirement_label: random.alphaNumeric(),
+            icon: random.word(),
+            minimal_score: random.number(),
+          };
         },
       );
+
+      updateValues.job_requirements.shift(); // test if req gets removed
 
       const resp = await request(app)
         .put(`/jobs/${job.job_id}`)
@@ -232,6 +239,38 @@ describe('jobs', () => {
 
       expect(resp.body.job_title).toBe(updateValues.job_title);
       expect(resp.body.job_requirements).toEqual(updateValues.job_requirements);
+
+      done();
+    });
+
+    it('Adds new requirement', async (done) => {
+      const updateValues = job;
+      updateValues.job_title = random.alphaNumeric();
+      updateValues.job_requirements = updateValues.job_requirements.map(
+        (req: any) => {
+          return {
+            ...req,
+            requirement_label: random.alphaNumeric(),
+            icon: random.word(),
+            minimal_score: random.number(),
+          };
+        },
+      );
+
+      updateValues.job_requirements.push({
+        requirement_label: random.alphaNumeric(),
+        minimal_scorce: random.number(),
+      });
+
+      const resp = await request(app)
+        .put(`/jobs/${job.job_id}`)
+        .set('Accept', 'application/json')
+        .send(updateValues)
+        .expect(200);
+
+      expect(resp.body.job_requirements.length).toEqual(
+        updateValues.job_requirements.length,
+      );
 
       done();
     });

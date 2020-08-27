@@ -1,5 +1,5 @@
 import db from 'db';
-import {selectJobs as selectJobsSQL} from './sql';
+import {selectJobs as selectJobsSQL, selectJob as selectJobSQL} from './sql';
 import {TJob} from './types';
 
 export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
@@ -9,14 +9,20 @@ export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
   const insertedJob = await db.one(insertJobStmt);
 
   const cs = new helpers.ColumnSet(
-    ['job_id', 'organization_id', 'requirement_label'],
+    [
+      'job_id',
+      'organization_id',
+      'requirement_label',
+      {name: 'icon', def: null},
+      {name: 'minimal_score', def: null},
+    ],
     {table: 'job_requirement'},
   );
 
   const requirements = job_requirements.map((req) => ({
     job_id: insertedJob.job_id,
     organization_id: insertedJob.organization_id,
-    requirement_label: req.requirement_label,
+    ...req,
   }));
 
   const reqStmt = helpers.insert(requirements, cs) + ' RETURNING *';
@@ -30,35 +36,55 @@ export const dbSelectJobs = (organization_id: string) => {
   return db.any(selectJobsSQL, {organization_id});
 };
 
-export const dbUpdateJob = (job_id: string, body: any) => {
+export const dbSelectJob = (job_id: string, organization_id: string) => {
+  return db.one(selectJobSQL, {job_id, organization_id});
+};
+
+export const dbUpdateJob = (
+  job_id: string,
+  organization_id: string,
+  body: TJob,
+) => {
   return db
-    .tx((t) => {
-      const promises = [];
-      const update = db.$config.pgp.helpers.update;
+    .tx(async (t) => {
+      const helpers = db.$config.pgp.helpers;
 
       /* Update job title or query job */
-      if (body.job_title) {
-        const vals = {job_title: body.job_title};
-        const stmt = update(vals, null, 'job') + ' WHERE job_id=$1 RETURNING *';
-        promises.push(t.one(stmt, job_id));
-      } else {
-        const stmt = 'SELECT * FROM job WHERE job_id=$1';
-        promises.push(t.one(stmt, job_id));
-      }
+      const vals = {job_title: body.job_title};
+      const stmt = helpers.update(vals, null, 'job') + ' WHERE job_id=$1';
+      await t.none(stmt, job_id);
 
-      (body.job_requirements || []).forEach((req: any) => {
-        const vals = {requirement_label: req.requirement_label};
-        const condition = ' WHERE job_requirement_id=$1';
-        const stmt = update(vals, null, 'job_requirement') + condition;
-        promises.push(t.none(stmt, req.job_requirement_id));
+      await t.any('SET CONSTRAINTS job_requirement_id_fk DEFERRED');
+      await t.none('DELETE FROM job_requirement WHERE job_id=$1', job_id);
+
+      const rawText = (text: string) => ({
+        toPostgres: () => text,
+        rawType: true,
       });
 
-      return t.batch(promises);
+      const cs = new helpers.ColumnSet(
+        [
+          {
+            name: 'job_requirement_id',
+            def: () => rawText('uuid_generate_v4()'),
+          }, // insert job_requirement_id to make shure already existsing form items "only get updated"
+          'job_id',
+          'organization_id',
+          'requirement_label',
+          {name: 'icon', def: null},
+          {name: 'minimal_score', def: null},
+        ],
+        {table: 'job_requirement'},
+      );
+
+      const requirements = body.job_requirements.map((req: any) => {
+        const tmp: any = {job_id, organization_id, ...req};
+        if (!tmp.job_requirement_id) delete tmp.job_requirement_id; // filter out empty strings
+        return tmp;
+      });
+
+      const reqStmt = helpers.insert(requirements, cs);
+      await t.none(reqStmt);
     })
-    .then(async (result) => {
-      // to send all requirements as response a new select stmt has to be made
-      const stmt = 'SELECT * FROM job_requirement WHERE job_id=$1';
-      const job_requirements = await db.any(stmt, job_id);
-      return {...result[0], job_requirements};
-    });
+    .then(async () => await dbSelectJob(job_id, organization_id));
 };
