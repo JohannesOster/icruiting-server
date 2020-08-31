@@ -40,13 +40,15 @@ CREATE TABLE IF NOT EXISTS form (
   CONSTRAINT form_title_assessment_form_not_null CHECK(form_title IS NOT NULL OR form_category != 'assessment')
 );
 
+CREATE TYPE form_item_intent AS ENUM ('aggregate', 'count_distinct', 'sum_up');
 CREATE TYPE form_component AS ENUM ('input','date_picker', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group');
 CREATE TABLE IF NOT EXISTS form_item (
   form_item_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
   organization_id UUID NOT NULL,
   job_requirement_id UUID DEFAULT NULL,
-  component FORM_COMPONENT NOT NULL,
+  intent form_item_intent DEFAULT NULL,
+  component form_component NOT NULL,
   row_index INTEGER NOT NULL,
   label TEXT NOT NULL,
   placeholder TEXT,
