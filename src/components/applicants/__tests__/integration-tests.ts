@@ -185,4 +185,28 @@ describe('applicants', () => {
       done();
     });
   });
+  describe('GET applicants/:applicant_id/report', () => {
+    let applicant: TApplicant;
+    beforeAll(async () => {
+      applicant = await dbInsertApplicant(
+        fake.applicant(mockUser.orgID, randomElement(jobIds)),
+      );
+    });
+    it('returns 200 json response', (done) => {
+      request(app)
+        .get(
+          `/applicants/${applicant.applicant_id}/report?form_category=screening`,
+        )
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200, done);
+    });
+
+    it('validates form_category query', (done) => {
+      request(app)
+        .get(`/applicants/${applicant.applicant_id}/report`)
+        .set('Accept', 'application/json')
+        .expect(422, done);
+    });
+  });
 });

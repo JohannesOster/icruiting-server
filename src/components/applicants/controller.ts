@@ -22,3 +22,11 @@ export const getApplicants: RequestHandler = (req, res, next) => {
     })
     .catch(next);
 };
+
+export const getReport: RequestHandler = (req, res, next) => {
+  const applicant_id = req.params.applicant_id;
+  const {orgID: organization_id} = res.locals.user;
+  const formCategory = req.query.form_category;
+
+  res.status(200).json();
+};
