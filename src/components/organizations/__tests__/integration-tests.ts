@@ -11,7 +11,8 @@ afterAll(async () => {
 
 describe('organizations', () => {
   describe('POST /organizations', () => {
-    it('Returns 201 json response', (done) => {
+    it('Returns 201 json response', async (done) => {
+      console.log(await db.any('SELECT * FROM organization'));
       request(app)
         .post('/organizations')
         .set('Accept', 'application/json')
@@ -20,7 +21,8 @@ describe('organizations', () => {
         .expect(201, done);
     });
 
-    it('Returns 422 on missing params', (done) => {
+    it('Returns 422 on missing params', async (done) => {
+      console.log(await db.any('SELECT * FROM organization'));
       request(app)
         .post('/organizations')
         .set('Accept', 'application/json')
