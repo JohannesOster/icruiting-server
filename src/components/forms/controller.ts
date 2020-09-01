@@ -132,7 +132,7 @@ export const submitHTMLForm: RequestHandler = (req, res, next) => {
             const fileKey =
               form.organization_id + '.' + fileId + '.' + extension;
             const params: any = {
-              Key: 'applications/' + fileKey,
+              Key: fileKey,
               Bucket: process.env.S3_BUCKET || '',
               ContentType: 'application/pdf',
             };

@@ -5,7 +5,7 @@ export const getApplicantFileURLs = async (
 ) => {
   const s3 = new S3();
   const promises = files.map((file) => {
-    const fileKey = 'applications/' + file.value;
+    const fileKey = file.value;
     const params = {
       Bucket: process.env.S3_BUCKET,
       Key: fileKey,

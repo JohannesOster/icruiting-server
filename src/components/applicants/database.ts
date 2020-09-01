@@ -1,5 +1,5 @@
 import db from '../../db';
-import {selectApplicants as selectApplicantsSQL} from './sql';
+import {selectApplicants, selectReport} from './sql';
 import {TApplicant} from './types';
 
 export const dbInsertApplicant = (applicant: TApplicant) => {
@@ -24,5 +24,13 @@ export const dbSelectApplicants = (params: {
   organization_id: string;
   user_id: string;
 }) => {
-  return db.any(selectApplicantsSQL, params);
+  return db.any(selectApplicants, params);
+};
+
+export const dbSelectReport = (params: {
+  organization_id: string;
+  applicant_id: string;
+  form_category: 'screening' | 'assessment';
+}) => {
+  return db.any(selectReport, params);
 };

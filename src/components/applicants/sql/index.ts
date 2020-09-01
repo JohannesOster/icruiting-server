@@ -8,4 +8,9 @@ const selectApplicants = new QueryFile(
   options,
 );
 
-export {selectApplicants};
+const selectReport = new QueryFile(
+  join(__dirname, 'selectReport.sql'),
+  options,
+);
+
+export {selectApplicants, selectReport};

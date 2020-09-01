@@ -9,3 +9,8 @@ export const dbInsertOrganization = (params: {
 
   return db.one(query);
 };
+
+export const dbDeleteOrganization = (organization_id: string) => {
+  const query = 'DELETE FROM organization WHERE organization_id=$1';
+  return db.none(query, organization_id);
+};
