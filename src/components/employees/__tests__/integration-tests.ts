@@ -86,28 +86,28 @@ describe('employees', () => {
     it('Returns 201 json response', (done) => {
       request(app)
         .post('/employees')
-        .send({email: internet.email()})
+        .send({emails: [internet.email()]})
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201, done);
     });
 
     it('Returns created user', async () => {
-      const email = internet.email();
+      const emails = [internet.email()];
       const resp = await request(app)
         .post('/employees')
-        .send({email})
+        .send({emails})
         .set('Accept', 'application/json')
         .expect(201);
 
       const expectAttributes = [
-        {Name: 'email', Value: email},
+        {Name: 'email', Value: emails[0]},
         {Name: 'custom:orgID', Value: mockUser.orgID},
         {Name: 'custom:role', Value: 'employee'},
       ];
 
-      expect(resp.body.User.Username).toBe(email);
-      expect(resp.body.User.Attributes).toStrictEqual(expectAttributes);
+      expect(resp.body[0].User.Username).toBe(emails[0]);
+      expect(resp.body[0].User.Attributes).toStrictEqual(expectAttributes);
     });
   });
 
