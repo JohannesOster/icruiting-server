@@ -192,6 +192,7 @@ describe('applicants', () => {
         fake.applicant(mockUser.orgID, randomElement(jobIds)),
       );
     });
+
     it('returns 200 json response', (done) => {
       request(app)
         .get(
@@ -202,7 +203,7 @@ describe('applicants', () => {
         .expect(200, done);
     });
 
-    it('validates form_category query', (done) => {
+    it('requires form_category query', (done) => {
       request(app)
         .get(`/applicants/${applicant.applicant_id}/report`)
         .set('Accept', 'application/json')

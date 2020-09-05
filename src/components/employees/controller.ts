@@ -4,24 +4,27 @@ import {removePrefixFromUserAttribute} from './utils';
 
 export const createEmployee: RequestHandler = (req, res, next) => {
   const cIdp = new CognitoIdentityServiceProvider();
-  const {email} = req.body;
+  const {emails} = req.body;
+  const {userPoolID, orgID} = res.locals.user;
 
-  const params = {
-    UserPoolId: res.locals.user.userPoolID,
-    Username: email,
-    DesiredDeliveryMediums: ['EMAIL'],
-    //MessageAction: 'SUPPRESS',
-    UserAttributes: [
-      {Name: 'email', Value: email},
-      {Name: 'custom:orgID', Value: res.locals.user.orgID},
-      {Name: 'custom:role', Value: 'employee'},
-    ],
-  };
+  const promises = emails.map((email: string) => {
+    const params = {
+      UserPoolId: userPoolID,
+      Username: email,
+      DesiredDeliveryMediums: ['EMAIL'],
+      //MessageAction: 'SUPPRESS',
+      UserAttributes: [
+        {Name: 'email', Value: email},
+        {Name: 'custom:orgID', Value: orgID},
+        {Name: 'custom:role', Value: 'employee'},
+      ],
+    };
 
-  cIdp
-    .adminCreateUser(params)
-    .promise()
-    .then((resp) => res.status(201).json(resp))
+    return cIdp.adminCreateUser(params).promise();
+  });
+
+  Promise.all(promises)
+    .then((result) => res.status(201).json(result))
     .catch(next);
 };
 
