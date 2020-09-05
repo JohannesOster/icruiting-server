@@ -1,9 +1,7 @@
 import db from 'db';
+import {organization} from './types';
 
-export const dbInsertOrganization = (params: {
-  organization_name: string;
-  organization_id?: string;
-}) => {
+export const dbInsertOrganization = (params: organization) => {
   const {insert} = db.$config.pgp.helpers;
   const query = insert(params, null, 'organization') + ' RETURNING *';
 
