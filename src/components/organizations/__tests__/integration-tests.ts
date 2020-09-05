@@ -15,6 +15,36 @@ jest.mock('middlewares/auth', () => ({
   }),
 }));
 
+jest.mock('aws-sdk', () => ({
+  S3: jest.fn().mockImplementation(() => ({
+    listObjects: () => ({
+      promise: () => Promise.resolve({Contents: [{Key: faker.internet.url()}]}),
+    }),
+    deleteObjects: () => ({
+      promise: () => Promise.resolve(),
+    }),
+  })),
+  CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({
+    listUsers: () => ({
+      promise: () =>
+        Promise.resolve({
+          Users: [
+            {
+              Username: faker.internet.email(),
+              Attributes: [
+                {Name: 'email', Value: faker.internet.email()},
+                {Name: 'custom:orgID', Value: mockUser.orgID},
+              ],
+            },
+          ],
+        }),
+    }),
+    adminDeleteUser: () => ({
+      promise: () => Promise.resolve({}),
+    }),
+  })),
+}));
+
 afterAll(async () => {
   await truncateAllTables();
   endConnection();
@@ -55,35 +85,6 @@ describe('organizations', () => {
   });
 
   describe('DELETE /organizations', () => {
-    jest.mock('aws-sdk', () => ({
-      S3: jest.fn().mockImplementation(() => ({
-        listObjects: () => ({
-          promise: Promise.resolve({Contents: [{Key: faker.internet.url()}]}),
-        }),
-        deleteObjects: () => ({
-          promise: Promise.resolve(),
-        }),
-      })),
-      CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({
-        listUsers: () => ({
-          promise: Promise.resolve({
-            Users: [
-              {
-                Username: faker.internet.email(),
-                Attributes: [
-                  {Name: 'email', Value: faker.internet.email()},
-                  {Name: 'custom:orgID', Value: mockUser.orgID},
-                ],
-              },
-            ],
-          }),
-          adminDeleteUser: () => ({
-            promise: Promise.resolve({}),
-          }),
-        }),
-      })),
-    }));
-
     beforeEach(async () => {
       const fakeOrg = fake.organization(mockUser.orgID);
       await dbInsertOrganization(fakeOrg);

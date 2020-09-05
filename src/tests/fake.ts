@@ -2,10 +2,10 @@ import faker from 'faker';
 import {EFormCategory} from 'components/forms';
 
 const fake = {
-  user: (user_role: 'admin' | 'user' = 'admin') => ({
+  user: (userRole: 'admin' | 'user' = 'admin') => ({
     orgID: faker.random.uuid(),
     sub: faker.random.uuid(),
-    user_role: user_role,
+    userRole,
   }),
   organization: (organization_id?: string) => ({
     organization_id,
