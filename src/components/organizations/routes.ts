@@ -12,6 +12,7 @@ router.post(
   catchValidationErrors,
   createOrganization,
 );
+
 router.use(requireAuth);
 router.use(requireAdmin);
 router.delete('/', deleteOrganization);
