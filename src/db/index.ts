@@ -7,6 +7,8 @@ const pgp = pgPromise({capSQL: true});
 
 const dbURL = () => {
   switch (process.env.NODE_ENV) {
+    case 'production':
+      return process.env.DATABASE_URL;
     case 'development':
       console.log('Running development database');
       return process.env.DEV_DB_URL;
