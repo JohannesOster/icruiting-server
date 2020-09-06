@@ -1,0 +1,105 @@
+html
+  head
+    title icruiting-webform
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    script(src='https://sdk.amazonaws.com/js/aws-sdk-2.680.0.min.js')
+    script
+      include ic-iframe-resize.js
+    style
+      include ic-forms.css
+
+  body(onload="post_iframe_size();")
+    div(class="ic-overlay" id="ic-overlay")
+      div(class="ic-chase")
+        div(class="ic-chase-dot")
+        div(class="ic-chase-dot")
+        div(class="ic-chase-dot")
+        div(class="ic-chase-dot")
+        div(class="ic-chase-dot")
+        div(class="ic-chase-dot")
+    form(
+      class="ic-form",
+      method="POST",
+      id=formID,
+      action=submitAction,
+      enctype="multipart/form-data")
+
+      each formItem in formItems
+        div(class="ic-form-field-container")
+          label(for=formItem.form_item_id class="ic-font-300") #{formItem.label}#{formItem.validation && formItem.validation.required && '*'}
+          span(class="ic-description ic-font-200") #{formItem.description}
+          case formItem.component
+            when "input" 
+              input(
+                class="ic-input ic-font-200",
+                type="text",
+                id=formItem.form_item_id,
+                name=formItem.form_item_id,
+                placeholder=formItem.placeholder
+                required=formItem.validation && formItem.validation.required
+              )
+            when "date_picker"
+              input(
+                class="ic-input ic-font-200",
+                type="date",
+                id=formItem.form_item_id,
+                name=formItem.form_item_id,
+                required=formItem.validation && formItem.validation.required
+              ) 
+            when "textarea"
+              textarea(
+                class="ic-textarea ic-font-200",
+                id=formItem.form_item_id,
+                name=formItem.form_item_id,
+                placeholder=formItem.placeholder
+                required=formItem.validation && formItem.validation.required
+              )
+            when "select"
+              div(class="ic-select-container ic-font-200")
+                select(
+                  class="ic-select",
+                  id=formItem.form_item_id,
+                  name=formItem.form_item_id,
+                  required=formItem.validation && formItem.validation.required
+                )
+                  each option in formItem.options
+                    option(value=option.value) #{option.label}
+                include select-icon.svg
+            when "radio"
+              each option in formItem.options
+                div(style="display: flex")
+                  input(
+                    type="radio"
+                    name=formItem.form_item_id,
+                    value=option.value
+                    checked=formItem.default_value === option.value
+                    required=formItem.validation && formItem.validation.required
+                  )
+                  span(style="margin-left: 5px" class="ic-font-200") #{option.label}
+            when "checkbox"
+              each option in formItem.options
+                div(style="display: flex")
+                  // required validation currently only works for single option checkbox
+                  input(
+                    type="checkbox"
+                    name=formItem.form_item_id,
+                    value=option.value
+                    checked=formItem.default_value === option.value
+                    style="margin-top: 3.5px"
+                    required=formItem.validation && formItem.validation.required && formItem.options.length === 1
+                  )
+                  span(style="margin-left: 5px" class="ic-font-200") #{option.label}
+            when "file_upload"
+              input(type="hidden", name=formItem.form_item_id id=`fileKey-${formItem.form_item_id}`)
+              input(
+                type="file",
+                id=`fileUpload-${formItem.form_item_id}`,
+                name=formItem.form_item_id,
+                accept="application/pdf, image/jpeg",
+                required=formItem.validation && formItem.validation.required
+              )
+            default: span Invalides Formularelement
+      div
+        button(class="ic-submit-button ic-font-300" type="submit") Absenden
+
