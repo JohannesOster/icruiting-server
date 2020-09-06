@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "NODE_PATH=./src env NODE_ENV=development nodemon",
-    "start": "npm run build && NODE_PATH=dist/ node dist/index.js",
-    "build": "rimraf ./dist && tsc",
+    "start": "npm run build && node dist/api.bundle.js",
+    "build": "rimraf ./dist && webpack",
     "db-setup": "env NODE_ENV=development npx ts-node ./src/db/utils.ts createAllTables",
     "db-drop": "env NODE_ENV=development npx ts-node ./src/db/utils.ts dropAllTables",
     "test": "npx jest --runInBand"
@@ -42,6 +42,11 @@
     "aws-sdk-mock": "^5.1.0",
     "rimraf": "^3.0.2",
     "ts-jest": "^26.1.0",
-    "typescript": "^3.9.3"
+    "ts-loader": "^8.0.3",
+    "tsconfig-paths-webpack-plugin": "^3.3.0",
+    "typescript": "^3.9.3",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12",
+    "webpack-node-externals": "^2.5.2"
   }
 }

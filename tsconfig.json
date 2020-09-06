@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": "src",
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "target": "es5",
     "lib": ["es6"],
     "allowJs": true,
