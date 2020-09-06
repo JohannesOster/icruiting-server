@@ -41,7 +41,7 @@ export const getReport: RequestHandler = (req, res, next) => {
   dbSelectReport(params).then((result) => {
     const tmp = result.map((row: TScreeningRankingRow) => {
       const {submissions} = row;
-
+      const jobres = {} as any;
       const initialValues = (key: EFormItemIntent) => {
         return {
           [EFormItemIntent.sumUp]: 0,
@@ -50,31 +50,46 @@ export const getReport: RequestHandler = (req, res, next) => {
         }[key];
       };
       const submissionsResult = submissions.reduce((acc, curr) => {
-        curr.forEach(({form_item_id, intent, value, label}) => {
-          if (!acc[form_item_id]) {
-            const initialVal = initialValues(intent);
-            acc[form_item_id] = {label, intent, value: initialVal};
-          }
-          switch (intent) {
-            case EFormItemIntent.sumUp:
-              (acc[form_item_id].value as number) += +value;
-              break;
-            case EFormItemIntent.aggregate:
-              acc[form_item_id].value = (acc[form_item_id].value as Array<
-                string
-              >).concat(value.toString());
-              break;
-            case EFormItemIntent.countDistinct:
-              const key = value.toString();
-              const currVal = (acc[form_item_id].value as KeyVal)[key];
-              (acc[form_item_id].value as KeyVal)[key] = (currVal || 0) + 1;
-          }
-        });
+        curr.forEach(
+          ({
+            form_item_id,
+            intent,
+            value,
+            label,
+            job_requirement_label,
+          }: any) => {
+            if (!acc[form_item_id]) {
+              const initialVal = initialValues(intent);
+              acc[form_item_id] = {label, intent, value: initialVal};
+            }
+            switch (intent) {
+              case EFormItemIntent.sumUp:
+                (acc[form_item_id].value as number) += parseFloat(value);
+                if (job_requirement_label)
+                  jobres[job_requirement_label] =
+                    (jobres[job_requirement_label] || 0) + parseFloat(value);
+                break;
+              case EFormItemIntent.aggregate:
+                acc[form_item_id].value = (acc[form_item_id].value as Array<
+                  string
+                >).concat(value.toString());
+                break;
+              case EFormItemIntent.countDistinct:
+                const key = value.toString();
+                const currVal = (acc[form_item_id].value as KeyVal)[key];
+                (acc[form_item_id].value as KeyVal)[key] = (currVal || 0) + 1;
+            }
+          },
+        );
 
         return acc;
       }, {} as TScreeningResultObject);
 
-      return {result: submissionsResult, ...row};
+      return {
+        result: submissionsResult,
+        job_requirements_result: jobres,
+        ...row,
+      };
     });
 
     res.status(200).json(tmp);
