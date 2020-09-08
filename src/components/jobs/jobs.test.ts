@@ -223,8 +223,6 @@ describe('jobs', () => {
           return {
             ...req,
             requirement_label: random.alphaNumeric(),
-            icon: random.word(),
-            minimal_score: random.number(),
           };
         },
       );
@@ -251,7 +249,6 @@ describe('jobs', () => {
           return {
             ...req,
             requirement_label: random.alphaNumeric(),
-            icon: random.word(),
             minimal_score: random.number(),
           };
         },
