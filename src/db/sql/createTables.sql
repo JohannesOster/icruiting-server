@@ -20,8 +20,6 @@ CREATE TABLE IF NOT EXISTS job_requirement (
   organization_id UUID NOT NULL,
   job_id UUID NOT NULL,
   requirement_label TEXT NOT NULL,
-  icon TEXT DEFAULT NULL,
-  minimal_score DECIMAL DEFAULT NULL,
   CONSTRAINT job_requirement_id_pk PRIMARY KEY (job_requirement_id),
   CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE

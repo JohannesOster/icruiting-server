@@ -9,13 +9,7 @@ export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
   const insertedJob = await db.one(insertJobStmt);
 
   const cs = new helpers.ColumnSet(
-    [
-      'job_id',
-      'organization_id',
-      'requirement_label',
-      {name: 'icon', def: null},
-      {name: 'minimal_score', def: null},
-    ],
+    ['job_id', 'organization_id', 'requirement_label'],
     {table: 'job_requirement'},
   );
 
@@ -71,8 +65,6 @@ export const dbUpdateJob = (
           'job_id',
           'organization_id',
           'requirement_label',
-          {name: 'icon', def: null},
-          {name: 'minimal_score', def: null},
         ],
         {table: 'job_requirement'},
       );

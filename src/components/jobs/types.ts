@@ -3,7 +3,5 @@ export type TJob = {
   organization_id: string;
   job_requirements: Array<{
     requirement_label: string;
-    icon?: string;
-    minimal_score?: number;
   }>;
 };
