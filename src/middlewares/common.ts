@@ -13,7 +13,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   res.status(statusCode).json({message: err.message, stack: err.stack});
 };
 
-export const catchValidationErrors: RequestHandler = (req, res, next) => {
+export const validate: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
 
   if (errors.isEmpty()) return next();

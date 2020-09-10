@@ -8,7 +8,7 @@ import {
   submitHTMLForm,
 } from './controller';
 import {createFormValidationRules} from './validation';
-import {catchValidationErrors} from 'middlewares/common';
+import {validate} from 'middlewares/common';
 import {requireAdmin, requireAuth} from 'middlewares';
 
 const router = express.Router();
@@ -20,7 +20,7 @@ router.use(requireAuth);
 router.get('/', getForms);
 
 router.use(requireAdmin);
-router.post('/', createFormValidationRules, catchValidationErrors, createForm);
+router.post('/', createFormValidationRules, validate, createForm);
 router.delete('/:form_id', deleteForm);
 router.put('/:form_id', updateForm);
 
