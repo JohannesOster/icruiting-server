@@ -26,6 +26,7 @@ jest.mock('aws-sdk', () => ({
     deleteObjects: () => ({
       promise: () => Promise.resolve(),
     }),
+    getSignedUrlPromise: () => Promise.resolve(''),
   })),
 }));
 
