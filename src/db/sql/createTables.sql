@@ -38,25 +38,25 @@ CREATE TABLE IF NOT EXISTS form (
   CONSTRAINT form_title_assessment_form_not_null CHECK(form_title IS NOT NULL OR form_category != 'assessment')
 );
 
-CREATE TYPE form_item_intent AS ENUM ('aggregate', 'count_distinct', 'sum_up');
-CREATE TYPE form_component AS ENUM ('input','date_picker', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group');
-CREATE TABLE IF NOT EXISTS form_item (
-  form_item_id UUID DEFAULT uuid_generate_v4(),
+CREATE TYPE form_field_intent AS ENUM ('aggregate', 'count_distinct', 'sum_up');
+CREATE TYPE form_field_component AS ENUM ('input','date_picker', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group');
+CREATE TABLE IF NOT EXISTS form_field (
+  form_field_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
   organization_id UUID NOT NULL,
   job_requirement_id UUID DEFAULT NULL,
-  intent form_item_intent DEFAULT NULL,
-  component form_component NOT NULL,
+  intent form_field_intent DEFAULT NULL,
+  component form_field_component NOT NULL,
   row_index INTEGER NOT NULL,
   label TEXT NOT NULL,
   placeholder TEXT,
   description TEXT,
   default_value TEXT,
-  validation JSONB,    -- validation object for form item
+  required BOOLEAN DEFAULT FALSE,
   options JSONB,       -- array of options if componen is select, radio, etc.
   editable BOOLEAN DEFAULT FALSE,
   deletable BOOLEAN DEFAULT FALSE,
-  CONSTRAINT form_item_id_pk PRIMARY KEY (form_item_id),
+  CONSTRAINT form_field_id_pk PRIMARY KEY (form_field_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT organization_id_fk FOREIGN KEY (organization_id) REFERENCES organization(organization_id) ON DELETE CASCADE,
   CONSTRAINT job_requirement_id_fk FOREIGN KEY (job_requirement_id) REFERENCES job_requirement(job_requirement_id) ON DELETE NO ACTION DEFERRABLE,
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS form_submission (
   submitter_id TEXT, -- id of submitting user
   form_id UUID,
   organization_id UUID NOT NULL,
-  submission JSONB NOT NULL, -- {form_item_id,value}
+  submission JSONB NOT NULL, -- {form_field_id,value}
   comment TEXT,
   CONSTRAINT applicant_id_submitter_id_form_id_pk PRIMARY KEY (applicant_id, submitter_id, form_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,

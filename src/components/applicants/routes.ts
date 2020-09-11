@@ -1,13 +1,16 @@
 import express from 'express';
-import {getApplicants, getReport} from './controller';
+import {getApplicants, getReport, deleteApplicant} from './controller';
 import {validateGetApplicants, validateGetReport} from './validation';
 import {validate} from 'middlewares/common';
-import {requireAuth} from 'middlewares';
+import {requireAuth, requireAdmin} from 'middlewares';
 
 const router = express.Router();
 
 router.use(requireAuth);
 router.get('/', validateGetApplicants, validate, getApplicants);
+
+router.use(requireAdmin);
 router.get('/:applicant_id/report', validateGetReport, validate, getReport);
+router.delete('/:applicant_id', deleteApplicant);
 
 export {router as routes};

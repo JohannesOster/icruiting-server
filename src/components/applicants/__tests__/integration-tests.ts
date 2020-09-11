@@ -1,6 +1,7 @@
 import request from 'supertest';
 import {random} from 'faker';
 import app from 'app';
+import db from 'db';
 import {endConnection, truncateAllTables} from 'db/utils';
 import {TApplicant} from '../types';
 import {dbInsertApplicant} from '../database';
@@ -13,11 +14,20 @@ import {randomElement} from 'utils';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
-  requireAdmin: jest.fn(),
+  requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     res.locals.user = mockUser;
     next();
   }),
+}));
+
+jest.mock('aws-sdk', () => ({
+  S3: jest.fn().mockImplementation(() => ({
+    deleteObjects: () => ({
+      promise: () => Promise.resolve(),
+    }),
+    getSignedUrlPromise: () => Promise.resolve(''),
+  })),
 }));
 
 let jobIds: string[];
@@ -160,9 +170,9 @@ describe('applicants', () => {
         submitter_id: mockUser.sub,
         organization_id: mockUser.orgID,
         comment: random.words(),
-        submission: form.form_items.reduce(
-          (acc: {[form_item_id: string]: string}, item) => {
-            acc[item.form_item_id!] = random
+        submission: form.form_fields.reduce(
+          (acc: {[form_field_id: string]: string}, item) => {
+            acc[item.form_field_id!] = random
               .number({min: 0, max: 5})
               .toString();
             return acc;
@@ -208,6 +218,34 @@ describe('applicants', () => {
         .get(`/applicants/${applicant.applicant_id}/report`)
         .set('Accept', 'application/json')
         .expect(422, done);
+    });
+  });
+
+  describe('DELETE /applicants/:applicant_id', () => {
+    let applicant: TApplicant;
+    beforeEach(async () => {
+      applicant = await dbInsertApplicant(
+        fake.applicant(mockUser.orgID, randomElement(jobIds)),
+      );
+    });
+
+    it('returns 200 json response', (done) => {
+      request(app)
+        .del(`/applicants/${applicant.applicant_id}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200, done);
+    });
+
+    it('deletes applicant', async () => {
+      await request(app)
+        .del(`/applicants/${applicant.applicant_id}`)
+        .set('Accept', 'application/json');
+
+      const stmt = 'SELECT COUNT(*) FROM applicant WHERE applicant_id = $1';
+      const {count} = await db.one(stmt, applicant.applicant_id);
+
+      expect(parseInt(count)).toBe(0);
     });
   });
 });

@@ -35,7 +35,7 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
   res.header('Content-Type', 'text/html');
   res.render('form', {
     formID: form.form_id,
-    formItems: form.form_items,
+    formItems: form.form_fields,
     submitAction: currUrl,
   });
 });
@@ -66,9 +66,9 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
     const s3 = new S3();
     const promises = [];
 
-    const map = form.form_items.reduce(
+    const map = form.form_fields.reduce(
       (acc, item) => {
-        if (!item.form_item_id) {
+        if (!item.form_field_id) {
           throw new BaseError(
             500,
             'Received database entry without primary key',
@@ -77,10 +77,10 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
         // !> filter out non submitted values
         if (
-          !fields[item.form_item_id] &&
-          (!files[item.form_item_id] || !files[item.form_item_id].size)
+          !fields[item.form_field_id] &&
+          (!files[item.form_field_id] || !files[item.form_field_id].size)
         ) {
-          if (item.validation && item.validation.required)
+          if (item.required)
             throw new BaseError(402, `Missing required field: ${item.label}`);
           return acc;
         }
@@ -90,12 +90,12 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
           acc.attributes.push({
             key: item.label,
-            value: fields[item.form_item_id],
+            value: fields[item.form_field_id],
           });
         } else if (['select', 'radio'].includes(item.component)) {
           console.log(`Got ${item.component}, map value to label of option.`);
           // find the one option where option.value is equal to submitted value value
-          const val = fields[item.form_item_id];
+          const val = fields[item.form_field_id];
           const options = item.options?.filter(
             (option: any) => option.value === val,
           );
@@ -113,11 +113,11 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
             `Got ${item.component} join selected values by comma (,).`,
           );
 
-          const value = Array.isArray(fields[item.form_item_id])
-            ? fields[item.form_item_id].join(', ')
-            : fields[item.form_item_id];
+          const value = Array.isArray(fields[item.form_field_id])
+            ? fields[item.form_field_id].join(', ')
+            : fields[item.form_field_id];
 
-          console.log(fields[item.form_item_id], {
+          console.log(fields[item.form_field_id], {
             key: item.label,
             value: value,
           });
@@ -131,7 +131,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
             `Got ${item.component}. Upload file to S3 bucket and map value to {label, fileURL}`,
           );
 
-          const file = files[item.form_item_id];
+          const file = files[item.form_field_id];
           const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
           const fileId = (Math.random() * 1e32).toString(36);
           const fileKey = form.organization_id + '.' + fileId + '.' + extension;
