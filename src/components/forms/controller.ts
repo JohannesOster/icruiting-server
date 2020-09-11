@@ -80,7 +80,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
           !fields[item.form_item_id] &&
           (!files[item.form_item_id] || !files[item.form_item_id].size)
         ) {
-          if (item.validation && item.validation.required)
+          if (item.required)
             throw new BaseError(402, `Missing required field: ${item.label}`);
           return acc;
         }

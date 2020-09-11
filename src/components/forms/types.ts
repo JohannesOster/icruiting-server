@@ -18,7 +18,7 @@ export type TForm = {
     label: string;
     placeholder?: string;
     default_value?: string;
-    validation?: {required: boolean};
+    required?: boolean;
     options?: Array<{label: string; value: string}>;
     editable?: boolean;
     deletable?: boolean;

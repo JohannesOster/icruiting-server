@@ -1,5 +1,11 @@
 import {catchAsync} from 'errorHandling';
-import {dbSelectApplicants, dbSelectReport} from './database';
+import {S3} from 'aws-sdk';
+import {
+  dbSelectApplicants,
+  dbSelectReport,
+  dbDeleteApplicant,
+  dbSelectApplicantFiles,
+} from './database';
 import {getApplicantFileURLs} from './utils';
 import {
   TScreeningRankingRow,
@@ -87,4 +93,21 @@ export const getReport = catchAsync(async (req, res) => {
   });
 
   res.status(200).json(resp);
+});
+
+export const deleteApplicant = catchAsync(async (req, res) => {
+  const {applicant_id} = req.params;
+
+  const data = await dbSelectApplicantFiles(applicant_id);
+  if (data[0] && data[0].files.length) {
+    const files: [{key: string; value: string}] = data[0].files;
+    const s3 = new S3();
+    const bucket = process.env.S3_BUCKET || '';
+    const fileKeys = files.map(({value}) => ({Key: value}));
+    const delParams = {Bucket: bucket, Delete: {Objects: fileKeys}};
+    await s3.deleteObjects(delParams).promise();
+  }
+
+  await dbDeleteApplicant(applicant_id);
+  res.status(200).json({});
 });

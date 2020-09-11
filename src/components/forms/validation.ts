@@ -19,7 +19,7 @@ export const createFormValidationRules = [
   body('form_items[*].placeholder').optional().isString(),
   body('form_items[*].default_value').optional(),
   body('form_items[*].row_index').isInt(),
-  body('form_items[*].validation.required').optional().isBoolean(),
+  body('form_items[*].required').optional().isBoolean(),
   body('form_items[*].options[*].label').optional().isString(),
   body('form_items[*].options[*].value').optional(),
   body('form_items[*].editable').optional().isBoolean(),

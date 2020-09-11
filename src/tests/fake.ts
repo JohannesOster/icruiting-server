@@ -44,7 +44,7 @@ const fake = {
         label: faker.random.word(),
         placeholder: faker.random.word(),
         row_index: 0,
-        validation: {required: true},
+        required: true,
         description: faker.random.words(),
       },
       {

@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS form_item (
   placeholder TEXT,
   description TEXT,
   default_value TEXT,
-  validation JSONB,    -- validation object for form item
+  required BOOLEAN DEFAULT FALSE,
   options JSONB,       -- array of options if componen is select, radio, etc.
   editable BOOLEAN DEFAULT FALSE,
   deletable BOOLEAN DEFAULT FALSE,

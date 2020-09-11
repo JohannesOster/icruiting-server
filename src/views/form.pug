@@ -27,7 +27,7 @@ html
 
       each formItem in formItems
         div(class="ic-form-field-container")
-          label(for=formItem.form_item_id class="ic-font-300") #{formItem.label}#{formItem.validation && formItem.validation.required && '*'}
+          label(for=formItem.form_item_id class="ic-font-300") #{formItem.label}#{formItem.required  && '*'}
           span(class="ic-description ic-font-200") #{formItem.description}
           case formItem.component
             when "input" 
@@ -37,7 +37,7 @@ html
                 id=formItem.form_item_id,
                 name=formItem.form_item_id,
                 placeholder=formItem.placeholder
-                required=formItem.validation && formItem.validation.required
+                required=formItem.required 
               )
             when "date_picker"
               input(
@@ -45,7 +45,7 @@ html
                 type="date",
                 id=formItem.form_item_id,
                 name=formItem.form_item_id,
-                required=formItem.validation && formItem.validation.required
+                required=formItem.required 
               ) 
             when "textarea"
               textarea(
@@ -53,7 +53,7 @@ html
                 id=formItem.form_item_id,
                 name=formItem.form_item_id,
                 placeholder=formItem.placeholder
-                required=formItem.validation && formItem.validation.required
+                required=formItem.required 
               )
             when "select"
               div(class="ic-select-container ic-font-200")
@@ -61,7 +61,7 @@ html
                   class="ic-select",
                   id=formItem.form_item_id,
                   name=formItem.form_item_id,
-                  required=formItem.validation && formItem.validation.required
+                  required=formItem.required 
                 )
                   each option in formItem.options
                     option(value=option.value) #{option.label}
@@ -74,7 +74,7 @@ html
                     name=formItem.form_item_id,
                     value=option.value
                     checked=formItem.default_value === option.value
-                    required=formItem.validation && formItem.validation.required
+                    required=formItem.required 
                   )
                   span(style="margin-left: 5px" class="ic-font-200") #{option.label}
             when "checkbox"
@@ -87,7 +87,7 @@ html
                     value=option.value
                     checked=formItem.default_value === option.value
                     style="margin-top: 3.5px"
-                    required=formItem.validation && formItem.validation.required && formItem.options.length === 1
+                    required=formItem.required && formItem.options.length === 1
                   )
                   span(style="margin-left: 5px" class="ic-font-200") #{option.label}
             when "file_upload"
@@ -97,7 +97,7 @@ html
                 id=`fileUpload-${formItem.form_item_id}`,
                 name=formItem.form_item_id,
                 accept="application/pdf, image/jpeg",
-                required=formItem.validation && formItem.validation.required
+                required=formItem.required 
               )
             default: span Invalides Formularelement
       div
