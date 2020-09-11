@@ -1,11 +1,11 @@
-import {RequestHandler} from 'express';
+import {catchAsync} from 'errorHandling';
 import {
   dbSelectFormSubmission,
   dbInsertFormSubmission,
   dbUpdateFormSubmission,
 } from './database';
 
-export const getFormSubmission: RequestHandler = (req, res, next) => {
+export const getFormSubmission = catchAsync(async (req, res) => {
   const {sub, orgID} = res.locals.user;
   const {form_id, applicant_id} = req.params;
   const params = {
@@ -15,20 +15,18 @@ export const getFormSubmission: RequestHandler = (req, res, next) => {
     organization_id: orgID,
   };
 
-  dbSelectFormSubmission(params)
-    .then((data) => res.status(200).json(data))
-    .catch(next);
-};
+  const resp = await dbSelectFormSubmission(params);
+  res.status(200).json(resp);
+});
 
-export const createFormSubmission: RequestHandler = (req, res, next) => {
+export const createFormSubmission = catchAsync(async (req, res) => {
   const {sub, orgID} = res.locals.user;
   const params = {...req.body, submitter_id: sub, organization_id: orgID};
-  dbInsertFormSubmission(params)
-    .then((data) => res.status(201).json(data))
-    .catch(next);
-};
+  const resp = await dbInsertFormSubmission(params);
+  res.status(201).json(resp);
+});
 
-export const updateFormSubmission: RequestHandler = (req, res, next) => {
+export const updateFormSubmission = catchAsync(async (req, res) => {
   const {sub, orgID} = res.locals.user;
   const {form_id, applicant_id} = req.params;
 
@@ -39,7 +37,6 @@ export const updateFormSubmission: RequestHandler = (req, res, next) => {
     submitter_id: sub,
     organization_id: orgID,
   };
-  dbUpdateFormSubmission(params)
-    .then((data) => res.status(200).json(data))
-    .catch(next);
-};
+  const resp = await dbUpdateFormSubmission(params);
+  res.status(200).json(resp);
+});

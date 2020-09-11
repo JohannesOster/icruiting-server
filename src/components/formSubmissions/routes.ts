@@ -5,7 +5,7 @@ import {
   getFormSubmission,
 } from './controller';
 import {createFormSubmissionValidationRules} from './validation';
-import {catchValidationErrors} from 'middlewares/common';
+import {validate} from 'middlewares/common';
 import {requireAuth} from 'middlewares';
 
 const router = express.Router();
@@ -14,7 +14,7 @@ router.use(requireAuth);
 router.post(
   '/',
   createFormSubmissionValidationRules,
-  catchValidationErrors,
+  validate,
   createFormSubmission,
 );
 router.put('/:form_id/:applicant_id', updateFormSubmission);

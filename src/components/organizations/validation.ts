@@ -1,5 +1,3 @@
 import {body} from 'express-validator';
 
-export const validateCreateOrganization = [
-  body('organization_name').isString(),
-];
+export const createOrganizationRules = [body('organization_name').isString()];
