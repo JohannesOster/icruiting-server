@@ -1,5 +1,5 @@
 export class BaseError extends Error {
-  constructor(message: string, statusCode: number) {
+  constructor(statusCode: number, message: string) {
     super(message);
 
     Object.defineProperty(this, 'name', {value: 'BaseError'});
