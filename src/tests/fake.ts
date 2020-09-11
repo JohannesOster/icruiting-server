@@ -85,6 +85,7 @@ const fake = {
         label: faker.random.word(),
         placeholder: faker.random.word(),
         description: faker.random.words(),
+        intent: 'sum_up',
         row_index: 0,
         default_value: '1',
         options: [
@@ -109,6 +110,7 @@ const fake = {
         component: 'rating_group',
         label: faker.random.word(),
         placeholder: faker.random.word(),
+        intent: 'sum_up',
         row_index: 0,
         default_value: '1',
         options: [

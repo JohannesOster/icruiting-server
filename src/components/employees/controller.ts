@@ -1,8 +1,8 @@
-import {RequestHandler} from 'express';
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
+import {catchAsync} from 'errorHandling';
 import {removePrefixFromUserAttribute} from './utils';
 
-export const createEmployee: RequestHandler = (req, res, next) => {
+export const createEmployee = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {emails} = req.body;
   const {userPoolID, orgID} = res.locals.user;
@@ -23,12 +23,11 @@ export const createEmployee: RequestHandler = (req, res, next) => {
     return cIdp.adminCreateUser(params).promise();
   });
 
-  Promise.all(promises)
-    .then((result) => res.status(201).json(result))
-    .catch(next);
-};
+  const resp = await Promise.all(promises);
+  res.status(201).json(resp);
+});
 
-export const getEmployees: RequestHandler = (req, res, next) => {
+export const getEmployees = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {userPoolID, orgID} = res.locals.user;
   const params = {
@@ -42,30 +41,26 @@ export const getEmployees: RequestHandler = (req, res, next) => {
     ],
   };
 
-  cIdp
-    .listUsers(params)
-    .promise()
-    .then((resp) => {
-      const userMaps = resp['Users']?.map((user) => {
-        // remove "custom:" prefix of Attributes (if it exists)
-        const map = user['Attributes']?.reduce((acc, curr) => {
-          const attrName = removePrefixFromUserAttribute(curr['Name']);
-          acc[attrName] = curr['Value'];
-          return acc;
-        }, {} as any);
+  const data = await cIdp.listUsers(params).promise();
 
-        return map;
-      });
+  const userMaps = data['Users']?.map((user) => {
+    // remove "custom:" prefix of Attributes (if it exists)
+    const map = user['Attributes']?.reduce((acc, curr) => {
+      const attrName = removePrefixFromUserAttribute(curr['Name']);
+      acc[attrName] = curr['Value'];
+      return acc;
+    }, {} as any);
 
-      // filter out foreign orgs
-      const filtered = userMaps?.filter((user) => user['orgID'] === orgID);
+    return map;
+  });
 
-      res.status(200).json(filtered);
-    })
-    .catch(next);
-};
+  // filter out foreign orgs
+  const filtered = userMaps?.filter((user) => user['orgID'] === orgID);
 
-export const updateEmployee: RequestHandler = (req, res, next) => {
+  res.status(200).json(filtered);
+});
+
+export const updateEmployee = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {userPoolID} = res.locals.user;
   const {user_role} = req.body;
@@ -76,10 +71,7 @@ export const updateEmployee: RequestHandler = (req, res, next) => {
     Username: username,
     UserAttributes: [{Name: 'custom:role', Value: user_role}],
   };
+  const resp = await cIdp.adminUpdateUserAttributes(params).promise();
 
-  cIdp
-    .adminUpdateUserAttributes(params)
-    .promise()
-    .then((resp) => res.status(200).json(resp))
-    .catch(next);
-};
+  res.status(200).json(resp);
+});

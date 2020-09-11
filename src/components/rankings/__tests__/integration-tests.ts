@@ -125,8 +125,8 @@ describe('rankings', () => {
 
       const promises = [];
 
-      const screeningForm = fake.screeningForm(mockUser.orgID, jobId);
-      promises.push(dbInsertForm(screeningForm));
+      const assessmentForm = fake.assessmentForm(mockUser.orgID, jobId);
+      promises.push(dbInsertForm(assessmentForm));
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
@@ -141,7 +141,7 @@ describe('rankings', () => {
         const [form, ...applicants] = data as [TForm, ...Array<TApplicant>];
 
         applicants.forEach((appl: TApplicant) => {
-          const screening = {
+          const assessment = {
             applicant_id: appl.applicant_id!,
             submitter_id: mockUser.sub,
             organization_id: mockUser.orgID,
@@ -158,7 +158,7 @@ describe('rankings', () => {
             comment: faker.random.words(),
           };
 
-          promises.push(dbInsertFormSubmission(screening));
+          promises.push(dbInsertFormSubmission(assessment));
         });
 
         Promise.all(promises).finally(done);
@@ -167,7 +167,7 @@ describe('rankings', () => {
 
     it('Returns 200 json response', (done) => {
       request(app)
-        .get(`/rankings/${jobId}?form_category=screening`)
+        .get(`/rankings/${jobId}?form_category=assessment`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -175,7 +175,7 @@ describe('rankings', () => {
 
     it('Returns result including all applicants', async (done) => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=screening`)
+        .get(`/rankings/${jobId}?form_category=assessment`)
         .set('Accept', 'application/json')
         .expect(200);
       expect(resp.body.length).toBe(applicantsCount);
@@ -184,7 +184,7 @@ describe('rankings', () => {
 
     it('Returns result ordered from highest score to lowest', async (done) => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=screening`)
+        .get(`/rankings/${jobId}?form_category=assessment`)
         .set('Accept', 'application/json')
         .expect(200);
 

@@ -1,19 +1,19 @@
 import {RequestHandler, ErrorRequestHandler} from 'express';
 import {validationResult} from 'express-validator';
+import {BaseError} from 'errorHandling';
 
-export const notFound: RequestHandler = (req, res, next) => {
-  res.status(404);
-  const error = new Error(`🔍 - Not Found - ${req.originalUrl}`);
-  next(error);
+export const notFound: RequestHandler = (req, res) => {
+  throw new BaseError(404, `🔍 - Not Found - ${req.originalUrl}`);
 };
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   console.log(err);
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+  let statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+  if (err.statusCode) statusCode = err.statusCode;
   res.status(statusCode).json({message: err.message, stack: err.stack});
 };
 
-export const catchValidationErrors: RequestHandler = (req, res, next) => {
+export const validate: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
 
   if (errors.isEmpty()) return next();
