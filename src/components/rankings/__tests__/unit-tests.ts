@@ -10,7 +10,7 @@ describe('rankings', () => {
 
       const submissions = randArray.map(() =>
         randArray.map(() => ({
-          form_item_id: random.uuid(),
+          form_field_id: random.uuid(),
           value: random.number({min: 1, max: 5}),
           job_requirement_id: randomElement(jobRequirements),
         })),

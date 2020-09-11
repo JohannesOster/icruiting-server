@@ -55,9 +55,9 @@ describe('form-submissions', () => {
           applicant_id: applicant.applicant_id!,
           submitter_id: mockUser.sub,
           form_id: form.form_id!,
-          submission: form.form_items.reduce(
-            (acc: {[form_item_id: string]: string}, item) => {
-              acc[item.form_item_id!] = faker.random
+          submission: form.form_fields.reduce(
+            (acc: {[form_field_id: string]: string}, item) => {
+              acc[item.form_field_id!] = faker.random
                 .number({min: 0, max: 5})
                 .toString();
               return acc;
@@ -115,9 +115,9 @@ describe('form-submissions', () => {
           organization_id: mockUser.orgID,
           submitter_id: mockUser.sub,
           form_id: form.form_id!,
-          submission: form.form_items.reduce(
-            (acc: {[form_item_id: string]: string}, item) => {
-              acc[item.form_item_id!] = faker.random
+          submission: form.form_fields.reduce(
+            (acc: {[form_field_id: string]: string}, item) => {
+              acc[item.form_field_id!] = faker.random
                 .number({min: 0, max: 5})
                 .toString();
               return acc;
@@ -186,9 +186,9 @@ describe('form-submissions', () => {
           organization_id: mockUser.orgID,
           submitter_id: mockUser.sub,
           form_id: form.form_id!,
-          submission: form.form_items.reduce(
-            (acc: {[form_item_id: string]: string}, item) => {
-              acc[item.form_item_id!] = faker.random
+          submission: form.form_fields.reduce(
+            (acc: {[form_field_id: string]: string}, item) => {
+              acc[item.form_field_id!] = faker.random
                 .number({min: 0, max: 5})
                 .toString();
               return acc;

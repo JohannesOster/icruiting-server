@@ -57,27 +57,27 @@ export const getReport = catchAsync(async (req, res) => {
 
     const submissionsResult = submissions.reduce((acc, curr) => {
       curr.forEach(
-        ({form_item_id, intent, value, label, job_requirement_label}: any) => {
-          if (!acc[form_item_id]) {
+        ({form_field_id, intent, value, label, job_requirement_label}: any) => {
+          if (!acc[form_field_id]) {
             const initialVal = initialValues(intent);
-            acc[form_item_id] = {label, intent, value: initialVal};
+            acc[form_field_id] = {label, intent, value: initialVal};
           }
           switch (intent) {
             case EFormItemIntent.sumUp:
-              (acc[form_item_id].value as number) += parseFloat(value);
+              (acc[form_field_id].value as number) += parseFloat(value);
               if (job_requirement_label)
                 jobres[job_requirement_label] =
                   (jobres[job_requirement_label] || 0) + parseFloat(value);
               break;
             case EFormItemIntent.aggregate:
-              acc[form_item_id].value = (acc[form_item_id].value as Array<
+              acc[form_field_id].value = (acc[form_field_id].value as Array<
                 string
               >).concat(value.toString());
               break;
             case EFormItemIntent.countDistinct:
               const key = value.toString();
-              const currVal = (acc[form_item_id].value as KeyVal)[key];
-              (acc[form_item_id].value as KeyVal)[key] = (currVal || 0) + 1;
+              const currVal = (acc[form_field_id].value as KeyVal)[key];
+              (acc[form_field_id].value as KeyVal)[key] = (currVal || 0) + 1;
           }
         },
       );

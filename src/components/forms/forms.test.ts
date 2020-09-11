@@ -56,7 +56,7 @@ describe('forms', () => {
 
       expect(resp.body.form_id).not.toBeUndefined();
       expect(resp.body.form_category).toBe(form.form_category);
-      expect(resp.body.form_items.length).toBe(form.form_items.length);
+      expect(resp.body.form_fields.length).toBe(form.form_fields.length);
 
       done();
     });
@@ -174,7 +174,7 @@ describe('forms', () => {
       const form: TForm = await dbInsertForm(fakeForm);
 
       const updateVals = {...form};
-      updateVals.form_items = updateVals.form_items.map((item) => ({
+      updateVals.form_fields = updateVals.form_fields.map((item) => ({
         ...item,
         placeholder: faker.random.words(),
         description: faker.random.words(),

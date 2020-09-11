@@ -10,8 +10,8 @@ export type TForm = {
   form_category: EFormCategory;
   form_title?: string;
   job_id: string;
-  form_items: Array<{
-    form_item_id?: string;
+  form_fields: Array<{
+    form_field_id?: string;
     form_id?: string;
     row_index: number;
     component: string;

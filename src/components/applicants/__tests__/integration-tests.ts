@@ -169,9 +169,9 @@ describe('applicants', () => {
         submitter_id: mockUser.sub,
         organization_id: mockUser.orgID,
         comment: random.words(),
-        submission: form.form_items.reduce(
-          (acc: {[form_item_id: string]: string}, item) => {
-            acc[item.form_item_id!] = random
+        submission: form.form_fields.reduce(
+          (acc: {[form_field_id: string]: string}, item) => {
+            acc[item.form_field_id!] = random
               .number({min: 0, max: 5})
               .toString();
             return acc;

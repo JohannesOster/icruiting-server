@@ -27,15 +27,15 @@ html
 
       each formItem in formItems
         div(class="ic-form-field-container")
-          label(for=formItem.form_item_id class="ic-font-300") #{formItem.label}#{formItem.required  && '*'}
+          label(for=formItem.form_field_id class="ic-font-300") #{formItem.label}#{formItem.required  && '*'}
           span(class="ic-description ic-font-200") #{formItem.description}
           case formItem.component
             when "input" 
               input(
                 class="ic-input ic-font-200",
                 type="text",
-                id=formItem.form_item_id,
-                name=formItem.form_item_id,
+                id=formItem.form_field_id,
+                name=formItem.form_field_id,
                 placeholder=formItem.placeholder
                 required=formItem.required 
               )
@@ -43,15 +43,15 @@ html
               input(
                 class="ic-input ic-font-200",
                 type="date",
-                id=formItem.form_item_id,
-                name=formItem.form_item_id,
+                id=formItem.form_field_id,
+                name=formItem.form_field_id,
                 required=formItem.required 
               ) 
             when "textarea"
               textarea(
                 class="ic-textarea ic-font-200",
-                id=formItem.form_item_id,
-                name=formItem.form_item_id,
+                id=formItem.form_field_id,
+                name=formItem.form_field_id,
                 placeholder=formItem.placeholder
                 required=formItem.required 
               )
@@ -59,8 +59,8 @@ html
               div(class="ic-select-container ic-font-200")
                 select(
                   class="ic-select",
-                  id=formItem.form_item_id,
-                  name=formItem.form_item_id,
+                  id=formItem.form_field_id,
+                  name=formItem.form_field_id,
                   required=formItem.required 
                 )
                   each option in formItem.options
@@ -71,7 +71,7 @@ html
                 div(style="display: flex")
                   input(
                     type="radio"
-                    name=formItem.form_item_id,
+                    name=formItem.form_field_id,
                     value=option.value
                     checked=formItem.default_value === option.value
                     required=formItem.required 
@@ -83,7 +83,7 @@ html
                   // required validation currently only works for single option checkbox
                   input(
                     type="checkbox"
-                    name=formItem.form_item_id,
+                    name=formItem.form_field_id,
                     value=option.value
                     checked=formItem.default_value === option.value
                     style="margin-top: 3.5px"
@@ -91,11 +91,11 @@ html
                   )
                   span(style="margin-left: 5px" class="ic-font-200") #{option.label}
             when "file_upload"
-              input(type="hidden", name=formItem.form_item_id id=`fileKey-${formItem.form_item_id}`)
+              input(type="hidden", name=formItem.form_field_id id=`fileKey-${formItem.form_field_id}`)
               input(
                 type="file",
-                id=`fileUpload-${formItem.form_item_id}`,
-                name=formItem.form_item_id,
+                id=`fileUpload-${formItem.form_field_id}`,
+                name=formItem.form_field_id,
                 accept="application/pdf, image/jpeg",
                 required=formItem.required 
               )
