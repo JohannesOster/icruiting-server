@@ -28,6 +28,7 @@ export const requireAuth: RequestHandler = (req, res, next) => {
       userPoolID: userPoolID,
       sub: payload.sub,
       userRole: payload['custom:role'],
+      email: payload.email,
     };
     next();
   });

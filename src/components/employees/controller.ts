@@ -29,7 +29,7 @@ export const createEmployee = catchAsync(async (req, res) => {
 
 export const getEmployees = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
-  const {userPoolID, orgID} = res.locals.user;
+  const {userPoolID, orgID, email} = res.locals.user;
   const params = {
     UserPoolId: userPoolID,
     Filter: 'cognito:user_status="CONFIRMED"',
@@ -56,8 +56,10 @@ export const getEmployees = catchAsync(async (req, res) => {
 
   // filter out foreign orgs
   const filtered = userMaps?.filter((user) => user['orgID'] === orgID);
+  // filter out requesting user
+  const withoutMe = filtered?.filter((user) => user.email !== email);
 
-  res.status(200).json(filtered);
+  res.status(200).json(withoutMe);
 });
 
 export const updateEmployee = catchAsync(async (req, res) => {
