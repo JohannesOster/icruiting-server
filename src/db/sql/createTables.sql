@@ -54,6 +54,7 @@ CREATE TABLE IF NOT EXISTS form_field (
   default_value TEXT,
   required BOOLEAN DEFAULT FALSE,
   options JSONB,       -- array of options if componen is select, radio, etc.
+  props JSONB, -- additional props
   editable BOOLEAN DEFAULT FALSE,
   deletable BOOLEAN DEFAULT FALSE,
   CONSTRAINT form_field_id_pk PRIMARY KEY (form_field_id),
