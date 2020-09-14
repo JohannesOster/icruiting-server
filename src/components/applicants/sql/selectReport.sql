@@ -1,12 +1,12 @@
 SELECT *
-FROM 
-(SELECT 
+FROM
+(SELECT
 	applicant_id,
-	ROW_NUMBER() OVER (ORDER BY SUM(single_submission.score) DESC) AS rank,
 	STDDEV_POP(single_submission.score) AS standard_deviation,
-	SUM(single_submission.score) AS score,
+	AVG(single_submission.score) AS score,
+	ROW_NUMBER() OVER (ORDER BY AVG(single_submission.score) DESC) AS rank,
 	ARRAY_AGG(single_submission.submission) AS submissions
-FROM 
+FROM
 	(SELECT
 		submitter_id,
 		applicant_id,
@@ -18,13 +18,13 @@ FROM
 			'intent', form_field.intent,
 			'value', submission_field.value
 		)) AS submission
-	FROM 
+	FROM
 		(SELECT job_id FROM applicant WHERE applicant_id = ${applicant_id}) AS appl
 	JOIN form
 	ON form.job_id = appl.job_id
 	JOIN form_field
 	ON form_field.form_id = form.form_id
-	JOIN 
+	JOIN
 		(SELECT form_submission.*, KEY::UUID as form_field_id, VALUE FROM form_submission, jsonb_each_text(submission)) AS submission_field
 	ON submission_field.form_field_id = form_field.form_field_id
 	LEFT JOIN job_requirement
