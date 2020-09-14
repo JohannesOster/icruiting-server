@@ -25,5 +25,5 @@ FROM
 		AND form.organization_id=${organization_id}
 		AND form.job_id=${job_id}
 	GROUP BY submitter_id, applicant_id) AS single_submission
-GROUP BY applicant_id,
-ORDER BY rank ASC
+GROUP BY applicant_id
+ORDER BY rank;

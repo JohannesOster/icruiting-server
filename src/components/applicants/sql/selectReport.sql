@@ -33,5 +33,5 @@ FROM
 	  AND form.form_category = ${form_category}
 	GROUP BY submitter_id, applicant_id) AS single_submission
 GROUP BY applicant_id
-ORDER BY score DESC) foo
+ORDER BY rank) foo
 WHERE applicant_id = ${applicant_id}
