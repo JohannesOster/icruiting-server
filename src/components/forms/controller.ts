@@ -21,7 +21,8 @@ export const createForm = catchAsync(async (req, res) => {
 
 export const getForms = catchAsync(async (req, res) => {
   const orgId = res.locals.user.orgID;
-  const resp = await dbSelectForms(orgId);
+  const job_id = req.query.job_id as string;
+  const resp = await dbSelectForms(orgId, job_id);
   res.status(200).json(resp);
 });
 
