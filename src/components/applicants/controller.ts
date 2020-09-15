@@ -86,8 +86,25 @@ export const getReport = catchAsync(async (req, res) => {
       return acc;
     }, {} as TScreeningResultObject);
 
+    const replaceSumByMean = Object.entries(submissionsResult).reduce(
+      (acc, [key, value]) => {
+        if (value.intent === EFormItemIntent.sumUp) {
+          const val = value.value as number;
+          acc[key] = {
+            ...value,
+            value: Math.round((100 * val) / submissions.length) / 100,
+          };
+        } else {
+          acc[key] = value;
+        }
+
+        return acc;
+      },
+      {} as any,
+    );
+
     return {
-      result: submissionsResult,
+      result: replaceSumByMean,
       job_requirements_result: jobres,
       ...row,
     };
