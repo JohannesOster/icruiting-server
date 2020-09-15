@@ -70,9 +70,10 @@ export const getReport = catchAsync(async (req, res) => {
                   (jobres[job_requirement_label] || 0) + parseFloat(value);
               break;
             case EFormItemIntent.aggregate:
-              acc[form_field_id].value = (acc[form_field_id].value as Array<
-                string
-              >).concat(value.toString());
+              const val = value.toString();
+              if (!val) break;
+              const currArray = acc[form_field_id].value as Array<string>;
+              acc[form_field_id].value = currArray.concat(val);
               break;
             case EFormItemIntent.countDistinct:
               const key = value.toString();
