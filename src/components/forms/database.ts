@@ -45,8 +45,8 @@ export const dbInsertForm = async ({form_fields, ...form}: TForm) => {
   return db.any(stmt).then((items) => ({...insertedForm, form_fields: items}));
 };
 
-export const dbSelectForms = (organization_id: string) => {
-  return db.any(selectFormsSQL, {organization_id});
+export const dbSelectForms = (organization_id: string, job_id?: string) => {
+  return db.any(selectFormsSQL, {organization_id, job_id});
 };
 
 export const dbSelectForm = (form_id: string) => {
