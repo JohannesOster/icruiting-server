@@ -36,8 +36,8 @@ export const dbSelectReport = (params: {
 };
 
 export const dbSelectApplicantFiles = (applicant_id: string) => {
-  const query = 'SELECT files FROM applicant WHERE applicant_id=$1';
-  return db.any(query, applicant_id);
+  const stmt = 'SELECT files FROM applicant WHERE applicant_id=$1';
+  return db.any(stmt, applicant_id);
 };
 
 export const dbDeleteApplicant = (applicant_id: string) => {

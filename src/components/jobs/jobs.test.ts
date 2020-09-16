@@ -17,6 +17,14 @@ jest.mock('middlewares/auth', () => ({
   }),
 }));
 
+jest.mock('aws-sdk', () => ({
+  S3: jest.fn().mockImplementation(() => ({
+    deleteObjects: () => ({
+      promise: () => Promise.resolve(),
+    }),
+  })),
+}));
+
 beforeAll(async (done) => {
   const fakeTenant = fake.tenant(mockUser.tenant_id);
   await dbInsertTenant(fakeTenant);
@@ -241,7 +249,7 @@ describe('jobs', () => {
       done();
     });
 
-    it('Adds new requirement', async (done) => {
+    it('Adds new requirement', async () => {
       const updateValues = job;
       updateValues.job_title = random.alphaNumeric();
       updateValues.job_requirements = updateValues.job_requirements.map(
@@ -268,8 +276,33 @@ describe('jobs', () => {
       expect(resp.body.job_requirements.length).toEqual(
         updateValues.job_requirements.length,
       );
+    });
+  });
 
-      done();
+  describe('DELETE /jobs/:job_id', () => {
+    let job: any;
+    beforeEach(async () => {
+      job = await dbInsertJob(fake.job(mockUser.tenant_id));
+    });
+
+    it('returns 200 json response', (done) => {
+      request(app)
+        .del(`/jobs/${job.job_id}`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200, done);
+    });
+
+    it('deletes job entity', async () => {
+      await request(app)
+        .del(`/jobs/${job.job_id}`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      const stmt = 'SELECT COUNT(*) FROM job WHERE job_id = $1';
+      const {count} = await db.one(stmt, job.job_id);
+
+      expect(parseInt(count)).toBe(0);
     });
   });
 });

@@ -3,12 +3,12 @@ import {tenant} from './types';
 
 export const dbInsertTenant = (params: tenant) => {
   const {insert} = db.$config.pgp.helpers;
-  const query = insert(params, null, 'tenant') + ' RETURNING *';
+  const stmt = insert(params, null, 'tenant') + ' RETURNING *';
 
-  return db.one(query);
+  return db.one(stmt);
 };
 
 export const dbDeleteTenant = (tenant_id: string) => {
-  const query = 'DELETE FROM tenant WHERE tenant_id=$1';
-  return db.none(query, tenant_id);
+  const stmt = 'DELETE FROM tenant WHERE tenant_id=$1';
+  return db.none(stmt, tenant_id);
 };

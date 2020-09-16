@@ -76,3 +76,9 @@ export const dbUpdateJob = (job_id: string, tenant_id: string, body: TJob) => {
     })
     .then(async () => await dbSelectJob(job_id, tenant_id));
 };
+
+export const dbDeleteJob = (job_id: string, tenant_id: string) => {
+  const stmt =
+    'DELETE FROM job WHERE job_id=${job_id} AND tenant_id=${tenant_id}';
+  return db.none(stmt, {job_id, tenant_id});
+};

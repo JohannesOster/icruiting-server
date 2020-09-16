@@ -100,8 +100,8 @@ describe('tenants', () => {
     });
 
     it('deletes tenant of authenticated user', async () => {
-      const query = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
-      const {count} = await db.one(query, mockUser.tenant_id);
+      const stmt = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
+      const {count} = await db.one(stmt, mockUser.tenant_id);
       expect(parseInt(count)).toBe(1);
 
       await request(app)
@@ -110,7 +110,7 @@ describe('tenants', () => {
         .expect('Content-Type', /json/)
         .expect(200);
 
-      const {count: countAfter} = await db.one(query, mockUser.tenant_id);
+      const {count: countAfter} = await db.one(stmt, mockUser.tenant_id);
       expect(parseInt(countAfter)).toBe(0);
     });
   });
