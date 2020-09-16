@@ -39,7 +39,7 @@ jest.mock('aws-sdk', () => ({
               Attributes: [
                 {Name: 'email', Value: internet.email()},
                 {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
-                {Name: 'custom:role', Value: 'employee'},
+                {Name: 'custom:user_role', Value: 'employee'},
               ],
             },
             {
@@ -47,7 +47,7 @@ jest.mock('aws-sdk', () => ({
               Attributes: [
                 {Name: 'email', Value: internet.email()},
                 {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
-                {Name: 'custom:role', Value: 'admin'},
+                {Name: 'custom:user_role', Value: 'admin'},
               ],
             },
             {
@@ -55,7 +55,7 @@ jest.mock('aws-sdk', () => ({
               Attributes: [
                 {Name: 'email', Value: internet.email()},
                 {Name: 'custom:tenant_id', Value: random.uuid()},
-                {Name: 'custom:role', Value: 'employee'},
+                {Name: 'custom:user_role', Value: 'employee'},
               ],
             },
           ],
@@ -103,7 +103,7 @@ describe('employees', () => {
       const expectAttributes = [
         {Name: 'email', Value: emails[0]},
         {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
-        {Name: 'custom:role', Value: 'employee'},
+        {Name: 'custom:user_role', Value: 'employee'},
       ];
 
       expect(resp.body[0].User.Username).toBe(emails[0]);
@@ -129,7 +129,7 @@ describe('employees', () => {
         .send({user_role: 'admin'})
         .expect(200);
 
-      const expectAttributes = [{Name: 'custom:role', Value: 'admin'}];
+      const expectAttributes = [{Name: 'custom:user_role', Value: 'admin'}];
 
       expect(resp.body.Attributes).toStrictEqual(expectAttributes);
     });
