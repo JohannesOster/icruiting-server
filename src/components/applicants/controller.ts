@@ -16,8 +16,8 @@ import {
 
 export const getApplicants = catchAsync(async (req, res, next) => {
   const job_id = req.query.job_id as string;
-  const {orgID: organization_id, sub: user_id} = res.locals.user;
-  const params = {organization_id, user_id, job_id};
+  const {tenant_id, sub: user_id} = res.locals.user;
+  const params = {tenant_id, user_id, job_id};
 
   const applicants = await dbSelectApplicants(params);
 
@@ -36,12 +36,12 @@ export const getApplicants = catchAsync(async (req, res, next) => {
 
 export const getReport = catchAsync(async (req, res) => {
   const applicant_id = req.params.applicant_id;
-  const {orgID: organization_id} = res.locals.user;
+  const {tenant_id} = res.locals.user;
   const {form_category} = req.query as {
     form_category: 'screening' | 'assessment';
   };
 
-  const params = {applicant_id, organization_id, form_category};
+  const params = {applicant_id, tenant_id, form_category};
   const data = await dbSelectReport(params);
 
   const resp = data.map((row: TScreeningRankingRow) => {
@@ -70,9 +70,10 @@ export const getReport = catchAsync(async (req, res) => {
                   (jobres[job_requirement_label] || 0) + parseFloat(value);
               break;
             case EFormItemIntent.aggregate:
-              acc[form_field_id].value = (acc[form_field_id].value as Array<
-                string
-              >).concat(value.toString());
+              const val = value.toString();
+              if (!val) break;
+              const currArray = acc[form_field_id].value as Array<string>;
+              acc[form_field_id].value = currArray.concat(val);
               break;
             case EFormItemIntent.countDistinct:
               const key = value.toString();
@@ -85,8 +86,25 @@ export const getReport = catchAsync(async (req, res) => {
       return acc;
     }, {} as TScreeningResultObject);
 
+    const replaceSumByMean = Object.entries(submissionsResult).reduce(
+      (acc, [key, value]) => {
+        if (value.intent === EFormItemIntent.sumUp) {
+          const val = value.value as number;
+          acc[key] = {
+            ...value,
+            value: Math.round((100 * val) / submissions.length) / 100,
+          };
+        } else {
+          acc[key] = value;
+        }
+
+        return acc;
+      },
+      {} as any,
+    );
+
     return {
-      result: submissionsResult,
+      result: replaceSumByMean,
       job_requirements_result: jobres,
       ...row,
     };

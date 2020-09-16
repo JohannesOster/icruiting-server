@@ -24,10 +24,10 @@ export const requireAuth: RequestHandler = (req, res, next) => {
     const lastSlashIdx = payload.iss.lastIndexOf('/');
     const userPoolID = payload.iss.substring(lastSlashIdx + 1);
     res.locals.user = {
-      orgID: payload['custom:orgID'],
+      tenant_id: payload['custom:tenant_id'],
       userPoolID: userPoolID,
       sub: payload.sub,
-      userRole: payload['custom:role'],
+      userRole: payload['custom:user_role'],
       email: payload.email,
     };
     next();

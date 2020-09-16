@@ -16,7 +16,7 @@ export const dbInsertForm = async ({form_fields, ...form}: TForm) => {
   const cs = new helpers.ColumnSet(
     [
       'form_id',
-      'organization_id',
+      'tenant_id',
       {name: 'job_requirement_id', def: null},
       'component',
       'row_index',
@@ -36,7 +36,7 @@ export const dbInsertForm = async ({form_fields, ...form}: TForm) => {
 
   const values = form_fields.map((item) => ({
     ...item,
-    organization_id: form.organization_id,
+    tenant_id: form.tenant_id,
     form_id: insertedForm.form_id,
   }));
 
@@ -45,8 +45,8 @@ export const dbInsertForm = async ({form_fields, ...form}: TForm) => {
   return db.any(stmt).then((items) => ({...insertedForm, form_fields: items}));
 };
 
-export const dbSelectForms = (organization_id: string, job_id?: string) => {
-  return db.any(selectFormsSQL, {organization_id, job_id});
+export const dbSelectForms = (tenant_id: string, job_id?: string) => {
+  return db.any(selectFormsSQL, {tenant_id, job_id});
 };
 
 export const dbSelectForm = (form_id: string) => {
@@ -63,15 +63,14 @@ export const dbUpdateForm = async (
   {form_fields, ...form}: TForm,
 ) => {
   const helpers = db.$config.pgp.helpers;
-  const condition =
-    ' WHERE form_id=${form_id} AND organization_id=${organization_id}';
+  const condition = ' WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
 
   await db.tx(async (t) => {
     if (form.form_title) {
       await t.none('UPDATE form SET form_title=${form_title}' + condition, {
         form_id,
         form_title: form.form_title,
-        organization_id: form.organization_id,
+        tenant_id: form.tenant_id,
       });
     }
 
@@ -90,7 +89,7 @@ export const dbUpdateForm = async (
             def: () => rawText('uuid_generate_v4()'),
           }, // insert form_field_id to make shure already existsing form items "only get updated"
           'form_id',
-          'organization_id',
+          'tenant_id',
           {name: 'job_requirement_id', def: null},
           'component',
           'row_index',
@@ -110,7 +109,7 @@ export const dbUpdateForm = async (
 
       const values = form_fields.map((item) => ({
         ...item,
-        organization_id: form.organization_id,
+        tenant_id: form.tenant_id,
         form_id,
       }));
 

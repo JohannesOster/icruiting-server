@@ -4,7 +4,7 @@ import db from 'db';
 import faker from 'faker';
 import {endConnection, truncateAllTables} from 'db/utils';
 import fake from 'tests/fake';
-import {dbInsertOrganization} from '../database';
+import {dbInsertTenant} from '../database';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -33,7 +33,7 @@ jest.mock('aws-sdk', () => ({
               Username: faker.internet.email(),
               Attributes: [
                 {Name: 'email', Value: faker.internet.email()},
-                {Name: 'custom:orgID', Value: mockUser.orgID},
+                {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
               ],
             },
           ],
@@ -50,68 +50,67 @@ afterAll(async () => {
   endConnection();
 });
 
-describe('organizations', () => {
-  describe('POST /organizations', () => {
+describe('tenants', () => {
+  describe('POST /tenants', () => {
     it('returns 201 json response', async (done) => {
       request(app)
-        .post('/organizations')
+        .post('/tenants')
         .set('Accept', 'application/json')
-        .send(fake.organization())
+        .send(fake.tenant())
         .expect('Content-Type', /json/)
         .expect(201, done);
     });
 
     it('returns 422 on missing params', async (done) => {
       request(app)
-        .post('/organizations')
+        .post('/tenants')
         .set('Accept', 'application/json')
         .expect(422, done);
     });
 
-    it('returns inserts organization entity', async () => {
-      const organization = fake.organization();
+    it('returns inserts tenant entity', async () => {
+      const tenant = fake.tenant();
       const resp = await request(app)
-        .post('/organizations')
+        .post('/tenants')
         .set('Accept', 'application/json')
-        .send(organization)
+        .send(tenant)
         .expect(201);
 
-      const stmt = 'SELECT * FROM organization WHERE organization_id=$1';
-      const result = await db.one(stmt, resp.body.organization_id);
+      const stmt = 'SELECT * FROM tenant WHERE tenant_id=$1';
+      const result = await db.one(stmt, resp.body.tenant_id);
 
-      expect(result.organization_name).toBe(organization.organization_name);
-      expect(!!result.organization_id).toBe(true);
+      expect(result.tenant_name).toBe(tenant.tenant_name);
+      expect(!!result.tenant_id).toBe(true);
     });
   });
 
-  describe('DELETE /organizations', () => {
+  describe('DELETE /tenants', () => {
     beforeEach(async () => {
-      const fakeOrg = fake.organization(mockUser.orgID);
-      await dbInsertOrganization(fakeOrg);
+      const fakeTenant = fake.tenant(mockUser.tenant_id);
+      await dbInsertTenant(fakeTenant);
     });
-    afterEach(async () => await db.none('TRUNCATE organization CASCADE'));
+    afterEach(async () => await db.none('TRUNCATE tenant CASCADE'));
 
     it('returns 200 json response', (done) => {
       request(app)
-        .del(`/organizations`)
+        .del(`/tenants`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
 
-    it('deletes organization of authenticated user', async () => {
-      const query =
-        'SELECT COUNT(*) FROM organization WHERE organization_id=$1';
-      const {count} = await db.one(query, mockUser.orgID);
+    it('deletes tenant of authenticated user', async () => {
+      const query = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
+      const {count} = await db.one(query, mockUser.tenant_id);
       expect(parseInt(count)).toBe(1);
 
       await request(app)
-        .del(`/organizations`)
+        .del(`/tenants`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200);
 
-      const {count: countAfter} = await db.one(query, mockUser.orgID);
+      const {count: countAfter} = await db.one(query, mockUser.tenant_id);
       expect(parseInt(countAfter)).toBe(0);
     });
   });

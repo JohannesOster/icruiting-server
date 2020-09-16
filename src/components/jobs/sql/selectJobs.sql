@@ -4,6 +4,6 @@ SELECT
 FROM job
 JOIN (select * FROM job_requirement) as jr 
 ON jr.job_id = job.job_id
-WHERE job.organization_id = ${organization_id}
+WHERE job.tenant_id = ${tenant_id}
 GROUP BY job.job_id
 ORDER BY job.created_at DESC;

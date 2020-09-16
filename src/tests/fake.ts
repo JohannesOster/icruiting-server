@@ -3,16 +3,16 @@ import {EFormCategory} from 'components/forms';
 
 const fake = {
   user: (userRole: 'admin' | 'user' = 'admin') => ({
-    orgID: faker.random.uuid(),
+    tenant_id: faker.random.uuid(),
     sub: faker.random.uuid(),
     userRole,
   }),
-  organization: (organization_id?: string) => ({
-    organization_id,
-    organization_name: faker.company.companyName(),
+  tenant: (tenant_id?: string) => ({
+    tenant_id,
+    tenant_name: faker.company.companyName(),
   }),
-  job: (organization_id: string) => ({
-    organization_id,
+  job: (tenant_id: string) => ({
+    tenant_id,
     job_title: faker.company.companyName(),
     job_requirements: [
       {requirement_label: faker.commerce.productName()},
@@ -20,8 +20,8 @@ const fake = {
       {requirement_label: faker.commerce.productName()},
     ],
   }),
-  applicant: (organization_id: string, job_id: string) => ({
-    organization_id,
+  applicant: (tenant_id: string, job_id: string) => ({
+    tenant_id,
     job_id,
     attributes: [
       {key: faker.random.alphaNumeric(), value: faker.random.words()},
@@ -34,8 +34,8 @@ const fake = {
       {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
     ],
   }),
-  applicationForm: (organization_id: string, job_id: string) => ({
-    organization_id,
+  applicationForm: (tenant_id: string, job_id: string) => ({
+    tenant_id,
     job_id: job_id,
     form_category: EFormCategory.application,
     form_fields: [
@@ -75,8 +75,8 @@ const fake = {
       },
     ],
   }),
-  screeningForm: (organization_id: string, job_id: string) => ({
-    organization_id,
+  screeningForm: (tenant_id: string, job_id: string) => ({
+    tenant_id,
     job_id: job_id,
     form_category: EFormCategory.screening,
     form_fields: [
@@ -100,8 +100,8 @@ const fake = {
       },
     ],
   }),
-  assessmentForm: (organization_id: string, job_id: string) => ({
-    organization_id,
+  assessmentForm: (tenant_id: string, job_id: string) => ({
+    tenant_id,
     job_id: job_id,
     form_category: EFormCategory.assessment,
     form_title: faker.random.words(),

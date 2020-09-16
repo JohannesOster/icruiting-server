@@ -7,7 +7,7 @@ import {TApplicant} from '../types';
 import {dbInsertApplicant} from '../database';
 import {TForm, dbInsertForm} from 'components/forms';
 import {dbInsertFormSubmission} from 'components/formSubmissions';
-import {dbInsertOrganization} from 'components/organizations';
+import {dbInsertTenant} from 'components/tenants';
 import {dbInsertJob} from 'components/jobs';
 import fake from 'tests/fake';
 import {randomElement} from 'utils';
@@ -32,15 +32,15 @@ jest.mock('aws-sdk', () => ({
 
 let jobIds: string[];
 beforeAll(async () => {
-  // insert organization
-  const fakeOrg = fake.organization(mockUser.orgID);
-  await dbInsertOrganization(fakeOrg);
+  // insert tenant
+  const fakeTenant = fake.tenant(mockUser.tenant_id);
+  await dbInsertTenant(fakeTenant);
 
   // insert jobs
   const jobsCount = random.number({min: 5, max: 20});
   const fakeJobs = Array(jobsCount)
     .fill(0)
-    .map(() => fake.job(mockUser.orgID));
+    .map(() => fake.job(mockUser.tenant_id));
 
   const promises = fakeJobs.map((job) => dbInsertJob(job));
 
@@ -62,7 +62,7 @@ describe('applicants', () => {
       const applicantsCount = random.number({min: 50, max: 100});
       const fakeApplicants = Array(applicantsCount)
         .fill(0)
-        .map(() => fake.applicant(mockUser.orgID, randomElement(jobIds)));
+        .map(() => fake.applicant(mockUser.tenant_id, randomElement(jobIds)));
       const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
       applicants = await Promise.all(promises);
     });
@@ -86,17 +86,17 @@ describe('applicants', () => {
       done();
     });
 
-    it('Isloates organization applicants', async () => {
-      const fakeOrg = fake.organization(random.uuid());
-      const {organization_id} = await dbInsertOrganization(fakeOrg);
+    it('Isloates tenant applicants', async () => {
+      const fakeTenant = fake.tenant(random.uuid());
+      const {tenant_id} = await dbInsertTenant(fakeTenant);
 
-      const fakeJob = fake.job(organization_id);
+      const fakeJob = fake.job(tenant_id);
       const {job_id} = await dbInsertJob(fakeJob);
 
       const applicantsCount = random.number({min: 50, max: 100});
       const fakeApplicants = Array(applicantsCount)
         .fill(0)
-        .map(() => fake.applicant(organization_id, job_id));
+        .map(() => fake.applicant(tenant_id, job_id));
       const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
       await Promise.all(promises);
 
@@ -109,23 +109,23 @@ describe('applicants', () => {
 
       // applicant of different organiyation
       const foreignApplicant = res.body.find(
-        (appl: TApplicant) => appl.organization_id !== mockUser.orgID,
+        (appl: TApplicant) => appl.tenant_id !== mockUser.tenant_id,
       );
 
       expect(foreignApplicant).toBeUndefined();
     });
 
     it('Filters by job_id using query', async (done) => {
-      const fakeOrg = fake.organization(random.uuid());
-      const {organization_id} = await dbInsertOrganization(fakeOrg);
+      const fakeTenant = fake.tenant(random.uuid());
+      const {tenant_id} = await dbInsertTenant(fakeTenant);
 
-      const fakeJob = fake.job(organization_id);
+      const fakeJob = fake.job(tenant_id);
       const {job_id} = await dbInsertJob(fakeJob);
 
       const applicantsCount = random.number({min: 50, max: 100});
       const fakeApplicants = Array(applicantsCount)
         .fill(0)
-        .map(() => fake.applicant(organization_id, job_id));
+        .map(() => fake.applicant(tenant_id, job_id));
       const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
       await Promise.all(promises);
 
@@ -139,7 +139,7 @@ describe('applicants', () => {
       done();
     });
 
-    it('Isloates organization applicants with job_id query', async (done) => {
+    it('Isloates tenant applicants with job_id query', async (done) => {
       const jobId = randomElement(jobIds);
       const res = await request(app)
         .get('/applicants?job_id=' + jobId)
@@ -155,7 +155,7 @@ describe('applicants', () => {
 
     it('Includes boolean weather screening exists or not', async (done) => {
       const fakeForm = fake.screeningForm(
-        mockUser.orgID,
+        mockUser.tenant_id,
         randomElement(jobIds),
       );
       const form: TForm = await dbInsertForm(fakeForm);
@@ -168,7 +168,7 @@ describe('applicants', () => {
         form_id: form.form_id!,
         applicant_id: randomApplId!,
         submitter_id: mockUser.sub,
-        organization_id: mockUser.orgID,
+        tenant_id: mockUser.tenant_id,
         comment: random.words(),
         submission: form.form_fields.reduce(
           (acc: {[form_field_id: string]: string}, item) => {
@@ -199,7 +199,7 @@ describe('applicants', () => {
     let applicant: TApplicant;
     beforeAll(async () => {
       applicant = await dbInsertApplicant(
-        fake.applicant(mockUser.orgID, randomElement(jobIds)),
+        fake.applicant(mockUser.tenant_id, randomElement(jobIds)),
       );
     });
 
@@ -225,7 +225,7 @@ describe('applicants', () => {
     let applicant: TApplicant;
     beforeEach(async () => {
       applicant = await dbInsertApplicant(
-        fake.applicant(mockUser.orgID, randomElement(jobIds)),
+        fake.applicant(mockUser.tenant_id, randomElement(jobIds)),
       );
     });
 

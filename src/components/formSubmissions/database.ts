@@ -9,7 +9,7 @@ export const dbInsertFormSubmission = (submission: TFormSubmission) => {
       'applicant_id',
       'submitter_id',
       'form_id',
-      'organization_id',
+      'tenant_id',
       {name: 'submission', mod: ':json', cast: 'jsonb'},
       {name: 'comment', def: null},
     ],
@@ -24,7 +24,7 @@ export const dbInsertFormSubmission = (submission: TFormSubmission) => {
 export const dbUpdateFormSubmission = (params: {
   submitter_id: string;
   applicant_id: string;
-  organization_id: string;
+  tenant_id: string;
   submission?: {[key: string]: string | number};
   comment?: string;
 }) => {
@@ -32,7 +32,7 @@ export const dbUpdateFormSubmission = (params: {
     ' WHERE submitter_id=${submitter_id} ' +
     'AND applicant_id=${applicant_id} ' +
     'AND form_id=${form_id} ' +
-    'AND organization_id=${organization_id}';
+    'AND tenant_id=${tenant_id}';
 
   if (!params.submission && !params.comment) {
     return db.one('SELECT * FROM form_submission' + condition, params);
@@ -61,13 +61,13 @@ export const dbSelectFormSubmission = (params: {
   form_id: string;
   submitter_id: string;
   applicant_id: string;
-  organization_id: string;
+  tenant_id: string;
 }) => {
   const condition =
     ' WHERE submitter_id=${submitter_id} ' +
     'AND applicant_id=${applicant_id} ' +
     'AND form_id=${form_id} ' +
-    'AND organization_id=${organization_id}';
+    'AND tenant_id=${tenant_id}';
 
   return db.one('SELECT * FROM form_submission' + condition, params);
 };

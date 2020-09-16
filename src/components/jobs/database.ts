@@ -9,13 +9,13 @@ export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
   const insertedJob = await db.one(insertJobStmt);
 
   const cs = new helpers.ColumnSet(
-    ['job_id', 'organization_id', 'requirement_label'],
+    ['job_id', 'tenant_id', 'requirement_label'],
     {table: 'job_requirement'},
   );
 
   const requirements = job_requirements.map((req) => ({
     job_id: insertedJob.job_id,
-    organization_id: insertedJob.organization_id,
+    tenant_id: insertedJob.tenant_id,
     ...req,
   }));
 
@@ -26,19 +26,15 @@ export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
     .then((job_requirements) => ({job_requirements, ...insertedJob}));
 };
 
-export const dbSelectJobs = (organization_id: string) => {
-  return db.any(selectJobsSQL, {organization_id});
+export const dbSelectJobs = (tenant_id: string) => {
+  return db.any(selectJobsSQL, {tenant_id});
 };
 
-export const dbSelectJob = (job_id: string, organization_id: string) => {
-  return db.one(selectJobSQL, {job_id, organization_id});
+export const dbSelectJob = (job_id: string, tenant_id: string) => {
+  return db.one(selectJobSQL, {job_id, tenant_id});
 };
 
-export const dbUpdateJob = (
-  job_id: string,
-  organization_id: string,
-  body: TJob,
-) => {
+export const dbUpdateJob = (job_id: string, tenant_id: string, body: TJob) => {
   return db
     .tx(async (t) => {
       const helpers = db.$config.pgp.helpers;
@@ -63,14 +59,14 @@ export const dbUpdateJob = (
             def: () => rawText('uuid_generate_v4()'),
           }, // insert job_requirement_id to make shure already existsing form items "only get updated"
           'job_id',
-          'organization_id',
+          'tenant_id',
           'requirement_label',
         ],
         {table: 'job_requirement'},
       );
 
       const requirements = body.job_requirements.map((req: any) => {
-        const tmp: any = {job_id, organization_id, ...req};
+        const tmp: any = {job_id, tenant_id, ...req};
         if (!tmp.job_requirement_id) delete tmp.job_requirement_id; // filter out empty strings
         return tmp;
       });
@@ -78,5 +74,5 @@ export const dbUpdateJob = (
       const reqStmt = helpers.insert(requirements, cs);
       await t.none(reqStmt);
     })
-    .then(async () => await dbSelectJob(job_id, organization_id));
+    .then(async () => await dbSelectJob(job_id, tenant_id));
 };
