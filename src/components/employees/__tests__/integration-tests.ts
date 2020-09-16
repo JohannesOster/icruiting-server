@@ -2,7 +2,7 @@ import request from 'supertest';
 import {internet, random} from 'faker';
 import app from 'app';
 import {endConnection, truncateAllTables} from 'db/utils';
-import {dbInsertOrganization} from 'components/organizations';
+import {dbInsertTenant} from 'components/tenants';
 import fake from 'tests/fake';
 
 const mockUser = fake.user();
@@ -38,7 +38,7 @@ jest.mock('aws-sdk', () => ({
               Username: internet.email(),
               Attributes: [
                 {Name: 'email', Value: internet.email()},
-                {Name: 'custom:orgID', Value: mockUser.orgID},
+                {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
                 {Name: 'custom:role', Value: 'employee'},
               ],
             },
@@ -46,7 +46,7 @@ jest.mock('aws-sdk', () => ({
               Username: internet.email(),
               Attributes: [
                 {Name: 'email', Value: internet.email()},
-                {Name: 'custom:orgID', Value: mockUser.orgID},
+                {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
                 {Name: 'custom:role', Value: 'admin'},
               ],
             },
@@ -54,7 +54,7 @@ jest.mock('aws-sdk', () => ({
               Username: internet.email(),
               Attributes: [
                 {Name: 'email', Value: internet.email()},
-                {Name: 'custom:orgID', Value: random.uuid()},
+                {Name: 'custom:tenant_id', Value: random.uuid()},
                 {Name: 'custom:role', Value: 'employee'},
               ],
             },
@@ -72,8 +72,8 @@ jest.mock('aws-sdk', () => ({
 }));
 
 beforeAll(async () => {
-  const fakeOrg = fake.organization(mockUser.orgID);
-  await dbInsertOrganization(fakeOrg);
+  const fakeTenant = fake.tenant(mockUser.tenant_id);
+  await dbInsertTenant(fakeTenant);
 });
 
 afterAll(async () => {
@@ -102,7 +102,7 @@ describe('employees', () => {
 
       const expectAttributes = [
         {Name: 'email', Value: emails[0]},
-        {Name: 'custom:orgID', Value: mockUser.orgID},
+        {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
         {Name: 'custom:role', Value: 'employee'},
       ];
 
@@ -160,19 +160,19 @@ describe('employees', () => {
 
       resp.body.forEach((user: any) => {
         expect(user.email).toBeDefined();
-        expect(user.orgID).toBeDefined();
+        expect(user.tenant_id).toBeDefined();
         expect(user.role).toBeDefined();
       });
     });
 
-    it('Isolates organization employees', async () => {
+    it('Isolates tenant employees', async () => {
       const resp = await request(app)
         .get('/employees')
         .set('Accept', 'application/json')
         .expect(200);
 
       resp.body.forEach((user: any) => {
-        expect(user.orgID).toBe(mockUser.orgID);
+        expect(user.tenant_id).toBe(mockUser.tenant_id);
       });
     });
   });

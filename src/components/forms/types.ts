@@ -6,7 +6,7 @@ export enum EFormCategory {
 
 export type TForm = {
   form_id?: string;
-  organization_id: string;
+  tenant_id: string;
   form_category: EFormCategory;
   form_title?: string;
   job_id: string;

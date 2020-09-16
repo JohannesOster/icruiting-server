@@ -1,20 +1,20 @@
 import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
 import {catchAsync} from 'errorHandling';
-import {dbInsertOrganization, dbDeleteOrganization} from './database';
+import {dbInsertTenant, dbDeleteTenant} from './database';
 
-export const createOrganization = catchAsync(async (req, res) => {
-  const {organization_name} = req.body;
-  const resp = await dbInsertOrganization({organization_name});
+export const createTenant = catchAsync(async (req, res) => {
+  const {tenant_name} = req.body;
+  const resp = await dbInsertTenant({tenant_name});
   res.status(201).json(resp);
 });
 
-export const deleteOrganization = catchAsync(async (req, res) => {
-  const {userPoolID, orgID} = res.locals.user;
-  await dbDeleteOrganization(orgID);
+export const deletetenant = catchAsync(async (req, res) => {
+  const {userPoolID, tenant_id} = res.locals.user;
+  await dbDeleteTenant(tenant_id);
 
   const s3 = new S3();
   const bucket = process.env.S3_BUCKET || '';
-  const listParams = {Bucket: bucket, Prefix: orgID};
+  const listParams = {Bucket: bucket, Prefix: tenant_id};
 
   const {Contents} = await s3.listObjects(listParams).promise();
   if (Contents?.length) {
@@ -26,7 +26,7 @@ export const deleteOrganization = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const params = {
     UserPoolId: userPoolID,
-    AttributesToGet: ['email', 'custom:orgID'],
+    AttributesToGet: ['email', 'custom:tenant_id'],
   };
 
   const users = await cIdp
@@ -44,7 +44,7 @@ export const deleteOrganization = catchAsync(async (req, res) => {
         return map;
       });
       // filter out foreign orgs
-      return userMaps?.filter((user) => user['custom:orgID'] === orgID);
+      return userMaps?.filter((user) => user['custom:tenant_id'] === tenant_id);
     });
 
   const promises = users?.map((user) => {

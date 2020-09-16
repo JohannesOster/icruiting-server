@@ -4,7 +4,7 @@ import {dbInsertJob, dbSelectJobs, dbUpdateJob} from './database';
 export const createJob = catchAsync(async (req, res) => {
   const job = {
     job_title: req.body.job_title,
-    organization_id: res.locals.user.orgID,
+    tenant_id: res.locals.user.tenant_id,
     job_requirements: req.body.job_requirements,
   };
 
@@ -13,15 +13,15 @@ export const createJob = catchAsync(async (req, res) => {
 });
 
 export const getJobs = catchAsync(async (req, res) => {
-  const organization_id = res.locals.user.orgID;
-  const resp = await dbSelectJobs(organization_id);
+  const tenant_id = res.locals.user.tenant_id;
+  const resp = await dbSelectJobs(tenant_id);
   res.status(200).json(resp);
 });
 
 export const updateJob = catchAsync(async (req, res) => {
   const job_id = req.params.job_id;
-  const organization_id = res.locals.user.orgID;
+  const tenant_id = res.locals.user.tenant_id;
 
-  const resp = await dbUpdateJob(job_id, organization_id, req.body);
+  const resp = await dbUpdateJob(job_id, tenant_id, req.body);
   res.status(200).json(resp);
 });

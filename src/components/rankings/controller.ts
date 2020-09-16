@@ -9,14 +9,14 @@ import {
 
 export const getRanking = catchAsync(async (req, res) => {
   const jobId = req.params.job_id;
-  const {orgID: organization_id} = res.locals.user;
+  const {tenant_id} = res.locals.user;
 
   const formCategory = req.query.form_category;
   let data;
   if (formCategory === 'screening') {
-    data = await dbSelectScreeningRanking(jobId, organization_id);
+    data = await dbSelectScreeningRanking(jobId, tenant_id);
   } else if (formCategory === 'assessment') {
-    data = await dbSelectAssessmentRanking(jobId, organization_id);
+    data = await dbSelectAssessmentRanking(jobId, tenant_id);
   } else throw new BaseError(402, 'Invalid form_category: ' + formCategory);
 
   const tmp = data.map((row: TScreeningRankingRow) => {

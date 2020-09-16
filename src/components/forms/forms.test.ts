@@ -5,7 +5,7 @@ import db from 'db';
 import {dbInsertForm} from './database';
 import {TForm} from './types';
 import {endConnection, truncateAllTables} from 'db/utils';
-import {dbInsertOrganization} from 'components/organizations';
+import {dbInsertTenant} from 'components/tenants';
 import {dbInsertJob} from 'components/jobs';
 import fake from 'tests/fake';
 
@@ -20,10 +20,10 @@ jest.mock('middlewares/auth', () => ({
 
 let jobId: string;
 beforeAll(async () => {
-  const organization = fake.organization(mockUser.orgID);
-  await dbInsertOrganization(organization);
+  const tenant = fake.tenant(mockUser.tenant_id);
+  await dbInsertTenant(tenant);
 
-  const job = fake.job(mockUser.orgID);
+  const job = fake.job(mockUser.tenant_id);
   const {job_id} = await dbInsertJob(job);
   jobId = job_id;
 });
@@ -36,7 +36,7 @@ afterAll(async () => {
 describe('forms', () => {
   describe('POST /forms', () => {
     it('Returns 201 json response', (done) => {
-      const form = fake.applicationForm(mockUser.orgID, jobId);
+      const form = fake.applicationForm(mockUser.tenant_id, jobId);
 
       request(app)
         .post('/forms')
@@ -47,7 +47,7 @@ describe('forms', () => {
     });
 
     it('Returns created form entity', async (done) => {
-      const form = fake.applicationForm(mockUser.orgID, jobId);
+      const form = fake.applicationForm(mockUser.tenant_id, jobId);
       const resp = await request(app)
         .post('/forms')
         .set('Accept', 'application/json')
@@ -82,11 +82,11 @@ describe('forms', () => {
 
     it('Returns array of forms', async (done) => {
       const promises = [
-        dbInsertForm(fake.applicationForm(mockUser.orgID, jobId)),
-        dbInsertForm(fake.screeningForm(mockUser.orgID, jobId)),
-        dbInsertForm(fake.assessmentForm(mockUser.orgID, jobId)),
-        dbInsertForm(fake.assessmentForm(mockUser.orgID, jobId)),
-        dbInsertForm(fake.assessmentForm(mockUser.orgID, jobId)),
+        dbInsertForm(fake.applicationForm(mockUser.tenant_id, jobId)),
+        dbInsertForm(fake.screeningForm(mockUser.tenant_id, jobId)),
+        dbInsertForm(fake.assessmentForm(mockUser.tenant_id, jobId)),
+        dbInsertForm(fake.assessmentForm(mockUser.tenant_id, jobId)),
+        dbInsertForm(fake.assessmentForm(mockUser.tenant_id, jobId)),
       ];
 
       await Promise.all(promises);
@@ -104,7 +104,7 @@ describe('forms', () => {
   describe('GET /forms/:form_id/html', () => {
     let form: TForm;
     beforeAll(async () => {
-      const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
+      const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       form = await dbInsertForm(fakeForm);
     });
 
@@ -120,7 +120,7 @@ describe('forms', () => {
   describe('DELETE /forms/:form_id', () => {
     let form: TForm;
     beforeEach(async () => {
-      const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
+      const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       form = await dbInsertForm(fakeForm);
     });
 
@@ -158,7 +158,7 @@ describe('forms', () => {
 
   describe('PUT /forms/:form_id', () => {
     it('Returns json 200 response', async (done) => {
-      const fakeForm = fake.applicationForm(mockUser.orgID, jobId);
+      const fakeForm = fake.applicationForm(mockUser.tenant_id, jobId);
       const form = await dbInsertForm(fakeForm);
 
       request(app)
@@ -170,7 +170,7 @@ describe('forms', () => {
     });
 
     it('Returns updated form entity', async (done) => {
-      const fakeForm = fake.applicationForm(mockUser.orgID, jobId);
+      const fakeForm = fake.applicationForm(mockUser.tenant_id, jobId);
       const form: TForm = await dbInsertForm(fakeForm);
 
       const updateVals = {...form};
@@ -192,7 +192,7 @@ describe('forms', () => {
     });
 
     it('Updates form_title', async (done) => {
-      const fakeForm = fake.assessmentForm(mockUser.orgID, jobId);
+      const fakeForm = fake.assessmentForm(mockUser.tenant_id, jobId);
       const form: TForm = await dbInsertForm(fakeForm);
 
       const updateVals = {...form, form_title: faker.random.words()};

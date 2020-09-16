@@ -7,7 +7,7 @@ import {endConnection, truncateAllTables} from 'db/utils';
 import {TForm, dbInsertForm} from 'components/forms';
 import {dbInsertFormSubmission} from 'components/formSubmissions';
 import {dbInsertApplicant} from 'components/applicants';
-import {dbInsertOrganization} from 'components/organizations';
+import {dbInsertTenant} from 'components/tenants';
 import {dbInsertJob} from 'components/jobs';
 import {TApplicant} from 'components/applicants';
 
@@ -22,10 +22,10 @@ jest.mock('middlewares/auth', () => ({
 
 let jobId: string;
 beforeAll(async (done) => {
-  const organization = fake.organization(mockUser.orgID);
-  const {organization_id} = await dbInsertOrganization(organization);
+  const tenant = fake.tenant(mockUser.tenant_id);
+  const {tenant_id} = await dbInsertTenant(tenant);
 
-  const job = fake.job(organization_id);
+  const job = fake.job(tenant_id);
   const {job_id} = await dbInsertJob(job);
   jobId = job_id;
 
@@ -45,14 +45,14 @@ describe('rankings', () => {
 
       const promises = [];
 
-      const screeningForm = fake.screeningForm(mockUser.orgID, jobId);
+      const screeningForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(screeningForm));
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
-          const applicant = fake.applicant(mockUser.orgID, jobId);
+          const applicant = fake.applicant(mockUser.tenant_id, jobId);
           promises.push(dbInsertApplicant(applicant));
         });
 
@@ -64,7 +64,7 @@ describe('rankings', () => {
           const screening = {
             applicant_id: appl.applicant_id!,
             submitter_id: mockUser.sub,
-            organization_id: mockUser.orgID,
+            tenant_id: mockUser.tenant_id,
             form_id: form.form_id!,
             submission: form.form_fields.reduce(
               (acc: {[form_field_id: string]: string}, item) => {
@@ -125,14 +125,14 @@ describe('rankings', () => {
 
       const promises = [];
 
-      const assessmentForm = fake.assessmentForm(mockUser.orgID, jobId);
+      const assessmentForm = fake.assessmentForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(assessmentForm));
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
-          const applicant = fake.applicant(mockUser.orgID, jobId);
+          const applicant = fake.applicant(mockUser.tenant_id, jobId);
           promises.push(dbInsertApplicant(applicant));
         });
 
@@ -144,7 +144,7 @@ describe('rankings', () => {
           const assessment = {
             applicant_id: appl.applicant_id!,
             submitter_id: mockUser.sub,
-            organization_id: mockUser.orgID,
+            tenant_id: mockUser.tenant_id,
             form_id: form.form_id!,
             submission: form.form_fields.reduce(
               (acc: {[form_field_id: string]: string}, item) => {

@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS form_field;
 DROP TABLE IF EXISTS form;
 DROP TABLE IF EXISTS job_requirement;
 DROP TABLE IF EXISTS job;
-DROP TABLE IF EXISTS organization;
+DROP TABLE IF EXISTS tenant;
 
 DROP TYPE IF EXISTS form_field_intent;
 DROP TYPE IF EXISTS form_field_component;

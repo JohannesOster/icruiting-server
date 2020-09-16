@@ -13,16 +13,16 @@ import {
 import {TForm} from './types';
 
 export const createForm = catchAsync(async (req, res) => {
-  const orgId = res.locals.user.orgID;
-  const params: TForm = {...req.body, organization_id: orgId};
+  const tenant_id = res.locals.user.tenant_id;
+  const params: TForm = {...req.body, tenant_id};
   const resp = await dbInsertForm(params);
   res.status(201).json(resp);
 });
 
 export const getForms = catchAsync(async (req, res) => {
-  const orgId = res.locals.user.orgID;
+  const tenant_id = res.locals.user.tenant_id;
   const job_id = req.query.job_id as string;
-  const resp = await dbSelectForms(orgId, job_id);
+  const resp = await dbSelectForms(tenant_id, job_id);
   res.status(200).json(resp);
 });
 
@@ -56,7 +56,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
   // base object with required foreign keys
   const applicant: any = {
-    organization_id: form.organization_id,
+    tenant_id: form.tenant_id,
     job_id: form.job_id,
   };
 
@@ -135,7 +135,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
           const file = files[item.form_field_id];
           const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
           const fileId = (Math.random() * 1e32).toString(36);
-          const fileKey = form.organization_id + '.' + fileId + '.' + extension;
+          const fileKey = form.tenant_id + '.' + fileId + '.' + extension;
           const fileStream = fs.createReadStream(file.path);
           const params = {
             Key: fileKey,
@@ -183,9 +183,9 @@ export const deleteForm = catchAsync(async (req, res) => {
 
 export const updateForm = catchAsync(async (req, res) => {
   const {form_id} = req.params;
-  const {orgID} = res.locals.user;
+  const {tenant_id} = res.locals.user;
 
-  const params = {...req.body, organization_id: orgID};
+  const params = {...req.body, tenant_id};
 
   const resp = await dbUpdateForm(form_id, params);
   res.status(200).json(resp);

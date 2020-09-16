@@ -16,8 +16,8 @@ import {
 
 export const getApplicants = catchAsync(async (req, res, next) => {
   const job_id = req.query.job_id as string;
-  const {orgID: organization_id, sub: user_id} = res.locals.user;
-  const params = {organization_id, user_id, job_id};
+  const {tenant_id, sub: user_id} = res.locals.user;
+  const params = {tenant_id, user_id, job_id};
 
   const applicants = await dbSelectApplicants(params);
 
@@ -36,12 +36,12 @@ export const getApplicants = catchAsync(async (req, res, next) => {
 
 export const getReport = catchAsync(async (req, res) => {
   const applicant_id = req.params.applicant_id;
-  const {orgID: organization_id} = res.locals.user;
+  const {tenant_id} = res.locals.user;
   const {form_category} = req.query as {
     form_category: 'screening' | 'assessment';
   };
 
-  const params = {applicant_id, organization_id, form_category};
+  const params = {applicant_id, tenant_id, form_category};
   const data = await dbSelectReport(params);
 
   const resp = data.map((row: TScreeningRankingRow) => {

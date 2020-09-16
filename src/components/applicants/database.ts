@@ -7,7 +7,7 @@ export const dbInsertApplicant = (applicant: TApplicant) => {
 
   const cs = new helpers.ColumnSet(
     [
-      'organization_id',
+      'tenant_id',
       'job_id',
       {name: 'attributes', mod: ':json', cast: 'jsonb'},
       {name: 'files', mod: ':json', cast: 'jsonb', def: null},
@@ -21,14 +21,14 @@ export const dbInsertApplicant = (applicant: TApplicant) => {
 
 export const dbSelectApplicants = (params: {
   job_id?: string;
-  organization_id: string;
+  tenant_id: string;
   user_id: string;
 }) => {
   return db.any(selectApplicants, params);
 };
 
 export const dbSelectReport = (params: {
-  organization_id: string;
+  tenant_id: string;
   applicant_id: string;
   form_category: 'screening' | 'assessment';
 }) => {

@@ -5,7 +5,7 @@ import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/utils';
 import {TForm, dbInsertForm} from 'components/forms';
-import {dbInsertOrganization} from 'components/organizations';
+import {dbInsertTenant} from 'components/tenants';
 import {dbInsertJob} from 'components/jobs';
 import {dbInsertApplicant} from 'components/applicants';
 import {TApplicant} from 'components/applicants';
@@ -23,10 +23,10 @@ jest.mock('middlewares/auth', () => ({
 
 let jobId: string;
 beforeAll(async () => {
-  const organization = fake.organization(mockUser.orgID);
-  await dbInsertOrganization(organization);
+  const tenant = fake.tenant(mockUser.tenant_id);
+  await dbInsertTenant(tenant);
 
-  const job = fake.job(mockUser.orgID);
+  const job = fake.job(mockUser.tenant_id);
   const {job_id} = await dbInsertJob(job);
   jobId = job_id;
 });
@@ -42,10 +42,10 @@ describe('form-submissions', () => {
     beforeAll(async (done) => {
       const promises = [];
 
-      const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
+      const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(fakeForm));
 
-      const fakeApplicant = fake.applicant(mockUser.orgID, jobId);
+      const fakeApplicant = fake.applicant(mockUser.tenant_id, jobId);
       promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then((data) => {
@@ -101,10 +101,10 @@ describe('form-submissions', () => {
     beforeAll(async (done) => {
       const promises = [];
 
-      const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
+      const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(fakeForm));
 
-      const fakeApplicant = fake.applicant(mockUser.orgID, jobId);
+      const fakeApplicant = fake.applicant(mockUser.tenant_id, jobId);
       promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then((data) => {
@@ -112,7 +112,7 @@ describe('form-submissions', () => {
 
         return {
           applicant_id: applicant.applicant_id!,
-          organization_id: mockUser.orgID,
+          tenant_id: mockUser.tenant_id,
           submitter_id: mockUser.sub,
           form_id: form.form_id!,
           submission: form.form_fields.reduce(
@@ -172,10 +172,10 @@ describe('form-submissions', () => {
     beforeAll(async (done) => {
       const promises = [];
 
-      const fakeForm = fake.screeningForm(mockUser.orgID, jobId);
+      const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(fakeForm));
 
-      const fakeApplicant = fake.applicant(mockUser.orgID, jobId);
+      const fakeApplicant = fake.applicant(mockUser.tenant_id, jobId);
       promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then(async (data) => {
@@ -183,7 +183,7 @@ describe('form-submissions', () => {
 
         const formSubmission = {
           applicant_id: applicant.applicant_id!,
-          organization_id: mockUser.orgID,
+          tenant_id: mockUser.tenant_id,
           submitter_id: mockUser.sub,
           form_id: form.form_id!,
           submission: form.form_fields.reduce(

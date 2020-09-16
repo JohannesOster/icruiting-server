@@ -29,7 +29,7 @@ FROM
 	ON submission_field.form_field_id = form_field.form_field_id
 	LEFT JOIN job_requirement
 	ON job_requirement.job_requirement_id = form_field.job_requirement_id
-	WHERE form.organization_id = ${organization_id}
+	WHERE form.tenant_id = ${tenant_id}
 	  AND form.form_category = ${form_category}
 	GROUP BY submitter_id, applicant_id) AS single_submission
 GROUP BY applicant_id
