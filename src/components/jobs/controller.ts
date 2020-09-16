@@ -44,11 +44,13 @@ export const deleteJob = catchAsync(async (req, res) => {
     return acc.concat(keys);
   }, [] as Array<string>);
 
-  const s3 = new S3();
-  const bucket = process.env.S3_BUCKET || '';
-  const keys = fileKeys.map((key) => ({Key: key}));
-  const delParams = {Bucket: bucket, Delete: {Objects: keys}};
-  await s3.deleteObjects(delParams).promise();
+  if (fileKeys.length) {
+    const s3 = new S3();
+    const bucket = process.env.S3_BUCKET || '';
+    const keys = fileKeys.map((key) => ({Key: key}));
+    const delParams = {Bucket: bucket, Delete: {Objects: keys}};
+    await s3.deleteObjects(delParams).promise();
+  }
 
   await dbDeleteJob(job_id, tenant_id);
 
