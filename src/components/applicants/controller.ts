@@ -173,6 +173,9 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 
           if (item.component === 'file_upload') {
             const file = files[item.form_field_id];
+            const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
+            const fileType =
+              extension === 'pdf' ? 'application/pdf' : 'image/jpeg';
             const oldFile = oldFiles.find(({key}: any) => key === item.label);
             const fileKey = oldFile.value;
             const fileStream = await fs.createReadStream(file.path);
@@ -188,7 +191,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
             const params = {
               Key: fileKey,
               Bucket: process.env.S3_BUCKET || '',
-              ContentType: 'application/pdf',
+              ContentType: fileType,
               Body: fileStream,
             };
 
