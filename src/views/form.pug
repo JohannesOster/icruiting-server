@@ -33,11 +33,11 @@ html
             when "input" 
               input(
                 class="ic-input ic-font-200",
-                type="text",
                 id=formItem.form_field_id,
                 name=formItem.form_field_id,
-                placeholder=formItem.placeholder
-                required=formItem.required 
+                placeholder=formItem.placeholder,
+                required=formItem.required, 
+                type=formItem.props.type || 'text'
               )
             when "date_picker"
               input(
