@@ -1,7 +1,9 @@
 :root {
   --typography-primary-color: #1f1f1f;
-  --typography-secondary-color: #545454;
+  --typography-secondary-color: #e7c8c8;
   --color-primary: black;
+  --input-border: #eeeeee;
+  --input-border-active: #757575;
 
   --font-family-primary: system-ui, 'Helvetica Neue', Helvetica, Arial,
     sans-serif;
@@ -49,26 +51,24 @@ body {
 }
 .ic-input {
   background: white;
-  border: 1px solid #e8e9ec;
+  border: 1px solid var(--input-border);
   padding: 10px;
   border-radius: 2px;
 }
 .ic-input:focus {
   outline: none !important;
-  border-color: #72b2f2;
-  box-shadow: 0 0 1px #0f5ba5;
+  border-color: var(--input-border-active);
 }
 .ic-textarea {
   resize: none;
   background: white;
-  border: 1px solid #e8e9ec;
+  border: 1px solid var(--input-border);
   padding: 10px;
   border-radius: 2px;
 }
 .ic-textarea:focus {
   outline: none !important;
-  border-color: #72b2f2;
-  box-shadow: 0 0 1px #0f5ba5;
+  border-color: var(--input-border-active);
 }
 .ic-select-container {
   position: relative;
@@ -78,7 +78,7 @@ body {
   -moz-appearance: none;
   -webkit-appearance: none;
   appearance: none;
-  border: 1px solid #e8e9ec;
+  border: 1px solid var(--input-border);
   background: white;
   border-radius: 3px;
   cursor: pointer;
@@ -88,8 +88,7 @@ body {
 }
 .ic-select:focus {
   outline: none !important;
-  border-color: #72b2f2;
-  box-shadow: 0 0 1px #0f5ba5;
+  border-color: var(--input-border-active);
 }
 .ic-select-icon {
   position: absolute;

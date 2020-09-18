@@ -96,7 +96,7 @@ html
                 type="file",
                 id=`fileUpload-${formItem.form_field_id}`,
                 name=formItem.form_field_id,
-                accept="application/pdf, image/jpeg",
+                accept=formItem.props.accept || "application/pdf, image/jpeg",
                 required=formItem.required 
               )
             default: span Invalides Formularelement

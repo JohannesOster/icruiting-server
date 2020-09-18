@@ -177,6 +177,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
             const fileType =
               extension === 'pdf' ? 'application/pdf' : 'image/jpeg';
             const oldFile = oldFiles.find(({key}: any) => key === item.label);
+            if (!oldFile) return acc;
             const fileKey = oldFile.value;
             const fileStream = await fs.createReadStream(file.path);
 
