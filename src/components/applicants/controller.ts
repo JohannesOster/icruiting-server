@@ -1,11 +1,12 @@
 import {BaseError, catchAsync} from 'errorHandling';
-import {S3, SESV2} from 'aws-sdk';
+import {S3} from 'aws-sdk';
 import {
   dbSelectApplicants,
   dbSelectReport,
   dbDeleteApplicant,
   dbSelectApplicantFiles,
   dbUpdateApplicant,
+  dbSelectApplicant,
 } from './database';
 import {getApplicantFileURLs} from './utils';
 import {
@@ -19,6 +20,8 @@ import {IncomingForm} from 'formidable';
 import fs from 'fs';
 import pug from 'pug';
 import path from 'path';
+import puppeteer from 'puppeteer';
+import {TApplicant} from './types';
 
 export const getApplicants = catchAsync(async (req, res, next) => {
   const job_id = req.query.job_id as string;
@@ -232,17 +235,48 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 
 export const getPdfReport = catchAsync(async (req, res) => {
   const {applicant_id} = req.params;
-  const puppeteer = require('puppeteer');
+  const {tenant_id} = res.locals.user;
 
-  const html = pug.renderFile(path.resolve(__dirname, 'report/report.pug'));
+  const applicants: TApplicant[] = await dbSelectApplicant(
+    applicant_id,
+    tenant_id,
+  );
+  const applicant = applicants[0];
+  if (!applicants.length) throw new BaseError(404, 'Applicant not Found');
+
+  // might later be replaced with db entry
+  const report = {
+    image: 'Bewerbungsfoto (.jpeg)',
+    attributes: ['Vollständiger Name', 'E-Mail-Addresse'],
+  };
+
+  const file = applicant.files?.find(({key}) => key === report.image);
+  if (!file) throw new BaseError(404, 'Report image is missing on applicant');
+  const params = {
+    Bucket: process.env.S3_BUCKET,
+    Key: file.value,
+    Expires: 100,
+  };
+  const imageURL = await new S3().getSignedUrlPromise('getObject', params);
+
+  const attributes = report.attributes.map((key) => {
+    const attr = applicant.attributes.find((attr) => attr.key === key);
+    if (!attr)
+      throw new BaseError(404, 'Report attribute is missing on applicant');
+    return attr;
+  });
+
+  const html = pug.renderFile(path.resolve(__dirname, 'report/report.pug'), {
+    imageURL,
+    attributes,
+  });
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
-  const options = {format: 'A4'};
   await page.goto(
     `data:text/html;base64,${Buffer.from(html).toString('base64')}`,
     {waitUntil: 'networkidle0'},
   );
-  const pdf = await page.pdf(options);
+  const pdf = await page.pdf({format: 'A4'});
   await browser.close();
 
   res.setHeader('Content-Type', 'application/pdf');

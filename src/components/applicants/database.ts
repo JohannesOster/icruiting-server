@@ -27,6 +27,12 @@ export const dbSelectApplicants = (params: {
   return db.any(selectApplicants, params);
 };
 
+export const dbSelectApplicant = (applicant_id: string, tenant_id: string) => {
+  const stmt =
+    'SELECT * FROM applicant WHERE applicant_id=${applicant_id} AND tenant_id=${tenant_id}';
+  return db.any(stmt, {applicant_id, tenant_id});
+};
+
 export const dbSelectReport = (params: {
   tenant_id: string;
   applicant_id: string;
