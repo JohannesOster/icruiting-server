@@ -234,7 +234,7 @@ export const getPdfReport = catchAsync(async (req, res) => {
   const {applicant_id} = req.params;
   const puppeteer = require('puppeteer');
 
-  const html = pug.renderFile(path.resolve(__dirname, 'report.pug'));
+  const html = pug.renderFile(path.resolve(__dirname, 'report/report.pug'));
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
   const options = {format: 'A4'};

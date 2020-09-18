@@ -1,0 +1,19 @@
+:root {
+  --typography-primary-color: #1f1f1f;
+  --typography-secondary-color: #545454;
+  --color-primary: black;
+  --input-border: #eeeeee;
+  --input-border-active: #757575;
+
+  --font-family-primary: system-ui, 'Helvetica Neue', Helvetica, Arial,
+    sans-serif;
+}
+
+body {
+  font-family: var(--font-family-primary);
+  color: var(--typography-primary-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 16px;
+  margin: 0;
+}
