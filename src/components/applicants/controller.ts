@@ -17,6 +17,8 @@ import {
 import {dbSelectForm, TForm} from '../forms';
 import {IncomingForm} from 'formidable';
 import fs from 'fs';
+import pug from 'pug';
+import path from 'path';
 
 export const getApplicants = catchAsync(async (req, res, next) => {
   const job_id = req.query.job_id as string;
@@ -226,4 +228,23 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
       next(error);
     }
   });
+});
+
+export const getPdfReport = catchAsync(async (req, res) => {
+  const {applicant_id} = req.params;
+  const puppeteer = require('puppeteer');
+
+  const html = pug.renderFile(path.resolve(__dirname, 'report.pug'));
+  const browser = await puppeteer.launch({headless: true});
+  const page = await browser.newPage();
+  const options = {format: 'A4'};
+  await page.goto(
+    `data:text/html;base64,${Buffer.from(html).toString('base64')}`,
+    {waitUntil: 'networkidle0'},
+  );
+  const pdf = await page.pdf(options);
+  await browser.close();
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.send(pdf);
 });

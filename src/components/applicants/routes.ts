@@ -4,6 +4,7 @@ import {
   getReport,
   deleteApplicant,
   updateApplicant,
+  getPdfReport,
 } from './controller';
 import {validateGetApplicants, validateGetReport} from './validation';
 import {validate} from 'middlewares/common';
@@ -16,6 +17,7 @@ router.get('/', validateGetApplicants, validate, getApplicants);
 
 router.use(requireAdmin);
 router.get('/:applicant_id/report', validateGetReport, validate, getReport);
+router.get('/:applicant_id/pdf-report', getPdfReport);
 router.put('/:applicant_id', updateApplicant);
 router.delete('/:applicant_id', deleteApplicant);
 
