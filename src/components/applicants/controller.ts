@@ -1,10 +1,11 @@
-import {catchAsync} from 'errorHandling';
-import {S3} from 'aws-sdk';
+import {BaseError, catchAsync} from 'errorHandling';
+import {S3, SESV2} from 'aws-sdk';
 import {
   dbSelectApplicants,
   dbSelectReport,
   dbDeleteApplicant,
   dbSelectApplicantFiles,
+  dbUpdateApplicant,
 } from './database';
 import {getApplicantFileURLs} from './utils';
 import {
@@ -13,6 +14,9 @@ import {
   EFormItemIntent,
   KeyVal,
 } from '../rankings/types';
+import {dbSelectForm, TForm} from '../forms';
+import {IncomingForm} from 'formidable';
+import fs from 'fs';
 
 export const getApplicants = catchAsync(async (req, res, next) => {
   const job_id = req.query.job_id as string;
@@ -128,4 +132,94 @@ export const deleteApplicant = catchAsync(async (req, res) => {
 
   await dbDeleteApplicant(applicant_id);
   res.status(200).json({});
+});
+
+export const updateApplicant = catchAsync(async (req, res, next) => {
+  const {tenant_id} = res.locals.user;
+  const {applicant_id} = req.params;
+  const formidable = new IncomingForm({multiples: true} as any);
+
+  formidable.parse(req, async (err: Error, fields: any, files: any) => {
+    const s3 = new S3();
+
+    try {
+      const {form_id} = fields;
+      if (!form_id) throw new BaseError(422, 'Missing form_id field');
+
+      const forms = await dbSelectForm(form_id);
+      if (!forms.length) throw new BaseError(404, 'Form Not Found');
+      const form: TForm = forms[0];
+
+      const oldFiles = (await dbSelectApplicantFiles(applicant_id))[0].files;
+
+      const map = await form.form_fields.reduce(
+        async (acc, item) => {
+          if (!item.form_field_id) {
+            throw new BaseError(
+              500,
+              'Received database entry without primary key',
+            );
+          }
+
+          // !> filter out non submitted values
+          if (
+            !fields[item.form_field_id] &&
+            (!files[item.form_field_id] || !files[item.form_field_id].size)
+          ) {
+            if (item.required)
+              throw new BaseError(402, `Missing required field: ${item.label}`);
+            return acc;
+          }
+
+          if (item.component === 'file_upload') {
+            const file = files[item.form_field_id];
+            const oldFile = oldFiles.find(({key}: any) => key === item.label);
+            const fileKey = oldFile.value;
+            const fileStream = await fs.createReadStream(file.path);
+
+            // delete old file
+            const delParams = {
+              Bucket: process.env.S3_BUCKET || '',
+              Key: fileKey,
+            };
+
+            await s3.deleteObject(delParams).promise();
+
+            const params = {
+              Key: fileKey,
+              Bucket: process.env.S3_BUCKET || '',
+              ContentType: 'application/pdf',
+              Body: fileStream,
+            };
+
+            fs.unlink(file.path, function (err) {
+              if (err) console.error(err);
+              console.log('Temp File Delete');
+            });
+
+            await s3.upload(params).promise();
+            return acc;
+          }
+
+          (await acc).attributes.push({
+            key: item.label,
+            value: fields[item.form_field_id],
+          });
+
+          return acc;
+        },
+        {attributes: []} as any,
+      );
+
+      const appl = await dbUpdateApplicant(
+        tenant_id,
+        applicant_id,
+        map.attributes,
+      );
+
+      res.status(200).json(appl);
+    } catch (error) {
+      next(error);
+    }
+  });
 });

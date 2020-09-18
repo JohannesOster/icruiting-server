@@ -43,3 +43,21 @@ export const dbSelectApplicantFiles = (applicant_id: string) => {
 export const dbDeleteApplicant = (applicant_id: string) => {
   return db.none('DELETE FROM applicant WHERE applicant_id=$1', applicant_id);
 };
+
+export const dbUpdateApplicant = (
+  tenant_id: string,
+  applicant_id: string,
+  attributes: [{[key: string]: string}],
+) => {
+  const helpers = db.$config.pgp.helpers;
+
+  const cs = new helpers.ColumnSet(
+    [{name: 'attributes', mod: ':json', cast: 'jsonb'}],
+    {table: 'applicant'},
+  );
+
+  const condition =
+    ' WHERE applicant_id = ${applicant_id} AND tenant_id = ${tenant_id} RETURNING *';
+  const stmt = helpers.update({attributes}, cs) + condition;
+  return db.one(stmt, {tenant_id, applicant_id});
+};
