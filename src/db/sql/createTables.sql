@@ -80,10 +80,10 @@ CREATE TABLE IF NOT EXISTS applicant (
 
 CREATE TABLE IF NOT EXISTS applicant_attribute (
   applicant_id UUID NOT NULL,
-  form_field_id UUID,
+  form_field_id UUID NOT NULL,
   attribute_value TEXT,
   CONSTRAINT applicant_id_form_item_id_pk PRIMARY KEY (applicant_id, form_field_id),
-  CONSTRAINT applicant_id_fk FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE SET NULL,
+  CONSTRAINT applicant_id_fk FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE,
   CONSTRAINT form_field_id_fk FOREIGN KEY (form_field_id) REFERENCES form_field(form_field_id) ON DELETE CASCADE
 );
 

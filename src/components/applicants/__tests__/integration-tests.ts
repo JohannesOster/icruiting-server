@@ -263,9 +263,12 @@ describe('applicants', () => {
         ({form_field_id}) => form_field_id!,
       );
 
-      applicant = await dbInsertApplicant(
-        fake.applicant(mockUser.tenant_id, jobId, formFieldIds),
+      const fakeApplicant = fake.applicant(
+        mockUser.tenant_id,
+        jobId,
+        formFieldIds,
       );
+      applicant = await dbInsertApplicant(fakeApplicant);
     });
 
     it('returns 200 json response', (done) => {
