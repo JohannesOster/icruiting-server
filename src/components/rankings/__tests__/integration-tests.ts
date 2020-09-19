@@ -48,11 +48,21 @@ describe('rankings', () => {
       const screeningForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(screeningForm));
 
+      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeApplForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
-          const applicant = fake.applicant(mockUser.tenant_id, jobId);
+          const applicant = fake.applicant(
+            mockUser.tenant_id,
+            jobId,
+            formFieldIds,
+          );
           promises.push(dbInsertApplicant(applicant));
         });
 
@@ -127,12 +137,21 @@ describe('rankings', () => {
 
       const assessmentForm = fake.assessmentForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(assessmentForm));
+      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeApplForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
-          const applicant = fake.applicant(mockUser.tenant_id, jobId);
+          const applicant = fake.applicant(
+            mockUser.tenant_id,
+            jobId,
+            formFieldIds,
+          );
           promises.push(dbInsertApplicant(applicant));
         });
 

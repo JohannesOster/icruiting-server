@@ -77,37 +77,25 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
         }
 
         // !> filter out non submitted values
-        if (
-          !fields[item.form_field_id] &&
-          (!files[item.form_field_id] || !files[item.form_field_id].size)
-        ) {
+        const fieldExists = fields[item.form_field_id];
+        const file = files[item.form_field_id];
+        const fileExists = file && file.size;
+        if (!fieldExists && !fileExists) {
           if (item.required)
             throw new BaseError(402, `Missing required field: ${item.label}`);
           return acc;
         }
 
-        if (['input', 'textarea', 'date_picker'].includes(item.component)) {
+        if (
+          ['input', 'textarea', 'date_picker', 'select', 'radio'].includes(
+            item.component,
+          )
+        ) {
           console.log(`Got ${item.component}, no mapping required.`);
 
           acc.attributes.push({
-            key: item.label,
-            value: fields[item.form_field_id],
-          });
-        } else if (['select', 'radio'].includes(item.component)) {
-          console.log(`Got ${item.component}, map value to label of option.`);
-          // find the one option where option.value is equal to submitted value value
-          const val = fields[item.form_field_id];
-          const options = item.options?.filter(
-            (option: any) => option.value === val,
-          );
-
-          // throw error if submitted value does not exists in formitem options
-          if (!options?.length)
-            throw new BaseError(402, `Invalid selection: ${item.label}`);
-
-          acc.attributes.push({
-            key: item.label,
-            value: options[0].label,
+            form_field_id: item.form_field_id,
+            attribute_value: fields[item.form_field_id],
           });
         } else if (item.component === 'checkbox') {
           console.log(
@@ -118,14 +106,9 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
             ? fields[item.form_field_id].join(', ')
             : fields[item.form_field_id];
 
-          console.log(fields[item.form_field_id], {
-            key: item.label,
-            value: value,
-          });
-
           acc.attributes.push({
-            key: item.label,
-            value: value,
+            form_field_id: item.form_field_id,
+            attribute_value: value,
           });
         } else if (item.component === 'file_upload') {
           console.log(
@@ -152,12 +135,15 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
           });
 
           promises.push(s3.upload(params).promise());
-          acc.files.push({key: item.label, value: fileKey});
+          acc.attributes.push({
+            form_field_id: item.form_field_id,
+            attribute_value: fileKey,
+          });
         }
 
         return acc;
       },
-      {attributes: [], files: []} as any,
+      {attributes: []} as any,
     );
 
     applicant.files = !!map.files && map.files;

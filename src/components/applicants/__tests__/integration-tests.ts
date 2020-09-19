@@ -60,10 +60,23 @@ describe('applicants', () => {
     let applicants: TApplicant[];
     beforeAll(async () => {
       const applicantsCount = random.number({min: 50, max: 100});
-      const fakeApplicants = Array(applicantsCount)
+      const promises: Promise<TApplicant>[] = Array(applicantsCount)
         .fill(0)
-        .map(() => fake.applicant(mockUser.tenant_id, randomElement(jobIds)));
-      const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
+        .map(async () => {
+          const randJob = randomElement(jobIds);
+          const fakeForm = fake.applicationForm(mockUser.tenant_id, randJob);
+          const form: TForm = await dbInsertForm(fakeForm);
+          const formFieldIds = form.form_fields.map(
+            ({form_field_id}) => form_field_id!,
+          );
+          const fakeAppl = fake.applicant(
+            mockUser.tenant_id,
+            randJob,
+            formFieldIds,
+          );
+          return dbInsertApplicant(fakeAppl);
+        });
+
       applicants = await Promise.all(promises);
     });
 
@@ -93,10 +106,16 @@ describe('applicants', () => {
       const fakeJob = fake.job(tenant_id);
       const {job_id} = await dbInsertJob(fakeJob);
 
+      const fakeForm = fake.applicationForm(tenant_id, job_id);
+      const form: TForm = await dbInsertForm(fakeForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
       const applicantsCount = random.number({min: 50, max: 100});
       const fakeApplicants = Array(applicantsCount)
         .fill(0)
-        .map(() => fake.applicant(tenant_id, job_id));
+        .map(() => fake.applicant(tenant_id, job_id, formFieldIds));
       const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
       await Promise.all(promises);
 
@@ -122,10 +141,16 @@ describe('applicants', () => {
       const fakeJob = fake.job(tenant_id);
       const {job_id} = await dbInsertJob(fakeJob);
 
+      const fakeForm = fake.applicationForm(tenant_id, job_id);
+      const form: TForm = await dbInsertForm(fakeForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
       const applicantsCount = random.number({min: 50, max: 100});
       const fakeApplicants = Array(applicantsCount)
         .fill(0)
-        .map(() => fake.applicant(tenant_id, job_id));
+        .map(() => fake.applicant(tenant_id, job_id, formFieldIds));
       const promises = fakeApplicants.map((appl) => dbInsertApplicant(appl));
       await Promise.all(promises);
 
@@ -198,8 +223,15 @@ describe('applicants', () => {
   describe('GET applicants/:applicant_id/report', () => {
     let applicant: TApplicant;
     beforeAll(async () => {
+      const jobId = randomElement(jobIds);
+      const fakeForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
       applicant = await dbInsertApplicant(
-        fake.applicant(mockUser.tenant_id, randomElement(jobIds)),
+        fake.applicant(mockUser.tenant_id, jobId, formFieldIds),
       );
     });
 
@@ -224,8 +256,15 @@ describe('applicants', () => {
   describe('DELETE /applicants/:applicant_id', () => {
     let applicant: TApplicant;
     beforeEach(async () => {
+      const jobId = randomElement(jobIds);
+      const fakeForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
       applicant = await dbInsertApplicant(
-        fake.applicant(mockUser.tenant_id, randomElement(jobIds)),
+        fake.applicant(mockUser.tenant_id, jobId, formFieldIds),
       );
     });
 

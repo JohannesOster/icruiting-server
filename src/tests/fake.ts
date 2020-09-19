@@ -20,19 +20,17 @@ const fake = {
       {requirement_label: faker.commerce.productName()},
     ],
   }),
-  applicant: (tenant_id: string, job_id: string) => ({
+  applicant: (
+    tenant_id: string,
+    job_id: string,
+    form_field_ids: string[] = [],
+  ) => ({
     tenant_id,
     job_id,
-    attributes: [
-      {key: faker.random.alphaNumeric(), value: faker.random.words()},
-      {key: faker.random.alphaNumeric(), value: faker.random.words()},
-      {key: faker.random.alphaNumeric(), value: faker.random.words()},
-    ],
-    files: [
-      {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
-      {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
-      {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
-    ],
+    attributes: form_field_ids.map((form_field_id) => ({
+      form_field_id,
+      attribute_value: faker.random.words(),
+    })),
   }),
   applicationForm: (tenant_id: string, job_id: string) => ({
     tenant_id,
