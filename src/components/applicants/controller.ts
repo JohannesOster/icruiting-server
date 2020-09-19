@@ -38,8 +38,18 @@ export const getApplicants = catchAsync(async (req, res, next) => {
     });
   });
 
-  const resp = await Promise.all(promises);
-  res.status(200).json(resp);
+  const resp: TApplicant[] = (await Promise.all(promises)) as any;
+  const sortKey = 'Vollständiger Name';
+  const sortedResp = resp.sort((first, second) => {
+    const nameFirst = first.attributes.find(({key}) => key === sortKey)?.value;
+    const nameSecond = second.attributes.find(({key}) => key === sortKey)
+      ?.value;
+    if (!nameFirst || !nameSecond) return 0;
+
+    return nameFirst > nameSecond ? 1 : -1;
+  });
+
+  res.status(200).json(sortedResp);
 });
 
 export const getReport = catchAsync(async (req, res) => {
