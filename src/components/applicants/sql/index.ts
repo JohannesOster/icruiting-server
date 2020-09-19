@@ -3,14 +3,17 @@ import {join} from 'path';
 
 const options = {minify: true};
 
-const selectApplicants = new QueryFile(
+export const selectApplicants = new QueryFile(
   join(__dirname, 'selectApplicants.sql'),
   options,
 );
 
-const selectReport = new QueryFile(
-  join(__dirname, 'selectReport.sql'),
+export const selectApplicant = new QueryFile(
+  join(__dirname, 'selectApplicant.sql'),
   options,
 );
 
-export {selectApplicants, selectReport};
+export const selectReport = new QueryFile(
+  join(__dirname, 'selectReport.sql'),
+  options,
+);

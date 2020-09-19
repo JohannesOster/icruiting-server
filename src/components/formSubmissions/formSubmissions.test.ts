@@ -45,7 +45,17 @@ describe('form-submissions', () => {
       const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(fakeForm));
 
-      const fakeApplicant = fake.applicant(mockUser.tenant_id, jobId);
+      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeApplForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
+      const fakeApplicant = fake.applicant(
+        mockUser.tenant_id,
+        jobId,
+        formFieldIds,
+      );
       promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then((data) => {
@@ -104,7 +114,17 @@ describe('form-submissions', () => {
       const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(fakeForm));
 
-      const fakeApplicant = fake.applicant(mockUser.tenant_id, jobId);
+      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeApplForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
+      const fakeApplicant = fake.applicant(
+        mockUser.tenant_id,
+        jobId,
+        formFieldIds,
+      );
       promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then((data) => {
@@ -175,7 +195,17 @@ describe('form-submissions', () => {
       const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(fakeForm));
 
-      const fakeApplicant = fake.applicant(mockUser.tenant_id, jobId);
+      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeApplForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
+      const fakeApplicant = fake.applicant(
+        mockUser.tenant_id,
+        jobId,
+        formFieldIds,
+      );
       promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then(async (data) => {

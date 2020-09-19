@@ -1,11 +1,11 @@
 import {BaseError, catchAsync} from 'errorHandling';
-import {S3, SESV2} from 'aws-sdk';
+import {S3} from 'aws-sdk';
 import {
   dbSelectApplicants,
   dbSelectReport,
   dbDeleteApplicant,
-  dbSelectApplicantFiles,
   dbUpdateApplicant,
+  dbSelectApplicant,
 } from './database';
 import {getApplicantFileURLs} from './utils';
 import {
@@ -17,6 +17,10 @@ import {
 import {dbSelectForm, TForm} from '../forms';
 import {IncomingForm} from 'formidable';
 import fs from 'fs';
+import pug from 'pug';
+import path from 'path';
+import puppeteer from 'puppeteer';
+import {TApplicant} from './types';
 
 export const getApplicants = catchAsync(async (req, res, next) => {
   const job_id = req.query.job_id as string;
@@ -119,9 +123,10 @@ export const getReport = catchAsync(async (req, res) => {
 
 export const deleteApplicant = catchAsync(async (req, res) => {
   const {applicant_id} = req.params;
+  const {tenant_id} = res.locals.user;
 
-  const data = await dbSelectApplicantFiles(applicant_id);
-  if (data[0] && data[0].files.length) {
+  const data = await dbSelectApplicant(applicant_id, tenant_id);
+  if (data[0] && data[0].files?.length) {
     const files: [{key: string; value: string}] = data[0].files;
     const s3 = new S3();
     const bucket = process.env.S3_BUCKET || '';
@@ -150,7 +155,8 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
       if (!forms.length) throw new BaseError(404, 'Form Not Found');
       const form: TForm = forms[0];
 
-      const oldFiles = (await dbSelectApplicantFiles(applicant_id))[0].files;
+      const oldFiles = (await dbSelectApplicant(applicant_id, tenant_id))[0]
+        .files;
 
       const map = await form.form_fields.reduce(
         async (acc, item) => {
@@ -162,10 +168,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
           }
 
           // !> filter out non submitted values
-          if (
-            !fields[item.form_field_id] &&
-            (!files[item.form_field_id] || !files[item.form_field_id].size)
-          ) {
+          if (!fields[item.form_field_id] && item.component !== 'file_upload') {
             if (item.required)
               throw new BaseError(402, `Missing required field: ${item.label}`);
             return acc;
@@ -173,22 +176,38 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 
           if (item.component === 'file_upload') {
             const file = files[item.form_field_id];
+
+            const oldFile = oldFiles?.find(({key}: any) => key === item.label);
+            if (!file || !file.size) {
+              if (!oldFile) return acc;
+              (await acc).attributes.push({
+                form_field_id: item.form_field_id,
+                attribute_value: oldFile.value,
+              });
+
+              return acc;
+            }
+
             const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
             const fileType =
               extension === 'pdf' ? 'application/pdf' : 'image/jpeg';
-            const oldFile = oldFiles.find(({key}: any) => key === item.label);
-            if (!oldFile) return acc;
-            const fileKey = oldFile.value;
+
+            const fileId = (Math.random() * 1e32).toString(36);
+            let fileKey = form.tenant_id + '.' + fileId + '.' + extension;
+
+            if (oldFile) {
+              fileKey = oldFile.value;
+
+              // delete old file
+              const delParams = {
+                Bucket: process.env.S3_BUCKET || '',
+                Key: fileKey,
+              };
+
+              await s3.deleteObject(delParams).promise();
+            }
+
             const fileStream = await fs.createReadStream(file.path);
-
-            // delete old file
-            const delParams = {
-              Bucket: process.env.S3_BUCKET || '',
-              Key: fileKey,
-            };
-
-            await s3.deleteObject(delParams).promise();
-
             const params = {
               Key: fileKey,
               Bucket: process.env.S3_BUCKET || '',
@@ -202,12 +221,18 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
             });
 
             await s3.upload(params).promise();
+
+            (await acc).attributes.push({
+              form_field_id: item.form_field_id,
+              attribute_value: fileKey,
+            });
+
             return acc;
           }
 
           (await acc).attributes.push({
-            key: item.label,
-            value: fields[item.form_field_id],
+            form_field_id: item.form_field_id,
+            attribute_value: fields[item.form_field_id],
           });
 
           return acc;
@@ -226,4 +251,54 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
       next(error);
     }
   });
+});
+
+export const getPdfReport = catchAsync(async (req, res) => {
+  const {applicant_id} = req.params;
+  const {tenant_id} = res.locals.user;
+
+  const applicants: TApplicant[] = await dbSelectApplicant(
+    applicant_id,
+    tenant_id,
+  );
+  const applicant = applicants[0];
+  if (!applicants.length) throw new BaseError(404, 'Applicant not Found');
+
+  // might later be replaced with db entry
+  const report = {
+    image: 'Bewerbungsfoto (.jpeg)',
+    attributes: ['Vollständiger Name', 'E-Mail-Addresse'],
+  };
+
+  const file = applicant.files?.find(({key}) => key === report.image);
+  if (!file) throw new BaseError(404, 'Report image is missing on applicant');
+  const params = {
+    Bucket: process.env.S3_BUCKET,
+    Key: file.value,
+    Expires: 100,
+  };
+  const imageURL = await new S3().getSignedUrlPromise('getObject', params);
+
+  const attributes = report.attributes.map((key) => {
+    const attr = applicant.attributes.find((attr) => attr.key === key);
+    if (!attr)
+      throw new BaseError(404, 'Report attribute is missing on applicant');
+    return attr;
+  });
+
+  const html = pug.renderFile(path.resolve(__dirname, 'report/report.pug'), {
+    imageURL,
+    attributes,
+  });
+  const browser = await puppeteer.launch({headless: true});
+  const page = await browser.newPage();
+  await page.goto(
+    `data:text/html;base64,${Buffer.from(html).toString('base64')}`,
+    {waitUntil: 'networkidle0'},
+  );
+  const pdf = await page.pdf({format: 'A4'});
+  await browser.close();
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.send(pdf);
 });
