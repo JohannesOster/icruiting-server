@@ -1,4 +1,5 @@
 import db from 'db';
+import {rawText} from 'db/utils';
 import {selectJobs as selectJobsSQL, selectJob as selectJobSQL} from './sql';
 import {TJob} from './types';
 
@@ -46,11 +47,6 @@ export const dbUpdateJob = (job_id: string, tenant_id: string, body: TJob) => {
 
       await t.any('SET CONSTRAINTS job_requirement_id_fk DEFERRED');
       await t.none('DELETE FROM job_requirement WHERE job_id=$1', job_id);
-
-      const rawText = (text: string) => ({
-        toPostgres: () => text,
-        rawType: true,
-      });
 
       const cs = new helpers.ColumnSet(
         [
