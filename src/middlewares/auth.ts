@@ -26,7 +26,7 @@ export const requireAuth: RequestHandler = (req, res, next) => {
     res.locals.user = {
       tenant_id: payload['custom:tenant_id'],
       userPoolID: userPoolID,
-      user_id: payload.user_id,
+      user_id: payload.sub,
       userRole: payload['custom:user_role'],
       email: payload.email,
     };
