@@ -192,7 +192,7 @@ describe('applicants', () => {
       const screening = {
         form_id: form.form_id!,
         applicant_id: randomApplId!,
-        submitter_id: mockUser.sub,
+        submitter_id: mockUser.user_id,
         tenant_id: mockUser.tenant_id,
         comment: random.words(),
         submission: form.form_fields.reduce(

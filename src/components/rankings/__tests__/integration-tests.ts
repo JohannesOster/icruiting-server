@@ -73,7 +73,7 @@ describe('rankings', () => {
         applicants.forEach((appl: TApplicant) => {
           const screening = {
             applicant_id: appl.applicant_id!,
-            submitter_id: mockUser.sub,
+            submitter_id: mockUser.user_id,
             tenant_id: mockUser.tenant_id,
             form_id: form.form_id!,
             submission: form.form_fields.reduce(
@@ -162,7 +162,7 @@ describe('rankings', () => {
         applicants.forEach((appl: TApplicant) => {
           const assessment = {
             applicant_id: appl.applicant_id!,
-            submitter_id: mockUser.sub,
+            submitter_id: mockUser.user_id,
             tenant_id: mockUser.tenant_id,
             form_id: form.form_id!,
             submission: form.form_fields.reduce(

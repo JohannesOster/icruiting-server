@@ -1,5 +1,10 @@
-import {BaseError, catchAsync} from 'errorHandling';
+import fs from 'fs';
+import pug from 'pug';
+import path from 'path';
 import {S3} from 'aws-sdk';
+import puppeteer from 'puppeteer';
+import {IncomingForm} from 'formidable';
+import {BaseError, catchAsync} from 'errorHandling';
 import {
   dbSelectApplicants,
   dbSelectReport,
@@ -7,7 +12,7 @@ import {
   dbUpdateApplicant,
   dbSelectApplicant,
 } from './database';
-import {getApplicantFileURLs} from './utils';
+import {getApplicantFileURLs, sortApplicants, round} from './utils';
 import {
   TScreeningRankingRow,
   TScreeningResultObject,
@@ -15,16 +20,11 @@ import {
   KeyVal,
 } from '../rankings/types';
 import {dbSelectForm, TForm} from '../forms';
-import {IncomingForm} from 'formidable';
-import fs from 'fs';
-import pug from 'pug';
-import path from 'path';
-import puppeteer from 'puppeteer';
 import {TApplicant} from './types';
 
 export const getApplicants = catchAsync(async (req, res, next) => {
   const job_id = req.query.job_id as string;
-  const {tenant_id, sub: user_id} = res.locals.user;
+  const {tenant_id, user_id} = res.locals.user;
   const params = {tenant_id, user_id, job_id};
 
   const applicants = await dbSelectApplicants(params);
@@ -40,24 +40,16 @@ export const getApplicants = catchAsync(async (req, res, next) => {
 
   const resp: TApplicant[] = (await Promise.all(promises)) as any;
   const sortKey = 'Vollständiger Name';
-  const sortedResp = resp.sort((first, second) => {
-    const nameFirst = first.attributes.find(({key}) => key === sortKey)?.value;
-    const nameSecond = second.attributes.find(({key}) => key === sortKey)
-      ?.value;
-    if (!nameFirst || !nameSecond) return 0;
-
-    return nameFirst > nameSecond ? 1 : -1;
-  });
+  const sortedResp = sortApplicants(resp, sortKey);
 
   res.status(200).json(sortedResp);
 });
 
 export const getReport = catchAsync(async (req, res) => {
-  const applicant_id = req.params.applicant_id;
+  const {applicant_id} = req.params;
   const {tenant_id} = res.locals.user;
-  const {form_category} = req.query as {
-    form_category: 'screening' | 'assessment';
-  };
+  type QueryType = {form_category: 'screening' | 'assessment'};
+  const {form_category} = req.query as QueryType;
 
   const params = {applicant_id, tenant_id, form_category};
   const data = await dbSelectReport(params);
@@ -108,14 +100,12 @@ export const getReport = catchAsync(async (req, res) => {
       (acc, [key, value]) => {
         if (value.intent === EFormItemIntent.sumUp) {
           const val = value.value as number;
-          acc[key] = {
-            ...value,
-            value: Math.round((100 * val) / submissions.length) / 100,
-          };
-        } else {
-          acc[key] = value;
+          const average = round(val / submissions.length);
+          acc[key] = {...value, value: average};
+          return acc;
         }
 
+        acc[key] = value;
         return acc;
       },
       {} as any,
@@ -135,9 +125,14 @@ export const deleteApplicant = catchAsync(async (req, res) => {
   const {applicant_id} = req.params;
   const {tenant_id} = res.locals.user;
 
-  const data = await dbSelectApplicant(applicant_id, tenant_id);
-  if (data[0] && data[0].files?.length) {
-    const files: [{key: string; value: string}] = data[0].files;
+  const applicant: TApplicant = await dbSelectApplicant(
+    applicant_id,
+    tenant_id,
+  );
+  if (!applicant) throw new BaseError(404, 'Not Found');
+
+  if (applicant.files?.length) {
+    const files = applicant.files;
     const s3 = new S3();
     const bucket = process.env.S3_BUCKET || '';
     const fileKeys = files.map(({value}) => ({Key: value}));
@@ -145,89 +140,82 @@ export const deleteApplicant = catchAsync(async (req, res) => {
     await s3.deleteObjects(delParams).promise();
   }
 
-  await dbDeleteApplicant(applicant_id);
+  await dbDeleteApplicant(applicant_id, tenant_id);
   res.status(200).json({});
 });
 
 export const updateApplicant = catchAsync(async (req, res, next) => {
   const {tenant_id} = res.locals.user;
   const {applicant_id} = req.params;
-  const formidable = new IncomingForm({multiples: true} as any);
+  const formidable = new IncomingForm();
 
   formidable.parse(req, async (err: Error, fields: any, files: any) => {
     const s3 = new S3();
+    const bucket = process.env.S3_BUCKET || '';
+    const {form_id} = fields;
 
     try {
-      const {form_id} = fields;
       if (!form_id) throw new BaseError(422, 'Missing form_id field');
 
       const forms = await dbSelectForm(form_id);
-      if (!forms.length) throw new BaseError(404, 'Form Not Found');
       const form: TForm = forms[0];
+      if (!form) throw new BaseError(404, 'Form Not Found');
 
-      const oldFiles = (await dbSelectApplicant(applicant_id, tenant_id))[0]
-        .files;
+      const applicant = await dbSelectApplicant(applicant_id, tenant_id);
+      const oldFiles = applicant?.files;
 
       const map = await form.form_fields.reduce(
         async (acc, item) => {
-          if (!item.form_field_id) {
-            throw new BaseError(
-              500,
-              'Received database entry without primary key',
-            );
-          }
+          if (!item.form_field_id) throw new BaseError(500, '');
 
           // !> filter out non submitted values
-          if (!fields[item.form_field_id] && item.component !== 'file_upload') {
-            if (item.required)
-              throw new BaseError(402, `Missing required field: ${item.label}`);
+          const isFile = item.component === 'file_upload';
+          if (!fields[item.form_field_id] && !isFile) {
+            if (item.required) {
+              throw new BaseError(422, `Missing required field: ${item.label}`);
+            }
             return acc;
           }
 
-          if (item.component === 'file_upload') {
+          if (isFile) {
             const file = files[item.form_field_id];
 
             const oldFile = oldFiles?.find(({key}: any) => key === item.label);
-            if (!file || !file.size) {
+            const fileExists = file && file.size;
+            if (fileExists) {
               if (!oldFile) return acc;
-              (await acc).attributes.push({
+
+              const oldFileAttribute = {
                 form_field_id: item.form_field_id,
                 attribute_value: oldFile.value,
-              });
-
+              };
+              (await acc).attributes.push(oldFileAttribute);
               return acc;
             }
 
             const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
-            const fileType =
-              extension === 'pdf' ? 'application/pdf' : 'image/jpeg';
+            const isPDF = extension === 'pdf';
+            const fileType = isPDF ? 'application/pdf' : 'image/jpeg';
 
             const fileId = (Math.random() * 1e32).toString(36);
             let fileKey = form.tenant_id + '.' + fileId + '.' + extension;
 
             if (oldFile) {
               fileKey = oldFile.value;
-
-              // delete old file
-              const delParams = {
-                Bucket: process.env.S3_BUCKET || '',
-                Key: fileKey,
-              };
-
-              await s3.deleteObject(delParams).promise();
+              const params = {Bucket: bucket, Key: fileKey};
+              await s3.deleteObject(params).promise();
             }
 
             const fileStream = await fs.createReadStream(file.path);
             const params = {
               Key: fileKey,
-              Bucket: process.env.S3_BUCKET || '',
+              Bucket: bucket,
               ContentType: fileType,
               Body: fileStream,
             };
 
             fs.unlink(file.path, function (err) {
-              if (err) console.error(err);
-              console.log('Temp File Delete');
+              if (err) throw new BaseError(500, err.message);
             });
 
             await s3.upload(params).promise();
@@ -250,11 +238,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
         {attributes: []} as any,
       );
 
-      const appl = await dbUpdateApplicant(
-        tenant_id,
-        applicant_id,
-        map.attributes,
-      );
+      const appl = await dbUpdateApplicant(applicant_id, map.attributes);
 
       res.status(200).json(appl);
     } catch (error) {
@@ -267,12 +251,11 @@ export const getPdfReport = catchAsync(async (req, res) => {
   const {applicant_id} = req.params;
   const {tenant_id} = res.locals.user;
 
-  const applicants: TApplicant[] = await dbSelectApplicant(
+  const applicant: TApplicant = await dbSelectApplicant(
     applicant_id,
     tenant_id,
   );
-  const applicant = applicants[0];
-  if (!applicants.length) throw new BaseError(404, 'Applicant not Found');
+  if (!applicant) throw new BaseError(404, 'Applicant not Found');
 
   // might later be replaced with db entry
   const report = {
@@ -282,6 +265,7 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
   const file = applicant.files?.find(({key}) => key === report.image);
   if (!file) throw new BaseError(404, 'Report image is missing on applicant');
+
   const params = {
     Bucket: process.env.S3_BUCKET,
     Key: file.value,

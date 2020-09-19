@@ -4,7 +4,7 @@ import {EFormCategory} from 'components/forms';
 const fake = {
   user: (userRole: 'admin' | 'user' = 'admin') => ({
     tenant_id: faker.random.uuid(),
-    sub: faker.random.uuid(),
+    user_id: faker.random.uuid(),
     userRole,
   }),
   tenant: (tenant_id?: string) => ({

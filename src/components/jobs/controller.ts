@@ -30,7 +30,7 @@ export const updateJob = catchAsync(async (req, res) => {
 
 export const deleteJob = catchAsync(async (req, res) => {
   const {job_id} = req.params;
-  const {tenant_id, sub: user_id} = res.locals.user;
+  const {tenant_id, user_id} = res.locals.user;
 
   const applicants: Array<TApplicant> = await dbSelectApplicants({
     job_id,

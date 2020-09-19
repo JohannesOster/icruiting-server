@@ -2,32 +2,29 @@ import db from '../../db';
 import {selectApplicants, selectReport, selectApplicant} from './sql';
 import {TApplicantDb} from './types';
 
-export const dbInsertApplicant = async (applicant: TApplicantDb) => {
+export const dbInsertApplicant = async ({
+  tenant_id,
+  job_id,
+  attributes,
+}: TApplicantDb) => {
   const helpers = db.$config.pgp.helpers;
 
   try {
-    const {tenant_id, job_id} = applicant;
-    const applStmt =
-      helpers.insert({tenant_id, job_id}, null, 'applicant') + ' RETURNING *';
+    const params = {tenant_id, job_id};
+    const applStmt = helpers.insert(params, null, 'applicant') + ' RETURNING *';
     const {applicant_id} = await db.one(applStmt);
 
-    const cs = new helpers.ColumnSet(
-      ['applicant_id', 'form_field_id', 'attribute_value'],
-      {table: 'applicant_attribute'},
-    );
-
-    const values = applicant.attributes.map((attribute) => ({
+    const columns = ['applicant_id', 'form_field_id', 'attribute_value'];
+    const options = {table: 'applicant_attribute'};
+    const cs = new helpers.ColumnSet(columns, options);
+    const attrs = attributes.map((attribute) => ({
       ...attribute,
       applicant_id,
     }));
-
-    const attrStmt = helpers.insert(values, cs);
-
+    const attrStmt = helpers.insert(attrs, cs);
     await db.any(attrStmt);
 
-    return dbSelectApplicant(applicant_id, applicant.tenant_id).then(
-      (res) => res[0],
-    );
+    return dbSelectApplicant(applicant_id, tenant_id);
   } catch (error) {
     return Promise.reject(error);
   }
@@ -42,7 +39,9 @@ export const dbSelectApplicants = (params: {
 };
 
 export const dbSelectApplicant = (applicant_id: string, tenant_id: string) => {
-  return db.any(selectApplicant, {applicant_id, tenant_id});
+  return db
+    .any(selectApplicant, {applicant_id, tenant_id})
+    .then((res) => res[0]);
 };
 
 export const dbSelectReport = (params: {
@@ -53,12 +52,14 @@ export const dbSelectReport = (params: {
   return db.any(selectReport, params);
 };
 
-export const dbDeleteApplicant = (applicant_id: string) => {
-  return db.none('DELETE FROM applicant WHERE applicant_id=$1', applicant_id);
+export const dbDeleteApplicant = (applicant_id: string, tenant_id: string) => {
+  const stmt =
+    'DELETE FROM applicant' +
+    ' WHERE applicant_id=${applicant_id} AND tenant_id=${tenant_id}';
+  return db.none(stmt, {applicant_id, tenant_id});
 };
 
 export const dbUpdateApplicant = async (
-  tenant_id: string,
   applicant_id: string,
   applicant_attributes: [{form_field_id: string; attriubte_value: string}],
 ) => {
@@ -68,16 +69,14 @@ export const dbUpdateApplicant = async (
   const delStmt = 'DELETE FROM applicant_attribute' + delCond;
   await db.none(delStmt, {applicant_id});
 
-  const cs = new helpers.ColumnSet(
-    ['applicant_id', 'form_field_id', 'attribute_value'],
-    {table: 'applicant_attribute'},
-  );
-
-  const values = applicant_attributes.map((attribute) => ({
+  const columns = ['applicant_id', 'form_field_id', 'attribute_value'];
+  const options = {table: 'applicant_attribute'};
+  const cs = new helpers.ColumnSet(columns, options);
+  const attributes = applicant_attributes.map((attribute) => ({
     ...attribute,
     applicant_id,
   }));
 
-  const stmt = helpers.insert(values, cs);
+  const stmt = helpers.insert(attributes, cs);
   await db.any(stmt);
 };

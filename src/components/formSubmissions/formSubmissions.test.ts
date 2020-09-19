@@ -63,7 +63,7 @@ describe('form-submissions', () => {
 
         return {
           applicant_id: applicant.applicant_id!,
-          submitter_id: mockUser.sub,
+          submitter_id: mockUser.user_id,
           form_id: form.form_id!,
           submission: form.form_fields.reduce(
             (acc: {[form_field_id: string]: string}, item) => {
@@ -133,7 +133,7 @@ describe('form-submissions', () => {
         return {
           applicant_id: applicant.applicant_id!,
           tenant_id: mockUser.tenant_id,
-          submitter_id: mockUser.sub,
+          submitter_id: mockUser.user_id,
           form_id: form.form_id!,
           submission: form.form_fields.reduce(
             (acc: {[form_field_id: string]: string}, item) => {
@@ -214,7 +214,7 @@ describe('form-submissions', () => {
         const formSubmission = {
           applicant_id: applicant.applicant_id!,
           tenant_id: mockUser.tenant_id,
-          submitter_id: mockUser.sub,
+          submitter_id: mockUser.user_id,
           form_id: form.form_id!,
           submission: form.form_fields.reduce(
             (acc: {[form_field_id: string]: string}, item) => {
