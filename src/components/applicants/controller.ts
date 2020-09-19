@@ -182,7 +182,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 
             const oldFile = oldFiles?.find(({key}: any) => key === item.label);
             const fileExists = file && file.size;
-            if (fileExists) {
+            if (!fileExists) {
               if (!oldFile) return acc;
 
               const oldFileAttribute = {
