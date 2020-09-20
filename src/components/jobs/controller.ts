@@ -4,26 +4,22 @@ import {catchAsync} from 'errorHandling';
 import {dbInsertJob, dbSelectJobs, dbUpdateJob, dbDeleteJob} from './database';
 
 export const createJob = catchAsync(async (req, res) => {
-  const job = {
-    job_title: req.body.job_title,
-    tenant_id: res.locals.user.tenant_id,
-    job_requirements: req.body.job_requirements,
-  };
-
-  const resp = await dbInsertJob(job);
+  const {job_title, job_requirements} = req.body;
+  const {tenant_id} = res.locals.user;
+  const params = {job_title, tenant_id, job_requirements};
+  const resp = await dbInsertJob(params);
   res.status(201).json(resp);
 });
 
 export const getJobs = catchAsync(async (req, res) => {
-  const tenant_id = res.locals.user.tenant_id;
+  const {tenant_id} = res.locals.user;
   const resp = await dbSelectJobs(tenant_id);
   res.status(200).json(resp);
 });
 
 export const updateJob = catchAsync(async (req, res) => {
-  const job_id = req.params.job_id;
-  const tenant_id = res.locals.user.tenant_id;
-
+  const {job_id} = req.params;
+  const {tenant_id} = res.locals.user;
   const resp = await dbUpdateJob(job_id, tenant_id, req.body);
   res.status(200).json(resp);
 });
@@ -32,17 +28,14 @@ export const deleteJob = catchAsync(async (req, res) => {
   const {job_id} = req.params;
   const {tenant_id, user_id} = res.locals.user;
 
-  const applicants: Array<TApplicant> = await dbSelectApplicants({
-    job_id,
-    tenant_id,
-    user_id,
-  });
+  const params = {job_id, tenant_id, user_id};
+  const applicants: TApplicant[] = await dbSelectApplicants(params);
 
   const fileKeys = applicants.reduce((acc, {files}) => {
     if (!files) return acc;
     const keys = files?.map(({value}) => value);
     return acc.concat(keys);
-  }, [] as Array<string>);
+  }, [] as string[]);
 
   if (fileKeys.length) {
     const s3 = new S3();

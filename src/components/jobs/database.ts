@@ -4,15 +4,14 @@ import {selectJobs as selectJobsSQL, selectJob as selectJobSQL} from './sql';
 import {TJob} from './types';
 
 export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
-  const helpers = db.$config.pgp.helpers;
+  const {insert, ColumnSet} = db.$config.pgp.helpers;
 
-  const insertJobStmt = helpers.insert(job, null, 'job') + ' RETURNING *';
+  const insertJobStmt = insert(job, null, 'job') + ' RETURNING *';
   const insertedJob = await db.one(insertJobStmt);
 
-  const cs = new helpers.ColumnSet(
-    ['job_id', 'tenant_id', 'requirement_label'],
-    {table: 'job_requirement'},
-  );
+  const columns = ['job_id', 'tenant_id', 'requirement_label'];
+  const options = {table: 'job_requirement'};
+  const cs = new ColumnSet(columns, options);
 
   const requirements = job_requirements.map((req) => ({
     job_id: insertedJob.job_id,
@@ -20,7 +19,7 @@ export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
     ...req,
   }));
 
-  const reqStmt = helpers.insert(requirements, cs) + ' RETURNING *';
+  const reqStmt = insert(requirements, cs) + ' RETURNING *';
 
   return db
     .any(reqStmt)
@@ -38,17 +37,16 @@ export const dbSelectJob = (job_id: string, tenant_id: string) => {
 export const dbUpdateJob = (job_id: string, tenant_id: string, body: TJob) => {
   return db
     .tx(async (t) => {
-      const helpers = db.$config.pgp.helpers;
+      const {insert, update, ColumnSet} = db.$config.pgp.helpers;
 
-      /* Update job title or query job */
       const vals = {job_title: body.job_title};
-      const stmt = helpers.update(vals, null, 'job') + ' WHERE job_id=$1';
+      const stmt = update(vals, null, 'job') + ' WHERE job_id=$1';
       await t.none(stmt, job_id);
 
       await t.any('SET CONSTRAINTS job_requirement_id_fk DEFERRED');
       await t.none('DELETE FROM job_requirement WHERE job_id=$1', job_id);
 
-      const cs = new helpers.ColumnSet(
+      const cs = new ColumnSet(
         [
           {
             name: 'job_requirement_id',
@@ -67,7 +65,7 @@ export const dbUpdateJob = (job_id: string, tenant_id: string, body: TJob) => {
         return tmp;
       });
 
-      const reqStmt = helpers.insert(requirements, cs);
+      const reqStmt = insert(requirements, cs);
       await t.none(reqStmt);
     })
     .then(async () => await dbSelectJob(job_id, tenant_id));

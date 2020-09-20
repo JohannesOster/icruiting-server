@@ -4,8 +4,8 @@ import app from 'app';
 import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/utils';
-import {dbInsertJob} from './database';
-import {TJob} from './types';
+import {dbInsertJob} from '../database';
+import {TJob} from '../types';
 import {dbInsertTenant} from 'components/tenants';
 
 const mockUser = fake.user();
