@@ -8,7 +8,7 @@ export const dbInsertTenant = (params: tenant) => {
   return db.one(stmt);
 };
 
-export const dbDeleteTenant = (tenant_id: string) => {
+export const dbdeleteTenant = (tenant_id: string) => {
   const stmt = 'DELETE FROM tenant WHERE tenant_id=$1';
   return db.none(stmt, tenant_id);
 };
