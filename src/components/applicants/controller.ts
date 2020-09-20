@@ -14,8 +14,8 @@ import {
 } from './database';
 import {getApplicantFileURLs, sortApplicants, round} from './utils';
 import {
-  TScreeningRankingRow,
-  TScreeningResultObject,
+  TRankingRow,
+  TRankingResultObject,
   EFormItemIntent,
   KeyVal,
 } from '../rankings/types';
@@ -54,7 +54,7 @@ export const getReport = catchAsync(async (req, res) => {
   const params = {applicant_id, tenant_id, form_category};
   const data = await dbSelectReport(params);
 
-  const resp = data.map((row: TScreeningRankingRow) => {
+  const resp = data.map((row: TRankingRow) => {
     const {submissions} = row;
     const jobres = {} as any;
     const initialValues = (key: EFormItemIntent) => {
@@ -94,7 +94,7 @@ export const getReport = catchAsync(async (req, res) => {
       );
 
       return acc;
-    }, {} as TScreeningResultObject);
+    }, {} as TRankingResultObject);
 
     const replaceSumByMean = Object.entries(submissionsResult).reduce(
       (acc, [key, value]) => {

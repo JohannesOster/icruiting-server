@@ -31,7 +31,7 @@ type TFormBase = {
 
 export type TFormRequest = {
   form_fields: TFormFieldRequest[];
-};
+} & TFormBase;
 
 export type TForm = {
   form_id: string;

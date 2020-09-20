@@ -1,8 +1,8 @@
 import {BaseError, catchAsync} from 'errorHandling';
 import {dbSelectScreeningRanking, dbSelectAssessmentRanking} from './database';
 import {
-  TScreeningRankingRow,
-  TScreeningResultObject,
+  TRankingRow,
+  TRankingResultObject,
   EFormItemIntent,
   KeyVal,
 } from './types';
@@ -17,9 +17,9 @@ export const getRanking = catchAsync(async (req, res) => {
     data = await dbSelectScreeningRanking(jobId, tenant_id);
   } else if (formCategory === 'assessment') {
     data = await dbSelectAssessmentRanking(jobId, tenant_id);
-  } else throw new BaseError(402, 'Invalid form_category: ' + formCategory);
+  } else throw new BaseError(402, `Invalid form_category: ${formCategory}`);
 
-  const tmp = data.map((row: TScreeningRankingRow) => {
+  const tmp = data.map((row: TRankingRow) => {
     const {submissions} = row;
 
     const initialValues = (key: EFormItemIntent) => {
@@ -53,7 +53,7 @@ export const getRanking = catchAsync(async (req, res) => {
       });
 
       return acc;
-    }, {} as TScreeningResultObject);
+    }, {} as TRankingResultObject);
 
     return {result: submissionsResult, ...row};
   });

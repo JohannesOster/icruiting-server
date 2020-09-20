@@ -3,7 +3,7 @@ import {
   selectForms as selectFormsSQL,
   selectForm as selectFormSQL,
 } from './sql';
-import {TFormRequest} from './types';
+import {TFormRequest, TForm} from './types';
 
 export const dbInsertForm = async ({form_fields, ...form}: TFormRequest) => {
   const helpers = db.$config.pgp.helpers;
