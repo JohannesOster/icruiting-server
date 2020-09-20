@@ -3,9 +3,9 @@ import {
   selectForms as selectFormsSQL,
   selectForm as selectFormSQL,
 } from './sql';
-import {TForm} from './types';
+import {TFormRequest} from './types';
 
-export const dbInsertForm = async ({form_fields, ...form}: TForm) => {
+export const dbInsertForm = async ({form_fields, ...form}: TFormRequest) => {
   const helpers = db.$config.pgp.helpers;
 
   // - insert form
@@ -50,7 +50,7 @@ export const dbSelectForms = (tenant_id: string, job_id?: string) => {
 };
 
 export const dbSelectForm = (form_id: string) => {
-  return db.any(selectFormSQL, {form_id});
+  return db.any(selectFormSQL, {form_id}).then((resp) => resp[0]);
 };
 
 export const dbDeleteForm = (form_id: string) => {
