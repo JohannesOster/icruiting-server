@@ -1,22 +1,21 @@
 import faker from 'faker';
-import {removePrefixFromUserAttribute} from '../utils';
+import {removePrefix} from '../utils';
 
 describe('employees', () => {
-  describe('removePrefixFromUserAttribute', () => {
+  describe('removePrefix', () => {
     it('Removes prefix', () => {
-      const prefix = 'custom';
-      const separator = ':';
+      const prefix = 'custom:';
       const attributeName = faker.random.word();
 
-      const attribute = prefix + separator + attributeName;
-      const result = removePrefixFromUserAttribute(attribute);
+      const attribute = prefix + attributeName;
+      const result = removePrefix(attribute, prefix);
 
       expect(result).toBe(attributeName);
     });
 
-    it('Does nothing without prefix', () => {
+    it('Does nothing if word does not have prefix', () => {
       const attributeName = faker.random.word();
-      const result = removePrefixFromUserAttribute(attributeName);
+      const result = removePrefix(attributeName, 'custom:');
 
       expect(result).toBe(attributeName);
     });
