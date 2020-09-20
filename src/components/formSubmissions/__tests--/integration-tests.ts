@@ -9,8 +9,8 @@ import {dbInsertTenant} from 'components/tenants';
 import {dbInsertJob} from 'components/jobs';
 import {dbInsertApplicant} from 'components/applicants';
 import {TApplicant} from 'components/applicants';
-import {TFormSubmission} from './types';
-import {dbInsertFormSubmission} from './database';
+import {TFormSubmission} from '../types';
+import {dbInsertFormSubmission} from '../database';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({

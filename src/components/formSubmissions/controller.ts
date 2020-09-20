@@ -8,13 +8,7 @@ import {
 export const getFormSubmission = catchAsync(async (req, res) => {
   const {user_id, tenant_id} = res.locals.user;
   const {form_id, applicant_id} = req.params;
-  const params = {
-    form_id,
-    applicant_id,
-    submitter_id: user_id,
-    tenant_id,
-  };
-
+  const params = {form_id, applicant_id, submitter_id: user_id, tenant_id};
   const resp = await dbSelectFormSubmission(params);
   res.status(200).json(resp);
 });
