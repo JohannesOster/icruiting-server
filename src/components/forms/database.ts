@@ -64,9 +64,7 @@ export const dbUpdateForm = async (
 ) => {
   const helpers = db.$config.pgp.helpers;
   const condition = ' WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
-  const orgignialForm: TForm = await dbSelectForm(form_id).then((resp) => {
-    return resp[0];
-  });
+  const orgignialForm: TForm = await dbSelectForm(form_id);
 
   await db.tx(async (t) => {
     // await t.none('SET CONSTRAINTS form_id_row_index_unique DEFERRED');
@@ -166,5 +164,5 @@ export const dbUpdateForm = async (
     }
   });
 
-  return dbSelectForm(form_id).then((resp) => resp[0]);
+  return dbSelectForm(form_id);
 };

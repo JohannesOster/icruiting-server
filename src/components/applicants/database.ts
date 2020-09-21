@@ -32,10 +32,12 @@ export const dbInsertApplicant = async ({
 
 export const dbSelectApplicants = (params: {
   job_id?: string;
+  applicant_id?: string;
   tenant_id: string;
   user_id: string;
 }) => {
-  return db.any(selectApplicants, params);
+  const defaultParams = {job_id: null, applicant_id: null};
+  return db.any(selectApplicants, {...defaultParams, ...params});
 };
 
 export const dbSelectApplicant = (applicant_id: string, tenant_id: string) => {

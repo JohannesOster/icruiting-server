@@ -22,10 +22,10 @@ import {
 import {dbSelectForm, TForm} from '../forms';
 import {TApplicant} from './types';
 
-export const getApplicants = catchAsync(async (req, res, next) => {
-  const job_id = req.query.job_id as string;
+export const getApplicants = catchAsync(async (req, res) => {
+  const {job_id, applicant_id} = req.query as any;
   const {tenant_id, user_id} = res.locals.user;
-  const params = {tenant_id, user_id, job_id};
+  const params = {tenant_id, user_id, job_id, applicant_id};
 
   const applicants = await dbSelectApplicants(params);
 
@@ -43,6 +43,22 @@ export const getApplicants = catchAsync(async (req, res, next) => {
   const sortedResp = sortApplicants(resp, sortKey);
 
   res.status(200).json(sortedResp);
+});
+
+export const getApplicant = catchAsync(async (req, res) => {
+  const {applicant_id} = req.params;
+  const {tenant_id, user_id} = res.locals.user;
+  const params = {tenant_id, user_id, applicant_id};
+
+  const applicant = await dbSelectApplicants(params).then((res) => res[0]);
+  if (!applicant) throw new BaseError(404, 'Not Found');
+
+  const resp = await getApplicantFileURLs(applicant.files).then((files) => ({
+    ...applicant,
+    files,
+  }));
+
+  res.status(200).json(resp);
 });
 
 export const getReport = catchAsync(async (req, res) => {
@@ -157,8 +173,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
     try {
       if (!form_id) throw new BaseError(422, 'Missing form_id field');
 
-      const forms = await dbSelectForm(form_id);
-      const form: TForm = forms[0];
+      const form: TForm | undefined = await dbSelectForm(form_id);
       if (!form) throw new BaseError(404, 'Form Not Found');
 
       const applicant = await dbSelectApplicant(applicant_id, tenant_id);

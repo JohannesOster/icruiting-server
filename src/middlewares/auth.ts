@@ -17,11 +17,11 @@ export const requireAuth: RequestHandler = catchAsync(
     const authHeader = req.header('Authorization');
     if (!authHeader) throw new BaseError(401, 'Missing Authorization header');
 
-    const token = !authHeader.split(' ')[1];
-    if (token) throw new BaseError(401, 'Invalid Token');
+    const token = authHeader.split(' ')[1];
+    if (!token) throw new BaseError(401, 'Invalid Token');
 
     cognitoExpress.validate(token, (err: Error, payload: any) => {
-      if (err) throw new BaseError(401, err.message);
+      if (err) next(new BaseError(401, err.message));
 
       const lastSlashIdx = payload.iss.lastIndexOf('/');
       const userPoolID = payload.iss.substring(lastSlashIdx + 1);
@@ -38,8 +38,10 @@ export const requireAuth: RequestHandler = catchAsync(
   },
 );
 
-export const requireAdmin: RequestHandler = (req, res, next) => {
-  const userRole = res.locals.user.userRole;
-  if (userRole !== 'admin') throw new BaseError(401, 'Admin required');
-  next();
-};
+export const requireAdmin: RequestHandler = catchAsync(
+  async (req, res, next) => {
+    const userRole = res.locals.user.userRole;
+    if (userRole !== 'admin') throw new BaseError(401, 'Admin required');
+    next();
+  },
+);

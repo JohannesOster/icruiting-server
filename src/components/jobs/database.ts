@@ -26,12 +26,15 @@ export const dbInsertJob = async ({job_requirements, ...job}: TJob) => {
     .then((job_requirements) => ({job_requirements, ...insertedJob}));
 };
 
-export const dbSelectJobs = (tenant_id: string) => {
-  return db.any(selectJobsSQL, {tenant_id});
+export const dbSelectJobs = (
+  tenant_id: string,
+  job_id: string | null = null,
+) => {
+  return db.any(selectJobsSQL, {tenant_id, job_id});
 };
 
 export const dbSelectJob = (job_id: string, tenant_id: string) => {
-  return db.one(selectJobSQL, {job_id, tenant_id});
+  return db.any(selectJobsSQL, {tenant_id, job_id}).then((resp) => resp[0]);
 };
 
 export const dbUpdateJob = (job_id: string, tenant_id: string, body: TJob) => {

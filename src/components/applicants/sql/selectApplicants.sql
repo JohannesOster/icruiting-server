@@ -25,5 +25,6 @@ LEFT JOIN
 ON screening.applicant_id = applicant.applicant_id
 WHERE applicant.tenant_id = ${tenant_id}
   AND (applicant.job_id = ${job_id} OR ${job_id} IS NULL)
+  AND (applicant.applicant_id = ${applicant_id} OR ${applicant_id} IS NULL)
 GROUP BY applicant.applicant_id
  

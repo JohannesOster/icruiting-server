@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getApplicants,
+  getApplicant,
   getReport,
   deleteApplicant,
   updateApplicant,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.use(requireAuth);
 router.get('/', validateGetApplicants, validate, getApplicants);
+router.get('/:applicant_id', getApplicant);
 
 router.use(requireAdmin);
 router.get('/:applicant_id/report', validateGetReport, validate, getReport);

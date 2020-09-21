@@ -1,6 +1,6 @@
 import {S3} from 'aws-sdk';
 import {dbSelectApplicants, TApplicant} from 'components/applicants';
-import {catchAsync} from 'errorHandling';
+import {BaseError, catchAsync} from 'errorHandling';
 import {dbInsertJob, dbSelectJobs, dbUpdateJob, dbDeleteJob} from './database';
 
 export const createJob = catchAsync(async (req, res) => {
@@ -14,6 +14,14 @@ export const createJob = catchAsync(async (req, res) => {
 export const getJobs = catchAsync(async (req, res) => {
   const {tenant_id} = res.locals.user;
   const resp = await dbSelectJobs(tenant_id);
+  res.status(200).json(resp);
+});
+
+export const getJob = catchAsync(async (req, res) => {
+  const {job_id} = req.params;
+  const {tenant_id} = res.locals.user;
+  const resp = await dbSelectJobs(tenant_id, job_id);
+  if (!resp) throw new BaseError(404, 'Not Found');
   res.status(200).json(resp);
 });
 
