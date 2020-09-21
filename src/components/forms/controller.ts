@@ -31,8 +31,9 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
   const form: TForm | undefined = await dbSelectForm(form_id);
   if (!form) throw new BaseError(404, 'Not Found');
 
-  const {protocol, hostname, originalUrl} = req;
-  const submitAction = `${protocol}://${hostname}${originalUrl}`;
+  const {protocol, originalUrl} = req;
+  const host = req.get('host');
+  const submitAction = `${protocol}://${host}${originalUrl}`;
   const params = {formId: form_id, formFields: form.form_fields, submitAction};
   res.header('Content-Type', 'text/html');
   res.render('form', params);
