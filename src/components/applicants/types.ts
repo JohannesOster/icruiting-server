@@ -16,6 +16,6 @@ export type TApplicantDb = {
 export type TReport = {
   tenant_id: string;
   job_id: string;
-  attributes: string[];
-  image?: string;
+  attributes: {label: string; form_item_id: string}[];
+  image?: {label: string; form_item_id: string};
 };

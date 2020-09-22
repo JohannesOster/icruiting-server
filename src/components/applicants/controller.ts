@@ -278,12 +278,12 @@ export const getPdfReport = catchAsync(async (req, res) => {
     applicant.job_id,
   );
 
-  console.log(report);
-
   let htmlParams = {attributes: []} as any;
   if (report) {
     if (report.image) {
-      const file = applicant.files?.find(({key}) => key === report.image);
+      const file = applicant.files?.find(
+        ({key}) => key === report.image?.label,
+      );
       if (!file)
         throw new BaseError(404, 'Report image is missing on applicant');
 
@@ -296,8 +296,8 @@ export const getPdfReport = catchAsync(async (req, res) => {
       htmlParams.imageURL = imageURL;
     }
 
-    const attributes = report.attributes.map((key) => {
-      const attr = applicant.attributes.find((attr) => attr.key === key);
+    const attributes = report.attributes.map(({label}) => {
+      const attr = applicant.attributes.find((attr) => attr.key === label);
       if (!attr)
         throw new BaseError(404, 'Report attribute is missing on applicant');
       return attr;
