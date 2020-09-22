@@ -3,6 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS tenant (
   tenant_id UUID DEFAULT uuid_generate_v4(),
   tenant_name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT tenant_id_pk PRIMARY KEY (tenant_id)
 );
 
