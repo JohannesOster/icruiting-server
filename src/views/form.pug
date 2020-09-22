@@ -10,95 +10,96 @@ html
       include ic-forms.css
 
   body(onload="post_iframe_size();")
-    div(class="ic-overlay" id="ic-overlay")
-      div(class="ic-chase")
-        div(class="ic-chase-dot")
-        div(class="ic-chase-dot")
-        div(class="ic-chase-dot")
-        div(class="ic-chase-dot")
-        div(class="ic-chase-dot")
-        div(class="ic-chase-dot")
-    form(
-      class="ic-form",
-      method="POST",
-      id=formId,
-      action=submitAction,
-      enctype="multipart/form-data")
+    div(id='ic-iframe-container')
+      div(class="ic-overlay" id="ic-overlay")
+        div(class="ic-chase")
+          div(class="ic-chase-dot")
+          div(class="ic-chase-dot")
+          div(class="ic-chase-dot")
+          div(class="ic-chase-dot")
+          div(class="ic-chase-dot")
+          div(class="ic-chase-dot")
+      form(
+        class="ic-form",
+        method="POST",
+        id=formId,
+        action=submitAction,
+        enctype="multipart/form-data")
 
-      each formField in formFields
-        div(class="ic-form-field-container")
-          label(for=formField.form_field_id class="ic-font-300") #{formField.label}#{formField.required  && '*'}
-          span(class="ic-description ic-font-200") #{formField.description}
-          case formField.component
-            when "input" 
-              input(
-                class="ic-input ic-font-200",
-                id=formField.form_field_id,
-                name=formField.form_field_id,
-                placeholder=formField.placeholder,
-                required=formField.required, 
-                type=formField.props.type || 'text'
-              )
-            when "date_picker"
-              input(
-                class="ic-input ic-font-200",
-                type="date",
-                id=formField.form_field_id,
-                name=formField.form_field_id,
-                required=formField.required 
-              ) 
-            when "textarea"
-              textarea(
-                class="ic-textarea ic-font-200",
-                id=formField.form_field_id,
-                name=formField.form_field_id,
-                placeholder=formField.placeholder
-                required=formField.required 
-              )
-            when "select"
-              div(class="ic-select-container ic-font-200")
-                select(
-                  class="ic-select",
+        each formField in formFields
+          div(class="ic-form-field-container")
+            label(for=formField.form_field_id class="ic-font-300") #{formField.label}#{formField.required  && '*'}
+            span(class="ic-description ic-font-200") #{formField.description}
+            case formField.component
+              when "input" 
+                input(
+                  class="ic-input ic-font-200",
+                  id=formField.form_field_id,
+                  name=formField.form_field_id,
+                  placeholder=formField.placeholder,
+                  required=formField.required, 
+                  type=formField.props.type || 'text'
+                )
+              when "date_picker"
+                input(
+                  class="ic-input ic-font-200",
+                  type="date",
                   id=formField.form_field_id,
                   name=formField.form_field_id,
                   required=formField.required 
+                ) 
+              when "textarea"
+                textarea(
+                  class="ic-textarea ic-font-200",
+                  id=formField.form_field_id,
+                  name=formField.form_field_id,
+                  placeholder=formField.placeholder
+                  required=formField.required 
                 )
-                  each option in formField.options
-                    option(value=option.value) #{option.label}
-                include select-icon.svg
-            when "radio"
-              each option in formField.options
-                div(style="display: flex")
-                  input(
-                    type="radio"
+              when "select"
+                div(class="ic-select-container ic-font-200")
+                  select(
+                    class="ic-select",
+                    id=formField.form_field_id,
                     name=formField.form_field_id,
-                    value=option.value
-                    checked=formField.default_value === option.value
                     required=formField.required 
                   )
-                  span(style="margin-left: 5px" class="ic-font-200") #{option.label}
-            when "checkbox"
-              each option in formField.options
-                div(style="display: flex")
-                  // required validation currently only works for single option checkbox
-                  input(
-                    type="checkbox"
-                    name=formField.form_field_id,
-                    value=option.value
-                    checked=formField.default_value === option.value
-                    style="margin-top: 3.5px"
-                    required=formField.required && formField.options.length === 1
-                  )
-                  span(style="margin-left: 5px" class="ic-font-200") #{option.label}
-            when "file_upload"
-              input(type="hidden", name=formField.form_field_id id=`fileKey-${formField.form_field_id}`)
-              input(
-                type="file",
-                id=`fileUpload-${formField.form_field_id}`,
-                name=formField.form_field_id,
-                accept=formField.props.accept || "application/pdf, image/jpeg",
-                required=formField.required 
-              )
-            default: span Invalides Formularelement
-      div
-        button(class="ic-submit-button ic-font-300" type="submit") Absenden
+                    each option in formField.options
+                      option(value=option.value) #{option.label}
+                  include select-icon.svg
+              when "radio"
+                each option in formField.options
+                  div(style="display: flex")
+                    input(
+                      type="radio"
+                      name=formField.form_field_id,
+                      value=option.value
+                      checked=formField.default_value === option.value
+                      required=formField.required 
+                    )
+                    span(style="margin-left: 5px" class="ic-font-200") #{option.label}
+              when "checkbox"
+                each option in formField.options
+                  div(style="display: flex")
+                    // required validation currently only works for single option checkbox
+                    input(
+                      type="checkbox"
+                      name=formField.form_field_id,
+                      value=option.value
+                      checked=formField.default_value === option.value
+                      style="margin-top: 3.5px"
+                      required=formField.required && formField.options.length === 1
+                    )
+                    span(style="margin-left: 5px" class="ic-font-200") #{option.label}
+              when "file_upload"
+                input(type="hidden", name=formField.form_field_id id=`fileKey-${formField.form_field_id}`)
+                input(
+                  type="file",
+                  id=`fileUpload-${formField.form_field_id}`,
+                  name=formField.form_field_id,
+                  accept=formField.props.accept || "application/pdf, image/jpeg",
+                  required=formField.required 
+                )
+              default: span Invalides Formularelement
+        div
+          button(class="ic-submit-button ic-font-300" type="submit") Absenden

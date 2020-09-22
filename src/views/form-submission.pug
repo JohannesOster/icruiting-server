@@ -9,7 +9,8 @@ html
       include ic-forms.css
 
   body(onload="post_iframe_size();")
-    if error
-      p Ein Fehler ist aufgetreten #{error}
-    else
-      p Bewerbung erfolgreich abgeschickt!
+    div(id='ic-iframe-container')
+      if error
+        p(class="ic-font-300") Ein Fehler ist aufgetreten #{error}
+      else
+        p(class="ic-font-300") Bewerbung erfolgreich abgeschickt!
