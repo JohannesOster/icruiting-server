@@ -6,6 +6,7 @@ import {
   deleteJob,
   getJob,
   createApplicantReport,
+  updateApplicantReport,
 } from './controller';
 import {validateCreateJob, validateCreateApplicantReport} from './validation';
 import {validate} from 'middlewares/common';
@@ -23,10 +24,17 @@ router.put('/:job_id', updateJob);
 router.delete('/:job_id', deleteJob);
 
 router.post(
-  '/:job_id/applicant-report',
+  '/:job_id/applicant-reports',
   validateCreateApplicantReport,
   validate,
   createApplicantReport,
+);
+
+router.put(
+  '/:job_id/applicant-reports/:applicant_report_id',
+  validateCreateApplicantReport,
+  validate,
+  updateApplicantReport,
 );
 
 export {router as routes};

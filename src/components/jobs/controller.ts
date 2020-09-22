@@ -7,6 +7,7 @@ import {
   dbUpdateJob,
   dbDeleteJob,
   dbInsertApplicantReport,
+  dbUpdateApplicantReport,
 } from './database';
 
 export const createJob = catchAsync(async (req, res) => {
@@ -70,4 +71,12 @@ export const createApplicantReport = catchAsync(async (req, res) => {
   const params = {tenant_id, job_id, ...req.body};
   const report = await dbInsertApplicantReport(params);
   res.status(201).json(report);
+});
+
+export const updateApplicantReport = catchAsync(async (req, res) => {
+  const {tenant_id} = res.locals.user;
+  const {applicant_report_id} = req.params;
+  const params = {tenant_id, applicant_report_id, ...req.body};
+  const report = await dbUpdateApplicantReport(params);
+  res.status(200).json(report);
 });
