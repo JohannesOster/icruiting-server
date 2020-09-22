@@ -6,25 +6,19 @@ html
     script(src='https://sdk.amazonaws.com/js/aws-sdk-2.680.0.min.js')
     script
       include ic-iframe-resize.js
+      include ic-onSubmit.js
     style
       include ic-forms.css
 
   body(onload="post_iframe_size();")
     div(id='ic-iframe-container')
-      div(class="ic-overlay" id="ic-overlay")
-        div(class="ic-chase")
-          div(class="ic-chase-dot")
-          div(class="ic-chase-dot")
-          div(class="ic-chase-dot")
-          div(class="ic-chase-dot")
-          div(class="ic-chase-dot")
-          div(class="ic-chase-dot")
       form(
         class="ic-form",
         method="POST",
         id=formId,
         action=submitAction,
-        enctype="multipart/form-data")
+        enctype="multipart/form-data"
+        onSubmit="onSubmit()")
 
         each formField in formFields
           div(class="ic-form-field-container")
@@ -102,4 +96,7 @@ html
                 )
               default: span Invalides Formularelement
         div
-          button(class="ic-submit-button ic-font-300" type="submit") Absenden
+          button(class="ic-submit-button ic-font-300" id="ic-submit-button" type="submit") 
+            span(class="ic-submitt-button-label") Absenden
+            div(class="ic-spinner-container")
+              span(class="ic-spinner")
