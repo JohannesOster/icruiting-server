@@ -1,5 +1,10 @@
 import db from '../../db';
-import {selectApplicants, selectReport, selectApplicant} from './sql';
+import {
+  selectApplicants,
+  selectReport,
+  selectApplicant,
+  selectApplicantReport as selectApplicantReportSQL,
+} from './sql';
 import {TApplicantDb} from './types';
 
 export const dbInsertApplicant = async ({
@@ -80,5 +85,11 @@ export const dbUpdateApplicant = async (
   }));
 
   const stmt = helpers.insert(attributes, cs);
-  await db.any(stmt);
+  return db.any(stmt);
+};
+
+export const dbSelectApplicantReport = (tenant_id: string, job_id: string) => {
+  return db
+    .any(selectApplicantReportSQL, {tenant_id, job_id})
+    .then((resp) => resp[0]);
 };

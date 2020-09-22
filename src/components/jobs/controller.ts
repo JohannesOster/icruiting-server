@@ -1,7 +1,13 @@
 import {S3} from 'aws-sdk';
 import {dbSelectApplicants, TApplicant} from 'components/applicants';
 import {BaseError, catchAsync} from 'errorHandling';
-import {dbInsertJob, dbSelectJobs, dbUpdateJob, dbDeleteJob} from './database';
+import {
+  dbInsertJob,
+  dbSelectJobs,
+  dbUpdateJob,
+  dbDeleteJob,
+  dbInsertApplicantReport,
+} from './database';
 
 export const createJob = catchAsync(async (req, res) => {
   const {job_title, job_requirements} = req.body;
@@ -20,7 +26,7 @@ export const getJobs = catchAsync(async (req, res) => {
 export const getJob = catchAsync(async (req, res) => {
   const {job_id} = req.params;
   const {tenant_id} = res.locals.user;
-  const resp = await dbSelectJobs(tenant_id, job_id);
+  const resp = await dbSelectJobs(tenant_id, job_id).then((resp) => resp[0]);
   if (!resp) throw new BaseError(404, 'Not Found');
   res.status(200).json(resp);
 });
@@ -56,4 +62,12 @@ export const deleteJob = catchAsync(async (req, res) => {
   await dbDeleteJob(job_id, tenant_id);
 
   res.status(200).json({});
+});
+
+export const createApplicantReport = catchAsync(async (req, res) => {
+  const {tenant_id} = res.locals.user;
+  const {job_id} = req.params;
+  const params = {tenant_id, job_id, ...req.body};
+  const report = await dbInsertApplicantReport(params);
+  res.status(201).json(report);
 });

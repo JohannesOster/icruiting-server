@@ -11,6 +11,7 @@ import {
   dbDeleteApplicant,
   dbUpdateApplicant,
   dbSelectApplicant,
+  dbSelectApplicantReport,
 } from './database';
 import {getApplicantFileURLs, sortApplicants, round} from './utils';
 import {
@@ -20,7 +21,7 @@ import {
   KeyVal,
 } from '../rankings/types';
 import {dbSelectForm, TForm} from '../forms';
-import {TApplicant} from './types';
+import {TApplicant, TReport} from './types';
 
 export const getApplicants = catchAsync(async (req, res) => {
   const {job_id, applicant_id} = req.query as any;
@@ -272,33 +273,43 @@ export const getPdfReport = catchAsync(async (req, res) => {
   );
   if (!applicant) throw new BaseError(404, 'Applicant not Found');
 
-  // might later be replaced with db entry
-  const report = {
-    image: 'Bewerbungsfoto (.jpeg)',
-    attributes: ['Vollständiger Name', 'E-Mail-Addresse'],
-  };
+  const report: TReport | undefined = await dbSelectApplicantReport(
+    tenant_id,
+    applicant.job_id,
+  );
 
-  const file = applicant.files?.find(({key}) => key === report.image);
-  if (!file) throw new BaseError(404, 'Report image is missing on applicant');
+  console.log(report);
 
-  const params = {
-    Bucket: process.env.S3_BUCKET,
-    Key: file.value,
-    Expires: 100,
-  };
-  const imageURL = await new S3().getSignedUrlPromise('getObject', params);
+  let htmlParams = {attributes: []} as any;
+  if (report) {
+    if (report.image) {
+      const file = applicant.files?.find(({key}) => key === report.image);
+      if (!file)
+        throw new BaseError(404, 'Report image is missing on applicant');
 
-  const attributes = report.attributes.map((key) => {
-    const attr = applicant.attributes.find((attr) => attr.key === key);
-    if (!attr)
-      throw new BaseError(404, 'Report attribute is missing on applicant');
-    return attr;
-  });
+      const params = {
+        Bucket: process.env.S3_BUCKET,
+        Key: file.value,
+        Expires: 100,
+      };
+      const imageURL = await new S3().getSignedUrlPromise('getObject', params);
+      htmlParams.imageURL = imageURL;
+    }
 
-  const html = pug.renderFile(path.resolve(__dirname, 'report/report.pug'), {
-    imageURL,
-    attributes,
-  });
+    const attributes = report.attributes.map((key) => {
+      const attr = applicant.attributes.find((attr) => attr.key === key);
+      if (!attr)
+        throw new BaseError(404, 'Report attribute is missing on applicant');
+      return attr;
+    });
+
+    htmlParams.attributes = attributes;
+  }
+
+  const html = pug.renderFile(
+    path.resolve(__dirname, 'report/report.pug'),
+    htmlParams,
+  );
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
   await page.goto(

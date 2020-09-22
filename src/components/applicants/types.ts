@@ -12,3 +12,10 @@ export type TApplicantDb = {
   tenant_id: string;
   attributes: Array<{form_field_id: string; attribute_value: string}>;
 };
+
+export type TReport = {
+  tenant_id: string;
+  job_id: string;
+  attributes: string[];
+  image?: string;
+};

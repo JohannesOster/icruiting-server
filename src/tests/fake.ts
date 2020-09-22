@@ -47,6 +47,7 @@ const fake = {
       },
       {
         component: 'checkbox',
+        row_index: 1,
         label: faker.random.word(),
         description: faker.random.words(),
         options: [
@@ -56,18 +57,12 @@ const fake = {
         ],
         editable: true,
         deletable: true,
-        row_index: 1,
       },
       {
-        component: 'select',
+        component: 'file_upload',
         label: faker.random.word(),
         row_index: 2,
         description: faker.random.words(),
-        options: [
-          {label: faker.random.word(), value: faker.random.alphaNumeric()},
-          {label: faker.random.word(), value: faker.random.alphaNumeric()},
-          {label: faker.random.word(), value: faker.random.alphaNumeric()},
-        ],
         editable: true,
         deletable: true,
       },

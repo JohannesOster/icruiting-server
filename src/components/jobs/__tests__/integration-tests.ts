@@ -7,6 +7,7 @@ import {endConnection, truncateAllTables} from 'db/utils';
 import {dbInsertJob} from '../database';
 import {TJob} from '../types';
 import {dbInsertTenant} from 'components/tenants';
+import {dbInsertForm, TForm} from 'components/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -303,6 +304,84 @@ describe('jobs', () => {
       const {count} = await db.one(stmt, job.job_id);
 
       expect(parseInt(count)).toBe(0);
+    });
+  });
+
+  describe('POST /jobs/:job_id/applicant-report', () => {
+    let jobId: string;
+    let report: any;
+    beforeAll(async () => {
+      const fakeJob = fake.job(mockUser.tenant_id);
+      jobId = (await dbInsertJob(fakeJob)).job_id;
+
+      const fakeForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeForm);
+
+      report = form.form_fields.reduce(
+        (acc, {component, form_field_id}) => {
+          if (component === 'file_upload') acc.image = form_field_id;
+          else acc.attributes.push(form_field_id);
+          return acc;
+        },
+        {attributes: [], image: ''} as any,
+      );
+    });
+
+    afterEach(async () => await db.none('TRUNCATE applicant_report CASCADE'));
+
+    it('returns 201 json response', (done) => {
+      request(app)
+        .post(`/jobs/${jobId}/applicant-report`)
+        .set('Accept', 'application/json')
+        .send(report)
+        .expect('Content-Type', /json/)
+        .expect(201, done);
+    });
+
+    it('validates request parameters', (done) => {
+      request(app)
+        .post(`/jobs/${jobId}/applicant-report`)
+        .set('Accept', 'application/json')
+        .send({})
+        .expect('Content-Type', /json/)
+        .expect(422, done);
+    });
+
+    it('returns inserted entity', async () => {
+      const resp = await request(app)
+        .post(`/jobs/${jobId}/applicant-report`)
+        .set('Accept', 'application/json')
+        .send(report)
+        .expect(201);
+
+      expect(resp.body.applicant_report_id).toBeDefined();
+
+      const {count} = await db.one(
+        'SELECT COUNT(*) FROM applicant_report WHERE applicant_report_id=$1',
+        resp.body.applicant_report_id,
+      );
+
+      expect(parseInt(count)).toBe(1);
+
+      expect(resp.body.image).toBe(report.image);
+    });
+
+    it('allowes empty attributes result', (done) => {
+      request(app)
+        .post(`/jobs/${jobId}/applicant-report`)
+        .set('Accept', 'application/json')
+        .send({attributes: [], image: report.image})
+        .expect('Content-Type', /json/)
+        .expect(201, done);
+    });
+
+    it('allowes undefined image', (done) => {
+      request(app)
+        .post(`/jobs/${jobId}/applicant-report`)
+        .set('Accept', 'application/json')
+        .send({attributes: []})
+        .expect('Content-Type', /json/)
+        .expect(201, done);
     });
   });
 });

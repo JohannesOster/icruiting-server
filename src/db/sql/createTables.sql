@@ -101,3 +101,22 @@ CREATE TABLE IF NOT EXISTS form_submission (
   CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS applicant_report (
+  applicant_report_id UUID DEFAULT  uuid_generate_v4(),
+  tenant_id UUID NOT NULL,
+  job_id UUID NOT NULL,
+  image UUID DEFAULT NULL,
+  CONSTRAINT applicant_report_id_pk PRIMARY KEY (applicant_report_id),
+  CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE,
+  CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
+  CONSTRAINT image_fk FOREIGN KEY (image) REFERENCES form_field(form_field_id) ON DELETE CASCADE,
+  CONSTRAINT tenant_id_job_id_uq UNIQUE (tenant_id, job_id)
+);
+
+CREATE TABLE IF NOT EXISTS applicant_report_field (
+  applicant_report_id UUID,
+  form_field_id UUID,
+  CONSTRAINT applicant_report_id_form_field_id_pk PRIMARY KEY (applicant_report_id, form_field_id),
+  CONSTRAINT applicant_report_id_fk FOREIGN KEY (applicant_report_id) REFERENCES applicant_report(applicant_report_id) ON DELETE CASCADE,
+  CONSTRAINT form_field_id_fk FOREIGN KEY (form_field_id) REFERENCES form_field(form_field_id) ON DELETE CASCADE
+);

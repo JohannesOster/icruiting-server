@@ -9,7 +9,8 @@ html
     div(class="page-container")
       h1 Bewerber*innengutachten
       header(class="header-container")
-        img(src=imageURL height="150px" width="auto")
+        if !!imageURL
+          img(src=imageURL height="150px" width="auto")
         section(style="display:grid;row-gap:8px;")
           h4 Bewerber*in
           table

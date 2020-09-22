@@ -79,3 +79,42 @@ export const dbDeleteJob = (job_id: string, tenant_id: string) => {
     'DELETE FROM job WHERE job_id=${job_id} AND tenant_id=${tenant_id}';
   return db.none(stmt, {job_id, tenant_id});
 };
+
+type DbInsertApplicantReportParams = {
+  job_id: string;
+  tenant_id: string;
+  attributes: string[];
+  image: string;
+};
+export const dbInsertApplicantReport = async ({
+  job_id,
+  tenant_id,
+  attributes,
+  image,
+}: DbInsertApplicantReportParams) => {
+  const {insert, ColumnSet} = db.$config.pgp.helpers;
+
+  const params = {job_id, tenant_id, image};
+  const insertApplicantReportStmt =
+    insert(params, null, 'applicant_report') + ' RETURNING *';
+  const insertedApplicantReport = await db.one(insertApplicantReportStmt);
+
+  if (!attributes.length) {
+    return Promise.resolve({attributes: [], ...insertedApplicantReport});
+  }
+
+  const columns = ['applicant_report_id', 'form_field_id'];
+  const options = {table: 'applicant_report_field'};
+  const cs = new ColumnSet(columns, options);
+
+  const attrs = attributes.map((form_field_id) => ({
+    applicant_report_id: insertedApplicantReport.applicant_report_id,
+    form_field_id,
+  }));
+
+  const attrsStmt = insert(attrs, cs) + ' RETURNING *';
+
+  return db
+    .any(attrsStmt)
+    .then((attributes) => ({attributes, ...insertedApplicantReport}));
+};
