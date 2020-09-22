@@ -85,7 +85,6 @@ describe('rankings', () => {
               },
               {},
             ),
-            comment: faker.random.words(),
           };
 
           promises.push(dbInsertFormSubmission(screening));
@@ -174,7 +173,6 @@ describe('rankings', () => {
               },
               {},
             ),
-            comment: faker.random.words(),
           };
 
           promises.push(dbInsertFormSubmission(assessment));

@@ -3,5 +3,4 @@ export type TFormSubmission = {
   submitter_id: string;
   form_id: string;
   submission: {[form_field_id: string]: string};
-  comment: string;
 };

@@ -11,7 +11,6 @@ export const dbInsertFormSubmission = (submission: TFormSubmission) => {
       'form_id',
       'tenant_id',
       {name: 'submission', mod: ':json', cast: 'jsonb'},
-      {name: 'comment', def: null},
     ],
     {table: 'form_submission'},
   );
@@ -26,7 +25,6 @@ export const dbUpdateFormSubmission = (params: {
   applicant_id: string;
   tenant_id: string;
   submission?: {[key: string]: string | number};
-  comment?: string;
 }) => {
   const condition =
     ' WHERE submitter_id=${submitter_id} ' +
@@ -34,7 +32,7 @@ export const dbUpdateFormSubmission = (params: {
     'AND form_id=${form_id} ' +
     'AND tenant_id=${tenant_id}';
 
-  if (!params.submission && !params.comment) {
+  if (!params.submission) {
     return db.one('SELECT * FROM form_submission' + condition, params);
   }
 
@@ -47,7 +45,6 @@ export const dbUpdateFormSubmission = (params: {
         cast: 'jsonb',
         skip: () => !!!params.submission,
       },
-      {name: 'comment', skip: () => !!!params.comment},
     ],
     {table: 'form_submission'},
   );

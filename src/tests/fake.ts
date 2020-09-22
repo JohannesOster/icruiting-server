@@ -118,6 +118,25 @@ const fake = {
       },
     ],
   }),
+  formSubmission: (
+    tenant_id: string,
+    applicant_id: string,
+    submitter_id: string,
+    form_id: string,
+    form_field_ids: string[],
+  ) => ({
+    tenant_id,
+    applicant_id,
+    submitter_id,
+    form_id,
+    submission: form_field_ids.reduce(
+      (acc: {[form_field_id: string]: string}, curr) => {
+        acc[curr] = faker.random.number({min: 0, max: 5}).toString();
+        return acc;
+      },
+      {},
+    ),
+  }),
 };
 
 export default fake;

@@ -74,7 +74,6 @@ describe('form-submissions', () => {
             },
             {},
           ),
-          comment: faker.random.words(),
         };
       });
 
@@ -101,7 +100,6 @@ describe('form-submissions', () => {
       expect(resp.body.form_id).toBe(formSubmission.form_id);
       expect(resp.body.applicant_id).toBe(formSubmission.applicant_id);
       expect(resp.body.submitter_id).toBe(formSubmission.submitter_id);
-      expect(resp.body.comment).toBe(formSubmission.comment);
       expect(resp.body.submission).toStrictEqual(formSubmission.submission);
     });
   });
@@ -144,7 +142,6 @@ describe('form-submissions', () => {
             },
             {},
           ),
-          comment: faker.random.words(),
         };
       });
 
@@ -167,7 +164,6 @@ describe('form-submissions', () => {
 
     it('Returns updated entity', async () => {
       await dbInsertFormSubmission(formSubmission);
-      const newVals = {comment: faker.random.words()};
       const resp = await request(app)
         .put(
           `/form-submissions/${formSubmission.form_id}/${formSubmission.applicant_id}`,
@@ -181,9 +177,6 @@ describe('form-submissions', () => {
       expect(resp.body.applicant_id).toBe(formSubmission.applicant_id);
       expect(resp.body.submitter_id).toBe(formSubmission.submitter_id);
       expect(resp.body.submission).toStrictEqual(formSubmission.submission);
-
-      // make shure comment is updated
-      expect(resp.body.comment).toBe(newVals.comment);
     });
   });
 
@@ -225,7 +218,6 @@ describe('form-submissions', () => {
             },
             {},
           ),
-          comment: faker.random.words(),
         };
 
         return await dbInsertFormSubmission(formSubmission);
