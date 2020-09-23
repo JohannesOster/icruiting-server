@@ -56,7 +56,7 @@ export const dbSelectReport = (params: {
   applicant_id: string;
   form_category: 'screening' | 'assessment';
 }) => {
-  return db.any(selectReport, params);
+  return db.any(selectReport, params).then((resp) => resp[0]);
 };
 
 export const dbDeleteApplicant = (applicant_id: string, tenant_id: string) => {
