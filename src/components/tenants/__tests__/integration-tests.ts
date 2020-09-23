@@ -64,11 +64,12 @@ describe('tenants', () => {
     it('returns 422 on missing params', async (done) => {
       request(app)
         .post('/tenants')
+        .send({})
         .set('Accept', 'application/json')
         .expect(422, done);
     });
 
-    it('returns inserts tenant entity', async () => {
+    it('returns inserted tenant entity', async () => {
       const tenant = fake.tenant();
       const resp = await request(app)
         .post('/tenants')
@@ -76,11 +77,8 @@ describe('tenants', () => {
         .send(tenant)
         .expect(201);
 
-      const stmt = 'SELECT * FROM tenant WHERE tenant_id=$1';
-      const result = await db.one(stmt, resp.body.tenant_id);
-
-      expect(result.tenant_name).toBe(tenant.tenant_name);
-      expect(!!result.tenant_id).toBe(true);
+      expect(resp.body.tenant_name).toBe(tenant.tenant_name);
+      expect(!!resp.body.tenant_id).toBe(true);
     });
   });
 
@@ -89,7 +87,6 @@ describe('tenants', () => {
       const fakeTenant = fake.tenant(mockUser.tenant_id);
       await dbInsertTenant(fakeTenant);
     });
-    afterEach(async () => await db.none('TRUNCATE tenant CASCADE'));
 
     it('returns 200 json response', (done) => {
       request(app)
@@ -100,8 +97,8 @@ describe('tenants', () => {
     });
 
     it('deletes tenant of authenticated user', async () => {
-      const query = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
-      const {count} = await db.one(query, mockUser.tenant_id);
+      const stmt = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
+      const {count} = await db.one(stmt, mockUser.tenant_id);
       expect(parseInt(count)).toBe(1);
 
       await request(app)
@@ -110,7 +107,7 @@ describe('tenants', () => {
         .expect('Content-Type', /json/)
         .expect(200);
 
-      const {count: countAfter} = await db.one(query, mockUser.tenant_id);
+      const {count: countAfter} = await db.one(stmt, mockUser.tenant_id);
       expect(parseInt(countAfter)).toBe(0);
     });
   });

@@ -1,5 +1,5 @@
 import express from 'express';
-import {createTenant, deletetenant} from './controller';
+import {createTenant, deleteTenant} from './controller';
 import {createTenantRules} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth, requireAdmin} from 'middlewares';
@@ -10,6 +10,6 @@ router.post('/', createTenantRules, validate, createTenant);
 
 router.use(requireAuth);
 router.use(requireAdmin);
-router.delete('/', deletetenant);
+router.delete('/', deleteTenant);
 
 export {router as routes};

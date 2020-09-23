@@ -1,5 +1,5 @@
 import {random, image} from 'faker';
-import {getApplicantFileURLs} from '../utils';
+import {getApplicantFileURLs, sortApplicants, round} from '../utils';
 
 const mockURL = image.imageUrl();
 jest.mock('aws-sdk', () => ({
@@ -24,6 +24,60 @@ describe('applicant', () => {
       const resp = await getApplicantFileURLs(files);
 
       expect(resp).toStrictEqual(expectedResult);
+    });
+  });
+  describe('sort applicants', () => {
+    it('sorts applicants based on sort key', async () => {
+      const sortKey = random.alphaNumeric();
+      const base = {
+        job_id: random.uuid(),
+        tenant_id: random.uuid(),
+        applicant_id: random.uuid(),
+      };
+      const applicants = [
+        {
+          ...base,
+          attributes: [
+            {key: sortKey, value: 'a'},
+            {key: random.alphaNumeric(), value: image.imageUrl()},
+            {key: random.alphaNumeric(), value: image.imageUrl()},
+          ],
+        },
+        {
+          ...base,
+          attributes: [
+            {key: sortKey, value: 'c'},
+            {key: random.alphaNumeric(), value: image.imageUrl()},
+            {key: random.alphaNumeric(), value: image.imageUrl()},
+          ],
+        },
+        {
+          ...base,
+          attributes: [
+            {key: sortKey, value: 'b'},
+            {key: random.alphaNumeric(), value: image.imageUrl()},
+            {key: random.alphaNumeric(), value: image.imageUrl()},
+          ],
+        },
+      ];
+
+      const expectedResult = applicants.sort((a, b) =>
+        a.attributes[0] > b.attributes[0] ? 1 : -1,
+      );
+      const resp = sortApplicants(applicants, sortKey);
+      expect(resp).toStrictEqual(expectedResult);
+    });
+  });
+  describe('round', () => {
+    it('rounds default to 2 digits', () => {
+      const numb = 1.234;
+      const result = round(numb);
+      expect(result).toBe(1.23);
+    });
+    it('rounds default to provided digits', () => {
+      const numb = 1.2345678;
+      const result = round(numb, 3);
+      expect(result).toBe(1.235);
     });
   });
 });

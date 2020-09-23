@@ -1,6 +1,3 @@
-export const removePrefixFromUserAttribute = (
-  attribute: string,
-  separator: string = ':',
-) => {
-  return attribute.split(separator).slice(-1)[0];
+export const removePrefix = (attribute: string, prefix: string) => {
+  return attribute.split(prefix).slice(-1)[0];
 };

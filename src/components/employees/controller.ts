@@ -1,6 +1,6 @@
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
 import {catchAsync} from 'errorHandling';
-import {removePrefixFromUserAttribute} from './utils';
+import {removePrefix} from './utils';
 
 export const createEmployee = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
@@ -12,7 +12,6 @@ export const createEmployee = catchAsync(async (req, res) => {
       UserPoolId: userPoolID,
       Username: email,
       DesiredDeliveryMediums: ['EMAIL'],
-      //MessageAction: 'SUPPRESS',
       UserAttributes: [
         {Name: 'email', Value: email},
         {Name: 'custom:tenant_id', Value: tenant_id},
@@ -36,13 +35,13 @@ export const getEmployees = catchAsync(async (req, res) => {
     AttributesToGet: ['email', 'name', 'custom:user_role', 'custom:tenant_id'],
   };
 
-  const data = await cIdp.listUsers(params).promise();
+  const {Users} = await cIdp.listUsers(params).promise();
 
-  const userMaps = data['Users']?.map((user) => {
-    // remove "custom:" prefix of Attributes (if it exists)
-    const map = user['Attributes']?.reduce((acc, curr) => {
-      const attrName = removePrefixFromUserAttribute(curr['Name']);
-      acc[attrName] = curr['Value'];
+  const userMaps = Users?.map((user) => {
+    const prefix = 'custom:';
+    const map = user.Attributes?.reduce((acc, curr) => {
+      const attrName = removePrefix(curr.Name, prefix);
+      acc[attrName] = curr.Value;
       return acc;
     }, {} as any);
 

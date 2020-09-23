@@ -9,8 +9,8 @@ import {dbInsertTenant} from 'components/tenants';
 import {dbInsertJob} from 'components/jobs';
 import {dbInsertApplicant} from 'components/applicants';
 import {TApplicant} from 'components/applicants';
-import {TFormSubmission} from './types';
-import {dbInsertFormSubmission} from './database';
+import {TFormSubmission} from '../types';
+import {dbInsertFormSubmission} from '../database';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -45,7 +45,17 @@ describe('form-submissions', () => {
       const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(fakeForm));
 
-      const fakeApplicant = fake.applicant(mockUser.tenant_id, jobId);
+      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeApplForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
+      const fakeApplicant = fake.applicant(
+        mockUser.tenant_id,
+        jobId,
+        formFieldIds,
+      );
       promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then((data) => {
@@ -53,7 +63,7 @@ describe('form-submissions', () => {
 
         return {
           applicant_id: applicant.applicant_id!,
-          submitter_id: mockUser.sub,
+          submitter_id: mockUser.user_id,
           form_id: form.form_id!,
           submission: form.form_fields.reduce(
             (acc: {[form_field_id: string]: string}, item) => {
@@ -64,7 +74,6 @@ describe('form-submissions', () => {
             },
             {},
           ),
-          comment: faker.random.words(),
         };
       });
 
@@ -91,7 +100,6 @@ describe('form-submissions', () => {
       expect(resp.body.form_id).toBe(formSubmission.form_id);
       expect(resp.body.applicant_id).toBe(formSubmission.applicant_id);
       expect(resp.body.submitter_id).toBe(formSubmission.submitter_id);
-      expect(resp.body.comment).toBe(formSubmission.comment);
       expect(resp.body.submission).toStrictEqual(formSubmission.submission);
     });
   });
@@ -104,7 +112,17 @@ describe('form-submissions', () => {
       const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(fakeForm));
 
-      const fakeApplicant = fake.applicant(mockUser.tenant_id, jobId);
+      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeApplForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
+      const fakeApplicant = fake.applicant(
+        mockUser.tenant_id,
+        jobId,
+        formFieldIds,
+      );
       promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then((data) => {
@@ -113,7 +131,7 @@ describe('form-submissions', () => {
         return {
           applicant_id: applicant.applicant_id!,
           tenant_id: mockUser.tenant_id,
-          submitter_id: mockUser.sub,
+          submitter_id: mockUser.user_id,
           form_id: form.form_id!,
           submission: form.form_fields.reduce(
             (acc: {[form_field_id: string]: string}, item) => {
@@ -124,7 +142,6 @@ describe('form-submissions', () => {
             },
             {},
           ),
-          comment: faker.random.words(),
         };
       });
 
@@ -147,7 +164,6 @@ describe('form-submissions', () => {
 
     it('Returns updated entity', async () => {
       await dbInsertFormSubmission(formSubmission);
-      const newVals = {comment: faker.random.words()};
       const resp = await request(app)
         .put(
           `/form-submissions/${formSubmission.form_id}/${formSubmission.applicant_id}`,
@@ -161,9 +177,6 @@ describe('form-submissions', () => {
       expect(resp.body.applicant_id).toBe(formSubmission.applicant_id);
       expect(resp.body.submitter_id).toBe(formSubmission.submitter_id);
       expect(resp.body.submission).toStrictEqual(formSubmission.submission);
-
-      // make shure comment is updated
-      expect(resp.body.comment).toBe(newVals.comment);
     });
   });
 
@@ -175,7 +188,17 @@ describe('form-submissions', () => {
       const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
       promises.push(dbInsertForm(fakeForm));
 
-      const fakeApplicant = fake.applicant(mockUser.tenant_id, jobId);
+      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form: TForm = await dbInsertForm(fakeApplForm);
+      const formFieldIds = form.form_fields.map(
+        ({form_field_id}) => form_field_id!,
+      );
+
+      const fakeApplicant = fake.applicant(
+        mockUser.tenant_id,
+        jobId,
+        formFieldIds,
+      );
       promises.push(dbInsertApplicant(fakeApplicant));
 
       formSubmission = await Promise.all(promises).then(async (data) => {
@@ -184,7 +207,7 @@ describe('form-submissions', () => {
         const formSubmission = {
           applicant_id: applicant.applicant_id!,
           tenant_id: mockUser.tenant_id,
-          submitter_id: mockUser.sub,
+          submitter_id: mockUser.user_id,
           form_id: form.form_id!,
           submission: form.form_fields.reduce(
             (acc: {[form_field_id: string]: string}, item) => {
@@ -195,7 +218,6 @@ describe('form-submissions', () => {
             },
             {},
           ),
-          comment: faker.random.words(),
         };
 
         return await dbInsertFormSubmission(formSubmission);

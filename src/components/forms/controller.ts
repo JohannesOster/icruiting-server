@@ -13,14 +13,14 @@ import {
 import {TForm} from './types';
 
 export const createForm = catchAsync(async (req, res) => {
-  const tenant_id = res.locals.user.tenant_id;
-  const params: TForm = {...req.body, tenant_id};
+  const {tenant_id} = res.locals.user;
+  const params = {...req.body, tenant_id};
   const resp = await dbInsertForm(params);
   res.status(201).json(resp);
 });
 
 export const getForms = catchAsync(async (req, res) => {
-  const tenant_id = res.locals.user.tenant_id;
+  const {tenant_id} = res.locals.user;
   const job_id = req.query.job_id as string;
   const resp = await dbSelectForms(tenant_id, job_id);
   res.status(200).json(resp);
@@ -28,24 +28,21 @@ export const getForms = catchAsync(async (req, res) => {
 
 export const renderHTMLForm = catchAsync(async (req, res) => {
   const {form_id} = req.params;
-  const forms = await dbSelectForm(form_id);
-  if (!forms.length) throw new BaseError(404, 'Not Found');
+  const form: TForm | undefined = await dbSelectForm(form_id);
+  if (!form) throw new BaseError(404, 'Not Found');
 
-  const form = forms[0];
-  const currUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+  const {protocol, originalUrl} = req;
+  const host = req.get('host');
+  const submitAction = `${protocol}://${host}${originalUrl}`;
+  const params = {formId: form_id, formFields: form.form_fields, submitAction};
   res.header('Content-Type', 'text/html');
-  res.render('form', {
-    formID: form.form_id,
-    formItems: form.form_fields,
-    submitAction: currUrl,
-  });
+  res.render('form', params);
 });
 
 export const submitHTMLForm = catchAsync(async (req, res) => {
   const {form_id} = req.params;
-  const forms = await dbSelectForm(form_id);
-  if (!forms.length) throw new BaseError(404, 'Not Found');
-  const form: TForm = forms[0];
+  const form: TForm | undefined = await dbSelectForm(form_id);
+  if (!form) throw new BaseError(404, 'Not Found');
 
   if (form.form_category !== 'application') {
     throw new BaseError(
@@ -54,60 +51,40 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
     );
   }
 
-  // base object with required foreign keys
   const applicant: any = {
     tenant_id: form.tenant_id,
     job_id: form.job_id,
   };
 
-  const formidable = new IncomingForm({multiples: true} as any);
+  const formidable = new IncomingForm();
   formidable.parse(req, (err: Error, fields: any, files: any) => {
-    if (err) throw new BaseError(402, err.message);
+    if (err) throw new BaseError(500, err.message);
 
     const s3 = new S3();
     const promises = [];
 
     const map = form.form_fields.reduce(
       (acc, item) => {
-        if (!item.form_field_id) {
-          throw new BaseError(
-            500,
-            'Received database entry without primary key',
-          );
-        }
-
         // !> filter out non submitted values
-        if (
-          !fields[item.form_field_id] &&
-          (!files[item.form_field_id] || !files[item.form_field_id].size)
-        ) {
+        const fieldExists = fields[item.form_field_id];
+        const file = files[item.form_field_id];
+        const fileExists = file && file.size;
+        if (!fieldExists && !fileExists) {
           if (item.required)
             throw new BaseError(402, `Missing required field: ${item.label}`);
           return acc;
         }
 
-        if (['input', 'textarea', 'date_picker'].includes(item.component)) {
+        if (
+          ['input', 'textarea', 'date_picker', 'select', 'radio'].includes(
+            item.component,
+          )
+        ) {
           console.log(`Got ${item.component}, no mapping required.`);
 
           acc.attributes.push({
-            key: item.label,
-            value: fields[item.form_field_id],
-          });
-        } else if (['select', 'radio'].includes(item.component)) {
-          console.log(`Got ${item.component}, map value to label of option.`);
-          // find the one option where option.value is equal to submitted value value
-          const val = fields[item.form_field_id];
-          const options = item.options?.filter(
-            (option: any) => option.value === val,
-          );
-
-          // throw error if submitted value does not exists in formitem options
-          if (!options?.length)
-            throw new BaseError(402, `Invalid selection: ${item.label}`);
-
-          acc.attributes.push({
-            key: item.label,
-            value: options[0].label,
+            form_field_id: item.form_field_id,
+            attribute_value: fields[item.form_field_id],
           });
         } else if (item.component === 'checkbox') {
           console.log(
@@ -118,14 +95,9 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
             ? fields[item.form_field_id].join(', ')
             : fields[item.form_field_id];
 
-          console.log(fields[item.form_field_id], {
-            key: item.label,
-            value: value,
-          });
-
           acc.attributes.push({
-            key: item.label,
-            value: value,
+            form_field_id: item.form_field_id,
+            attribute_value: value,
           });
         } else if (item.component === 'file_upload') {
           console.log(
@@ -134,13 +106,15 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
           const file = files[item.form_field_id];
           const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
+          const fileType =
+            extension === 'pdf' ? 'application/pdf' : 'image/jpeg';
           const fileId = (Math.random() * 1e32).toString(36);
           const fileKey = form.tenant_id + '.' + fileId + '.' + extension;
           const fileStream = fs.createReadStream(file.path);
           const params = {
             Key: fileKey,
             Bucket: process.env.S3_BUCKET || '',
-            ContentType: 'application/pdf',
+            ContentType: fileType,
             Body: fileStream,
           };
 
@@ -150,12 +124,15 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
           });
 
           promises.push(s3.upload(params).promise());
-          acc.files.push({key: item.label, value: fileKey});
+          acc.attributes.push({
+            form_field_id: item.form_field_id,
+            attribute_value: fileKey,
+          });
         }
 
         return acc;
       },
-      {attributes: [], files: []} as any,
+      {attributes: []} as any,
     );
 
     applicant.files = !!map.files && map.files;
@@ -184,9 +161,7 @@ export const deleteForm = catchAsync(async (req, res) => {
 export const updateForm = catchAsync(async (req, res) => {
   const {form_id} = req.params;
   const {tenant_id} = res.locals.user;
-
   const params = {...req.body, tenant_id};
-
   const resp = await dbUpdateForm(form_id, params);
   res.status(200).json(resp);
 });

@@ -1,6 +1,6 @@
 import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
 import {catchAsync} from 'errorHandling';
-import {dbInsertTenant, dbDeleteTenant} from './database';
+import {dbInsertTenant, dbdeleteTenant} from './database';
 
 export const createTenant = catchAsync(async (req, res) => {
   const {tenant_name} = req.body;
@@ -8,9 +8,9 @@ export const createTenant = catchAsync(async (req, res) => {
   res.status(201).json(resp);
 });
 
-export const deletetenant = catchAsync(async (req, res) => {
+export const deleteTenant = catchAsync(async (req, res) => {
   const {userPoolID, tenant_id} = res.locals.user;
-  await dbDeleteTenant(tenant_id);
+  await dbdeleteTenant(tenant_id);
 
   const s3 = new S3();
   const bucket = process.env.S3_BUCKET || '';
@@ -43,6 +43,7 @@ export const deletetenant = catchAsync(async (req, res) => {
 
         return map;
       });
+
       // filter out foreign orgs
       return userMaps?.filter((user) => user['custom:tenant_id'] === tenant_id);
     });

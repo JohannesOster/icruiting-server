@@ -1,30 +1,54 @@
 import db from '../../db';
-import {selectApplicants, selectReport} from './sql';
-import {TApplicant} from './types';
+import {
+  selectApplicants,
+  selectReport,
+  selectApplicant,
+  selectApplicantReport as selectApplicantReportSQL,
+} from './sql';
+import {TApplicantDb} from './types';
 
-export const dbInsertApplicant = (applicant: TApplicant) => {
+export const dbInsertApplicant = async ({
+  tenant_id,
+  job_id,
+  attributes,
+}: TApplicantDb) => {
   const helpers = db.$config.pgp.helpers;
 
-  const cs = new helpers.ColumnSet(
-    [
-      'tenant_id',
-      'job_id',
-      {name: 'attributes', mod: ':json', cast: 'jsonb'},
-      {name: 'files', mod: ':json', cast: 'jsonb', def: null},
-    ],
-    {table: 'applicant'},
-  );
+  try {
+    const params = {tenant_id, job_id};
+    const applStmt = helpers.insert(params, null, 'applicant') + ' RETURNING *';
+    const {applicant_id} = await db.one(applStmt);
 
-  const stmt = helpers.insert(applicant, cs) + ' RETURNING *';
-  return db.one(stmt);
+    const columns = ['applicant_id', 'form_field_id', 'attribute_value'];
+    const options = {table: 'applicant_attribute'};
+    const cs = new helpers.ColumnSet(columns, options);
+    const attrs = attributes.map((attribute) => ({
+      ...attribute,
+      applicant_id,
+    }));
+    const attrStmt = helpers.insert(attrs, cs);
+    await db.any(attrStmt);
+
+    return dbSelectApplicant(applicant_id, tenant_id);
+  } catch (error) {
+    return Promise.reject(error);
+  }
 };
 
 export const dbSelectApplicants = (params: {
   job_id?: string;
+  applicant_id?: string;
   tenant_id: string;
   user_id: string;
 }) => {
-  return db.any(selectApplicants, params);
+  const defaultParams = {job_id: null, applicant_id: null};
+  return db.any(selectApplicants, {...defaultParams, ...params});
+};
+
+export const dbSelectApplicant = (applicant_id: string, tenant_id: string) => {
+  return db
+    .any(selectApplicant, {applicant_id, tenant_id})
+    .then((res) => res[0]);
 };
 
 export const dbSelectReport = (params: {
@@ -35,11 +59,37 @@ export const dbSelectReport = (params: {
   return db.any(selectReport, params);
 };
 
-export const dbSelectApplicantFiles = (applicant_id: string) => {
-  const query = 'SELECT files FROM applicant WHERE applicant_id=$1';
-  return db.any(query, applicant_id);
+export const dbDeleteApplicant = (applicant_id: string, tenant_id: string) => {
+  const stmt =
+    'DELETE FROM applicant' +
+    ' WHERE applicant_id=${applicant_id} AND tenant_id=${tenant_id}';
+  return db.none(stmt, {applicant_id, tenant_id});
 };
 
-export const dbDeleteApplicant = (applicant_id: string) => {
-  return db.none('DELETE FROM applicant WHERE applicant_id=$1', applicant_id);
+export const dbUpdateApplicant = async (
+  applicant_id: string,
+  applicant_attributes: [{form_field_id: string; attriubte_value: string}],
+) => {
+  const helpers = db.$config.pgp.helpers;
+
+  const delCond = ' WHERE applicant_id=${applicant_id}';
+  const delStmt = 'DELETE FROM applicant_attribute' + delCond;
+  await db.none(delStmt, {applicant_id});
+
+  const columns = ['applicant_id', 'form_field_id', 'attribute_value'];
+  const options = {table: 'applicant_attribute'};
+  const cs = new helpers.ColumnSet(columns, options);
+  const attributes = applicant_attributes.map((attribute) => ({
+    ...attribute,
+    applicant_id,
+  }));
+
+  const stmt = helpers.insert(attributes, cs);
+  return db.any(stmt);
+};
+
+export const dbSelectApplicantReport = (tenant_id: string, job_id: string) => {
+  return db
+    .any(selectApplicantReportSQL, {tenant_id, job_id})
+    .then((resp) => resp[0]);
 };

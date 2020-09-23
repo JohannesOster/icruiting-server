@@ -4,7 +4,7 @@ import {EFormCategory} from 'components/forms';
 const fake = {
   user: (userRole: 'admin' | 'user' = 'admin') => ({
     tenant_id: faker.random.uuid(),
-    sub: faker.random.uuid(),
+    user_id: faker.random.uuid(),
     userRole,
   }),
   tenant: (tenant_id?: string) => ({
@@ -20,19 +20,17 @@ const fake = {
       {requirement_label: faker.commerce.productName()},
     ],
   }),
-  applicant: (tenant_id: string, job_id: string) => ({
+  applicant: (
+    tenant_id: string,
+    job_id: string,
+    form_field_ids: string[] = [],
+  ) => ({
     tenant_id,
     job_id,
-    attributes: [
-      {key: faker.random.alphaNumeric(), value: faker.random.words()},
-      {key: faker.random.alphaNumeric(), value: faker.random.words()},
-      {key: faker.random.alphaNumeric(), value: faker.random.words()},
-    ],
-    files: [
-      {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
-      {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
-      {key: faker.random.alphaNumeric(), value: faker.image.imageUrl()},
-    ],
+    attributes: form_field_ids.map((form_field_id) => ({
+      form_field_id,
+      attribute_value: faker.random.words(),
+    })),
   }),
   applicationForm: (tenant_id: string, job_id: string) => ({
     tenant_id,
@@ -49,6 +47,7 @@ const fake = {
       },
       {
         component: 'checkbox',
+        row_index: 1,
         label: faker.random.word(),
         description: faker.random.words(),
         options: [
@@ -58,18 +57,12 @@ const fake = {
         ],
         editable: true,
         deletable: true,
-        row_index: 1,
       },
       {
-        component: 'select',
+        component: 'file_upload',
         label: faker.random.word(),
         row_index: 2,
         description: faker.random.words(),
-        options: [
-          {label: faker.random.word(), value: faker.random.alphaNumeric()},
-          {label: faker.random.word(), value: faker.random.alphaNumeric()},
-          {label: faker.random.word(), value: faker.random.alphaNumeric()},
-        ],
         editable: true,
         deletable: true,
       },
@@ -124,6 +117,25 @@ const fake = {
         deletable: true,
       },
     ],
+  }),
+  formSubmission: (
+    tenant_id: string,
+    applicant_id: string,
+    submitter_id: string,
+    form_id: string,
+    form_field_ids: string[],
+  ) => ({
+    tenant_id,
+    applicant_id,
+    submitter_id,
+    form_id,
+    submission: form_field_ids.reduce(
+      (acc: {[form_field_id: string]: string}, curr) => {
+        acc[curr] = faker.random.number({min: 0, max: 5}).toString();
+        return acc;
+      },
+      {},
+    ),
   }),
 };
 

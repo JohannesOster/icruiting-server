@@ -10,15 +10,10 @@ export type TRankingRow = {
 export type TSubmission = Array<{
   form_field_id: string;
   job_requirement_id?: string;
-  value: number;
+  value: number | string;
+  intent: EFormItemIntent;
+  label: string;
 }>;
-
-export type TScreeningRankingRow = {
-  applicant_id: string;
-  score: number;
-  standard_deviation: number;
-  submissions: Array<TScreeningRankingSubmission>;
-};
 
 export enum EFormItemIntent {
   sumUp = 'sum_up',
@@ -28,14 +23,7 @@ export enum EFormItemIntent {
 
 export type KeyVal = {[key: string]: number};
 
-export type TScreeningRankingSubmission = Array<{
-  form_field_id: string;
-  label: string;
-  intent: EFormItemIntent;
-  value: number | string;
-}>;
-
-export type TScreeningResultObject = {
+export type TRankingResultObject = {
   [form_field_id: string]: {
     label: string;
     intent: EFormItemIntent;

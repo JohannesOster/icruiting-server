@@ -1,6 +1,7 @@
 import {random} from 'faker';
 import {sumUpjobRequirementsScore} from '../utils';
 import {randomElement} from 'utils';
+import {EFormItemIntent} from '../types';
 
 describe('rankings', () => {
   describe('sumUpjobRequirementsScore', () => {
@@ -13,6 +14,8 @@ describe('rankings', () => {
           form_field_id: random.uuid(),
           value: random.number({min: 1, max: 5}),
           job_requirement_id: randomElement(jobRequirements),
+          intent: EFormItemIntent.sumUp,
+          label: '',
         })),
       );
 

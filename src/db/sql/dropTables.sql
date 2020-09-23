@@ -1,4 +1,7 @@
+DROP TABLE IF EXISTS applicant_report_field;
+DROP TABLE IF EXISTS applicant_report;
 DROP TABLE IF EXISTS form_submission;
+DROP TABLE IF EXISTS applicant_attribute;
 DROP TABLE IF EXISTS applicant;
 DROP TABLE IF EXISTS form_field;
 DROP TABLE IF EXISTS form;

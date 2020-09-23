@@ -161,7 +161,7 @@ describe('employees', () => {
       resp.body.forEach((user: any) => {
         expect(user.email).toBeDefined();
         expect(user.tenant_id).toBeDefined();
-        expect(user.role).toBeDefined();
+        expect(user.user_role).toBeDefined();
       });
     });
 
