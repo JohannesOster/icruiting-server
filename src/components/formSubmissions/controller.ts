@@ -22,16 +22,10 @@ export const createFormSubmission = catchAsync(async (req, res) => {
 });
 
 export const updateFormSubmission = catchAsync(async (req, res) => {
-  const {user_id, tenant_id} = res.locals.user;
-  const {form_id, applicant_id} = req.params;
-
-  const params = {
-    ...req.body,
-    form_id,
-    applicant_id,
-    submitter_id: user_id,
-    tenant_id,
-  };
+  const {tenant_id} = res.locals.user;
+  const {form_submission_id} = req.params;
+  const {submission} = req.body;
+  const params = {submission, form_submission_id, tenant_id};
   const resp = await dbUpdateFormSubmission(params);
   res.status(200).json(resp);
 });

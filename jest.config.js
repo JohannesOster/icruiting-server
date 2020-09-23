@@ -1,5 +1,4 @@
 module.exports = {
-  verbose: true,
   forceExit: true,
   preset: 'ts-jest',
   testEnvironment: 'node',

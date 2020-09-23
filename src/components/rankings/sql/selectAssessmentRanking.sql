@@ -9,18 +9,21 @@ FROM
 	(SELECT
 		submitter_id,
 		applicant_id,
-		SUM(VALUE::NUMERIC) FILTER (WHERE form_field.intent = 'sum_up') AS score,
+		SUM(submission_value::NUMERIC) FILTER (WHERE form_field.intent = 'sum_up') AS score,
 		JSON_AGG(JSON_BUILD_OBJECT(
 			'form_field_id', form_field.form_field_id,
 			'label', form_field.label,
 			'intent', form_field.intent,
-			'value', submission_field.value
+			'value', submission_value::NUMERIC
 		)) AS submission
 	FROM form
 	JOIN form_field
 	ON form_field.form_id = form.form_id
 	JOIN
-		(SELECT form_submission.*, KEY::UUID as form_field_id, VALUE FROM form_submission, jsonb_each_text(submission)) AS submission_field
+		(SELECT form_submission.*, form_field_id, submission_value
+			FROM form_submission
+			JOIN form_submission_field
+			ON form_submission.form_submission_id = form_submission_field.form_submission_id) AS submission_field
 	ON submission_field.form_field_id = form_field.form_field_id
 	WHERE form.form_category='assessment'
 		AND form.tenant_id=${tenant_id}

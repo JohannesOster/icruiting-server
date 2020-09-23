@@ -5,3 +5,10 @@ export const createFormSubmissionValidationRules = [
   body('applicant_id').isUUID(),
   body('submission').exists(),
 ];
+
+export const updateFormSubmissionValidationRules = [
+  body('form_id').isUUID(),
+  body('applicant_id').isUUID(),
+  body('form_submission_id').isUUID(),
+  body('submission').exists(),
+];

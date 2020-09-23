@@ -88,21 +88,29 @@ CREATE TABLE IF NOT EXISTS applicant_attribute (
   CONSTRAINT form_field_id_fk FOREIGN KEY (form_field_id) REFERENCES form_field(form_field_id) ON DELETE CASCADE
 );
 
--- Submission of screening or ac form
 CREATE TABLE IF NOT EXISTS form_submission (
-  applicant_id UUID,
-  submitter_id TEXT, -- id of submitting user
-  form_id UUID,
+  form_submission_id UUID DEFAULT uuid_generate_v4(), 
+  applicant_id UUID NOT NULL,
+  submitter_id TEXT NOT NULL, -- id of submitting user
+  form_id UUID NOT NULL,
   tenant_id UUID NOT NULL,
-  submission JSONB NOT NULL, -- {form_field_id,value}
-  CONSTRAINT applicant_id_submitter_id_form_id_pk PRIMARY KEY (applicant_id, submitter_id, form_id),
+  CONSTRAINT form_submission_id_pk PRIMARY KEY (form_submission_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE,
   CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS form_submission_field (
+  form_submission_id UUID,
+  form_field_id UUID,
+  submission_value TEXT,
+  CONSTRAINT form_submission_id_form_field_id_pk PRIMARY KEY (form_submission_id,form_field_id),
+  CONSTRAINT form_submission_id FOREIGN KEY (form_submission_id) REFERENCES form_submission(form_submission_id) ON DELETE CASCADE,
+  CONSTRAINT form_field_id FOREIGN KEY (form_field_id) REFERENCES form_field(form_field_id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS applicant_report (
-  applicant_report_id UUID DEFAULT  uuid_generate_v4(),
+  applicant_report_id UUID DEFAULT uuid_generate_v4(),
   tenant_id UUID NOT NULL,
   job_id UUID NOT NULL,
   image UUID DEFAULT NULL,

@@ -4,7 +4,10 @@ import {
   updateFormSubmission,
   getFormSubmission,
 } from './controller';
-import {createFormSubmissionValidationRules} from './validation';
+import {
+  createFormSubmissionValidationRules,
+  updateFormSubmissionValidationRules,
+} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth} from 'middlewares';
 
@@ -17,7 +20,12 @@ router.post(
   validate,
   createFormSubmission,
 );
-router.put('/:form_id/:applicant_id', updateFormSubmission);
+router.put(
+  '/:form_submission_id',
+  updateFormSubmissionValidationRules,
+  validate,
+  updateFormSubmission,
+);
 router.get('/:form_id/:applicant_id', getFormSubmission);
 
 export {router as routes};
