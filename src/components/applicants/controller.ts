@@ -265,6 +265,9 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 export const getPdfReport = catchAsync(async (req, res) => {
   const {applicant_id} = req.params;
   const {tenant_id} = res.locals.user;
+  const {form_category = 'screening'} = req.query as {
+    form_category?: 'screening' | 'assessment';
+  };
 
   const applicant: TApplicant = await dbSelectApplicant(
     applicant_id,
@@ -272,16 +275,16 @@ export const getPdfReport = catchAsync(async (req, res) => {
   );
   if (!applicant) throw new BaseError(404, 'Applicant not Found');
 
-  const report: TReport | undefined = await dbSelectApplicantReport(
+  const applicantReport: TReport | undefined = await dbSelectApplicantReport(
     tenant_id,
     applicant.job_id,
   );
 
   let htmlParams = {attributes: []} as any;
-  if (report) {
-    if (report.image) {
+  if (applicantReport) {
+    if (applicantReport.image) {
       const file = applicant.files?.find(
-        ({key}) => key === report.image?.label,
+        ({key}) => key === applicantReport.image?.label,
       );
       if (!file)
         throw new BaseError(404, 'Report image is missing on applicant');
@@ -295,7 +298,7 @@ export const getPdfReport = catchAsync(async (req, res) => {
       htmlParams.imageURL = imageURL;
     }
 
-    const attributes = report.attributes.map(({label}) => {
+    const attributes = applicantReport.attributes.map(({label}) => {
       const attr = applicant.attributes.find((attr) => attr.key === label);
       if (!attr)
         throw new BaseError(404, 'Report attribute is missing on applicant');
@@ -304,6 +307,9 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
     htmlParams.attributes = attributes;
   }
+
+  const report = await dbSelectReport({tenant_id, applicant_id, form_category});
+  console.log(report);
 
   const html = pug.renderFile(
     path.resolve(__dirname, 'report/report.pug'),
