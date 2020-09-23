@@ -8,7 +8,7 @@ jest.mock('aws-sdk', () => ({
   })),
 }));
 
-describe('applicant', () => {
+describe('applicants', () => {
   describe('getApplicantFileURLs', () => {
     it('calls S3 getPresigned URL for every file', async () => {
       const files = [

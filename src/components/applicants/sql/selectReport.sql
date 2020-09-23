@@ -16,7 +16,7 @@ FROM
 			'job_requirement_label', job_requirement.requirement_label,
 			'label', form_field.label,
 			'intent', form_field.intent,
-			'value', submission_field.submission_value::NUMERIC
+			'value', submission_value
 		)) AS submission
 	FROM
 		(SELECT job_id FROM applicant WHERE applicant_id = ${applicant_id}) AS appl

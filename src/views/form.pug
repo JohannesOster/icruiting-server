@@ -32,7 +32,7 @@ html
                   name=formField.form_field_id,
                   placeholder=formField.placeholder,
                   required=formField.required, 
-                  type=formField.props.type || 'text'
+                  type=(formField.props && formField.props.type) || 'text'
                 )
               when "date_picker"
                 input(
@@ -91,7 +91,7 @@ html
                   type="file",
                   id=`fileUpload-${formField.form_field_id}`,
                   name=formField.form_field_id,
-                  accept=formField.props.accept || "application/pdf, image/jpeg",
+                  accept=(formField.props && formField.props.accept) || "application/pdf, image/jpeg",
                   required=formField.required 
                 )
               default: span Invalides Formularelement

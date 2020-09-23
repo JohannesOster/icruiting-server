@@ -13,7 +13,7 @@ FROM
 			'form_field_id', form_field.form_field_id,
 			'label', form_field.label,
 			'intent', form_field.intent,
-			'value', submission_value::NUMERIC
+			'value', submission_value
 		)) AS submission
 	FROM form
 	JOIN form_field

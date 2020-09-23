@@ -2,8 +2,8 @@ import request from 'supertest';
 import {internet, random} from 'faker';
 import app from 'app';
 import {endConnection, truncateAllTables} from 'db/utils';
-import {dbInsertTenant} from 'components/tenants';
 import fake from 'tests/fake';
+import dataGenerator from 'tests/dataGenerator';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -72,8 +72,7 @@ jest.mock('aws-sdk', () => ({
 }));
 
 beforeAll(async () => {
-  const fakeTenant = fake.tenant(mockUser.tenant_id);
-  await dbInsertTenant(fakeTenant);
+  await dataGenerator.insertTenant(mockUser.tenant_id);
 });
 
 afterAll(async () => {
