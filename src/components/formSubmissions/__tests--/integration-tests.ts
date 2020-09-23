@@ -169,7 +169,7 @@ describe('form-submissions', () => {
           `/form-submissions/${formSubmission.form_id}/${formSubmission.applicant_id}`,
         )
         .set('Accept', 'application/json')
-        .send(newVals)
+        .send({})
         .expect(200);
 
       // make shure non passed properties stay unchanged
