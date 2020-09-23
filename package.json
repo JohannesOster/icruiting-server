@@ -29,6 +29,7 @@
     "body-parser": "^1.19.0",
     "cognito-express": "^2.0.18",
     "cors": "^2.8.5",
+    "deep-cleaner": "^1.2.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-validator": "^6.6.1",

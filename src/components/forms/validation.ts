@@ -1,6 +1,6 @@
-import {body, query} from 'express-validator';
+import {body} from 'express-validator';
 
-export const createFormValidationRules = [
+const formRules = [
   body('job_id').isUUID(),
   body('form_category').isIn(['application', 'screening', 'assessment']),
   body('form_title').optional().isString(),
@@ -25,3 +25,6 @@ export const createFormValidationRules = [
   body('form_fields[*].editable').optional().isBoolean(),
   body('form_fields[*].deletable').optional().isBoolean(),
 ];
+
+export const createFormValidationRules = formRules;
+export const updateFormValidationRules = [...formRules, body('form_id')];

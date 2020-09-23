@@ -7,7 +7,10 @@ import {
   renderHTMLForm,
   submitHTMLForm,
 } from './controller';
-import {createFormValidationRules} from './validation';
+import {
+  createFormValidationRules,
+  updateFormValidationRules,
+} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAdmin, requireAuth} from 'middlewares';
 
@@ -22,6 +25,6 @@ router.get('/', getForms);
 router.use(requireAdmin);
 router.post('/', createFormValidationRules, validate, createForm);
 router.delete('/:form_id', deleteForm);
-router.put('/:form_id', updateForm);
+router.put('/:form_id', updateFormValidationRules, validate, updateForm);
 
 export {router as routes};

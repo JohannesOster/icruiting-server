@@ -3,11 +3,11 @@ import request from 'supertest';
 import app from 'app';
 import db from 'db';
 import {dbInsertForm} from '../database';
-import {TForm} from '../types';
+import {EFormCategory, TForm} from '../types';
 import {endConnection, truncateAllTables} from 'db/utils';
-import {dbInsertTenant} from 'components/tenants';
-import {dbInsertJob} from 'components/jobs';
 import fake from 'tests/fake';
+import dataGenerator from 'tests/dataGenerator';
+import deepCleaner from 'deep-cleaner';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -20,12 +20,8 @@ jest.mock('middlewares/auth', () => ({
 
 let jobId: string;
 beforeAll(async () => {
-  const tenant = fake.tenant(mockUser.tenant_id);
-  await dbInsertTenant(tenant);
-
-  const job = fake.job(mockUser.tenant_id);
-  const {job_id} = await dbInsertJob(job);
-  jobId = job_id;
+  await dataGenerator.insertTenant(mockUser.tenant_id);
+  jobId = (await dataGenerator.insertJob(mockUser.tenant_id)).job_id;
 });
 
 afterAll(async () => {
@@ -35,7 +31,7 @@ afterAll(async () => {
 
 describe('forms', () => {
   describe('POST /forms', () => {
-    it('Returns 201 json response', (done) => {
+    it('returns 201 json response', (done) => {
       const form = fake.applicationForm(mockUser.tenant_id, jobId);
 
       request(app)
@@ -46,7 +42,7 @@ describe('forms', () => {
         .expect(201, done);
     });
 
-    it('Returns created form entity', async (done) => {
+    it('returns created form entity', async (done) => {
       const form = fake.applicationForm(mockUser.tenant_id, jobId);
       const resp = await request(app)
         .post('/forms')
@@ -61,7 +57,7 @@ describe('forms', () => {
       done();
     });
 
-    it('Validates req body', (done) => {
+    it('validates req body', (done) => {
       request(app)
         .post('/forms')
         .set('Accept', 'application/json')
@@ -72,7 +68,7 @@ describe('forms', () => {
   describe('GET /forms', () => {
     beforeEach(async () => await db.none('TRUNCATE form CASCADE'));
 
-    it('Returns 200 json response', (done) => {
+    it('returns 200 json response', (done) => {
       request(app)
         .get('/forms')
         .set('Accept', 'application/json')
@@ -80,15 +76,13 @@ describe('forms', () => {
         .expect(200, done);
     });
 
-    it('Returns array of forms', async (done) => {
+    it('returns array of forms', async () => {
+      const {tenant_id} = mockUser;
       const promises = [
-        dbInsertForm(fake.applicationForm(mockUser.tenant_id, jobId)),
-        dbInsertForm(fake.screeningForm(mockUser.tenant_id, jobId)),
-        dbInsertForm(fake.assessmentForm(mockUser.tenant_id, jobId)),
-        dbInsertForm(fake.assessmentForm(mockUser.tenant_id, jobId)),
-        dbInsertForm(fake.assessmentForm(mockUser.tenant_id, jobId)),
+        dataGenerator.insertForm(tenant_id, jobId, EFormCategory.application),
+        dataGenerator.insertForm(tenant_id, jobId, EFormCategory.screening),
+        dataGenerator.insertForm(tenant_id, jobId, EFormCategory.assessment),
       ];
-
       await Promise.all(promises);
 
       const resp = await request(app)
@@ -96,19 +90,23 @@ describe('forms', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
+      expect(Array.isArray(resp.body)).toBeTruthy();
       expect(resp.body.length).toBe(promises.length);
-      done();
+      expect(resp.body[0].form_id).toBeDefined();
     });
   });
 
   describe('GET /forms/:form_id/html', () => {
     let form: TForm;
     beforeAll(async () => {
-      const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
-      form = await dbInsertForm(fakeForm);
+      form = await dataGenerator.insertForm(
+        mockUser.tenant_id,
+        jobId,
+        EFormCategory.application,
+      );
     });
 
-    it('Renders html without crashing', (done) => {
+    it('renders html without crashing', (done) => {
       request(app)
         .get(`/forms/${form.form_id}/html`)
         .set('Accept', 'text/html')
@@ -120,11 +118,14 @@ describe('forms', () => {
   describe('DELETE /forms/:form_id', () => {
     let form: TForm;
     beforeEach(async () => {
-      const fakeForm = fake.screeningForm(mockUser.tenant_id, jobId);
-      form = await dbInsertForm(fakeForm);
+      form = await dataGenerator.insertForm(
+        mockUser.tenant_id,
+        jobId,
+        EFormCategory.application,
+      );
     });
 
-    it('Returns json 200 response', (done) => {
+    it('returns json 200 response', (done) => {
       request(app)
         .delete(`/forms/${form.form_id}`)
         .set('Accept', 'application/json')
@@ -132,7 +133,7 @@ describe('forms', () => {
         .expect(200, done);
     });
 
-    it('Deletes form', async (done) => {
+    it('deletes form', async () => {
       const {count: countBefore} = await db.one(
         'SELECT COUNT(*) FROM form WHERE form_id=$1',
         form.form_id,
@@ -151,33 +152,43 @@ describe('forms', () => {
       );
 
       expect(parseInt(count)).toBe(0);
-
-      done();
     });
   });
 
   describe('PUT /forms/:form_id', () => {
-    it('Returns json 200 response', async (done) => {
-      const fakeForm = fake.applicationForm(mockUser.tenant_id, jobId);
-      const form = await dbInsertForm(fakeForm);
+    it('returns json 200 response', async () => {
+      const form = await dataGenerator.insertForm(
+        mockUser.tenant_id,
+        jobId,
+        EFormCategory.application,
+      );
 
-      request(app)
+      // remove null to pass express-validator
+      deepCleaner(form);
+
+      await request(app)
         .put(`/forms/${form.form_id}`)
         .set('Accept', 'application/json')
-        .send({})
+        .send({...form})
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
 
-    it('Returns updated form entity', async (done) => {
-      const fakeForm = fake.applicationForm(mockUser.tenant_id, jobId);
-      const form: TForm = await dbInsertForm(fakeForm);
+    it('returns updated form entity', async () => {
+      const form: TForm = await dataGenerator.insertForm(
+        mockUser.tenant_id,
+        jobId,
+        EFormCategory.application,
+      );
+
+      // remove null to pass express-validator
+      deepCleaner(form);
 
       const updateVals = {...form};
+      const placeholder = faker.random.words();
       updateVals.form_fields = updateVals.form_fields.map((item) => ({
         ...item,
-        placeholder: faker.random.words(),
-        description: faker.random.words(),
+        placeholder,
       }));
 
       const resp = await request(app)
@@ -186,14 +197,20 @@ describe('forms', () => {
         .send(updateVals)
         .expect(200);
 
-      expect(resp.body).toStrictEqual(updateVals);
-
-      done();
+      (resp.body as TForm).form_fields.forEach((field) => {
+        expect(field.placeholder).toBe(placeholder);
+      });
     });
 
-    it('Updates form_title', async (done) => {
-      const fakeForm = fake.assessmentForm(mockUser.tenant_id, jobId);
-      const form: TForm = await dbInsertForm(fakeForm);
+    it('updates form_title', async () => {
+      const form: TForm = await dataGenerator.insertForm(
+        mockUser.tenant_id,
+        jobId,
+        EFormCategory.application,
+      );
+
+      // remove null to pass express-validator
+      deepCleaner(form);
 
       const updateVals = {...form, form_title: faker.random.words()};
       const resp = await request(app)
@@ -202,9 +219,7 @@ describe('forms', () => {
         .send(updateVals)
         .expect(200);
 
-      expect(resp.body).toStrictEqual(updateVals);
-
-      done();
+      expect(resp.body.form_title).toBe(updateVals.form_title);
     });
   });
 });

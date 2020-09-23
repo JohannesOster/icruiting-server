@@ -35,6 +35,7 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
   const host = req.get('host');
   const submitAction = `${protocol}://${host}${originalUrl}`;
   const params = {formId: form_id, formFields: form.form_fields, submitAction};
+
   res.header('Content-Type', 'text/html');
   res.render('form', params);
 });
