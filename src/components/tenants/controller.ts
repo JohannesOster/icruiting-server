@@ -55,5 +55,5 @@ export const deleteTenant = catchAsync(async (req, res) => {
 
   await Promise.all(promises || []);
 
-  res.status(200).json({});
+  res.status(200).json();
 });

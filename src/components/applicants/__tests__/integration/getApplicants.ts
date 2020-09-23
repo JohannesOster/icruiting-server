@@ -16,6 +16,12 @@ jest.mock('middlewares/auth', () => ({
   }),
 }));
 
+jest.mock('aws-sdk', () => ({
+  S3: jest.fn().mockImplementation(() => ({
+    getSignedUrlPromise: () => Promise.resolve(''),
+  })),
+}));
+
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenant_id);
 });

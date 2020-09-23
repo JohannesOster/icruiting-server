@@ -64,11 +64,12 @@ describe('tenants', () => {
     it('returns 422 on missing params', async (done) => {
       request(app)
         .post('/tenants')
+        .send({})
         .set('Accept', 'application/json')
         .expect(422, done);
     });
 
-    it('returns inserts tenant entity', async () => {
+    it('returns inserted tenant entity', async () => {
       const tenant = fake.tenant();
       const resp = await request(app)
         .post('/tenants')
@@ -76,11 +77,8 @@ describe('tenants', () => {
         .send(tenant)
         .expect(201);
 
-      const stmt = 'SELECT * FROM tenant WHERE tenant_id=$1';
-      const result = await db.one(stmt, resp.body.tenant_id);
-
-      expect(result.tenant_name).toBe(tenant.tenant_name);
-      expect(!!result.tenant_id).toBe(true);
+      expect(resp.body.tenant_name).toBe(tenant.tenant_name);
+      expect(!!resp.body.tenant_id).toBe(true);
     });
   });
 
@@ -89,7 +87,6 @@ describe('tenants', () => {
       const fakeTenant = fake.tenant(mockUser.tenant_id);
       await dbInsertTenant(fakeTenant);
     });
-    afterEach(async () => await db.none('TRUNCATE tenant CASCADE'));
 
     it('returns 200 json response', (done) => {
       request(app)
