@@ -66,5 +66,7 @@ export const dbSelectFormSubmission = (params: {
     'AND form_id=${form_id} ' +
     'AND tenant_id=${tenant_id}';
 
-  return db.one('SELECT * FROM form_submission' + condition, params);
+  return db
+    .any('SELECT * FROM form_submission' + condition, params)
+    .then((resp) => resp[0]);
 };

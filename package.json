@@ -10,7 +10,7 @@
     "copy-files": "copyfiles src/**/*.sql src/**/*.pug src/**/*.css src/**/*.svg dist/",
     "db-setup": "env NODE_ENV=development npx ts-node ./src/db/utils.ts createAllTables",
     "db-drop": "env NODE_ENV=development npx ts-node ./src/db/utils.ts dropAllTables",
-    "test": "npx jest --runInBand",
+    "test": "npx jest --runInBand --detectOpenHandles",
     "heroku-prebuild": "npm install --dev"
   },
   "keywords": [],

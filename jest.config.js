@@ -1,4 +1,6 @@
 module.exports = {
+  verbose: true,
+  forceExit: true,
   preset: 'ts-jest',
   testEnvironment: 'node',
   globalSetup: './jest.setup.js',

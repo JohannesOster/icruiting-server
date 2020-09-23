@@ -31,13 +31,12 @@ export const getApplicants = catchAsync(async (req, res) => {
   const applicants = await dbSelectApplicants(params);
 
   // replace S3 filekeys with aws presigned URL
-  const promises = applicants.map((appl) => {
-    return new Promise((resolve, reject) => {
-      return getApplicantFileURLs(appl.files)
-        .then((files) => resolve({...appl, files}))
-        .catch(reject);
-    });
-  });
+  const promises = applicants.map((appl) =>
+    getApplicantFileURLs(appl.files).then((files) => ({
+      ...appl,
+      files,
+    })),
+  );
 
   const resp: TApplicant[] = (await Promise.all(promises)) as any;
   const sortKey = 'Vollständiger Name';
