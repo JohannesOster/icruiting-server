@@ -3,9 +3,7 @@ import request from 'supertest';
 import app from 'app';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {dbInsertJob} from '../database';
 import {TJob} from '../types';
-import db from 'db';
 import dataGenerator from 'tests/dataGenerator';
 
 const mockUser = fake.user();
@@ -62,7 +60,6 @@ describe('jobs', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(resp.body.length).toBe(jobsCount);
       for (let i = 0; i < jobsCount - 1; ++i) {
         const curr = new Date(resp.body[i].created_at);
         const following = new Date(resp.body[i + 1].created_at);
@@ -72,21 +69,7 @@ describe('jobs', () => {
 
     it('isolates tenant jobs', async () => {
       const {tenant_id} = await dataGenerator.insertTenant();
-
-      // jobs for own tenant
-      const jobsCount = faker.random.number({min: 1, max: 10});
-      const fakeJobs = Array(jobsCount)
-        .fill(0)
-        .map(() => fake.job(mockUser.tenant_id));
-      const promises = fakeJobs.map((job) => dbInsertJob(job));
-
-      // jobs of foreign tenants
-      const fakeJobsForeign = Array(jobsCount)
-        .fill(0)
-        .map(() => fake.job(tenant_id));
-      promises.concat(fakeJobsForeign.map((job) => dbInsertJob(job)));
-
-      await Promise.all(promises);
+      await dataGenerator.insertJob(tenant_id);
 
       const resp = await request(app)
         .get('/jobs')

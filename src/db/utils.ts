@@ -5,3 +5,8 @@ export const sql = (path: string) => {
   if (qf.error) console.error(qf.error);
   return qf;
 };
+
+export const rawText = (text: string) => ({
+  toPostgres: () => text,
+  rawType: true,
+});
