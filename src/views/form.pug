@@ -22,7 +22,7 @@ html
 
         each formField in formFields
           div(class="ic-form-field-container")
-            label(for=formField.form_field_id class="ic-font-300") #{formField.label}#{formField.required  && '*'}
+            label(for=formField.form_field_id class="ic-font-300") #{formField.label}#{formField.required ? '*' : ''}
             span(class="ic-description ic-font-200") #{formField.description}
             case formField.component
               when "input" 
