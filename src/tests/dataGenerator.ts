@@ -1,5 +1,4 @@
 import db from 'db';
-import {dbInsertApplicant} from 'components/applicants';
 import fake from './fake';
 import {random} from 'faker';
 import {EFormCategory, TFormRequest, dbInsertForm} from 'components/forms';
@@ -36,7 +35,7 @@ const dataGenerator = {
     formFieldIds: string[],
   ) => {
     const applicant = fake.applicant(tenantId, jobId, formFieldIds);
-    return dbInsertApplicant(applicant);
+    return db.applicants.insert(applicant);
   },
   insertFormSubmission: (
     tenantId: string,

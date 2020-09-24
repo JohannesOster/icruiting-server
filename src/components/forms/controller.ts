@@ -1,7 +1,6 @@
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
-import {dbInsertApplicant} from 'components/applicants';
 import {catchAsync, BaseError} from 'errorHandling';
 import {
   dbInsertForm,
@@ -11,6 +10,7 @@ import {
   dbUpdateForm,
 } from './database';
 import {TForm} from './types';
+import db from 'db';
 
 export const createForm = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
@@ -137,7 +137,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
     applicant.files = !!map.files && map.files;
     applicant.attributes = !!map.attributes && map.attributes;
 
-    promises.push(dbInsertApplicant(applicant));
+    promises.push(db.applicants.insert(applicant));
 
     Promise.all(promises)
       .then(() => {

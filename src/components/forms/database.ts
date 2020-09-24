@@ -4,27 +4,29 @@ import {
   selectForm as selectFormSQL,
 } from './sql';
 import {TFormRequest, TForm} from './types';
+import {decamelizeKeys} from 'humps';
 
 export const dbInsertForm = async ({formFields, ...form}: TFormRequest) => {
   const helpers = db.$config.pgp.helpers;
 
   // - insert form
-  const formStmt = helpers.insert(form, null, 'form') + ' RETURNING *';
+  const formStmt =
+    helpers.insert(decamelizeKeys(form), null, 'form') + ' RETURNING *';
   const insertedForm = await db.one(formStmt);
 
   // - insert formFields
   const cs = new helpers.ColumnSet(
     [
-      'formId',
-      'tenantId',
-      {name: 'jobRequirementId', def: null},
+      'form_id',
+      'tenant_id',
+      {name: 'job_requirement_id', def: null},
       'component',
-      'rowIndex',
+      'row_index',
       'label',
       {name: 'intent', def: null},
       {name: 'placeholder', def: null},
       {name: 'description', def: null},
-      {name: 'defaultValue', def: null},
+      {name: 'default_value', def: null},
       {name: 'required', def: null, cast: 'boolean'},
       {name: 'options', mod: ':json', cast: 'jsonb', def: null},
       {name: 'props', mod: ':json', cast: 'jsonb', def: null},
@@ -40,7 +42,11 @@ export const dbInsertForm = async ({formFields, ...form}: TFormRequest) => {
     formId: insertedForm.formId,
   }));
 
-  const stmt = helpers.insert(values, cs) + ' RETURNING *';
+  const stmt =
+    helpers.insert(
+      values.map((val) => decamelizeKeys(val)),
+      cs,
+    ) + ' RETURNING *';
 
   return db.any(stmt).then((items) => ({...insertedForm, formFields: items}));
 };

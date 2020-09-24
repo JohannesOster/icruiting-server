@@ -7,14 +7,14 @@ import {
   updateApplicant,
   getPdfReport,
 } from './controller';
-import {validateGetApplicants, validateGetReport} from './validation';
+import {getApplicantsRules, validateGetReport} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth, requireAdmin} from 'middlewares';
 
 const router = express.Router();
 
 router.use(requireAuth);
-router.get('/', validateGetApplicants, validate, getApplicants);
+router.get('/', getApplicantsRules, validate, getApplicants);
 router.get('/:applicantId', getApplicant);
 
 router.use(requireAdmin);

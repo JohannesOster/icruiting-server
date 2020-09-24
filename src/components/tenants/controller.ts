@@ -25,7 +25,7 @@ export const deleteTenant = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const params = {
     UserPoolId: userPoolID,
-    AttributesToGet: ['email', 'custom:tenantId'],
+    AttributesToGet: ['email', 'custom:tenant_id'],
   };
 
   const users = await cIdp
@@ -44,7 +44,7 @@ export const deleteTenant = catchAsync(async (req, res) => {
       });
 
       // filter out foreign orgs
-      return userMaps?.filter((user) => user['custom:tenantId'] === tenantId);
+      return userMaps?.filter((user) => user['custom:tenant_id'] === tenantId);
     });
 
   const promises = users?.map((user) => {

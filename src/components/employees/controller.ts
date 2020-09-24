@@ -14,8 +14,8 @@ export const createEmployee = catchAsync(async (req, res) => {
       DesiredDeliveryMediums: ['EMAIL'],
       UserAttributes: [
         {Name: 'email', Value: email},
-        {Name: 'custom:tenantId', Value: tenantId},
-        {Name: 'custom:userattriubteValuerole', Value: 'employee'},
+        {Name: 'custom:tenant_id', Value: tenantId},
+        {Name: 'custom:user_role', Value: 'employee'},
       ],
     };
 
@@ -32,7 +32,7 @@ export const getEmployees = catchAsync(async (req, res) => {
   const params = {
     UserPoolId: userPoolID,
     Filter: 'cognito:user_status="CONFIRMED"',
-    AttributesToGet: ['email', 'name', 'custom:userRole', 'custom:tenantId'],
+    AttributesToGet: ['email', 'name', 'custom:user_role', 'custom:tenant_id'],
   };
 
   const {Users} = await cIdp.listUsers(params).promise();
@@ -65,7 +65,7 @@ export const updateEmployee = catchAsync(async (req, res) => {
   const params = {
     UserPoolId: userPoolID,
     Username: username,
-    UserAttributes: [{Name: 'custom:userRole', Value: userRole}],
+    UserAttributes: [{Name: 'custom:user_role', Value: userRole}],
   };
   const resp = await cIdp.adminUpdateUserAttributes(params).promise();
 

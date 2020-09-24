@@ -33,7 +33,7 @@ jest.mock('aws-sdk', () => ({
               Username: faker.internet.email(),
               Attributes: [
                 {Name: 'email', Value: faker.internet.email()},
-                {Name: 'custom:tenantId', Value: mockUser.tenantId},
+                {Name: 'custom:tenant_id', Value: mockUser.tenantId},
               ],
             },
           ],
@@ -76,7 +76,6 @@ describe('tenants', () => {
         .set('Accept', 'application/json')
         .send(tenant)
         .expect(201);
-      console.log(resp.body);
 
       expect(resp.body.tenantName).toBe(tenant.tenantName);
       expect(!!resp.body.tenantId).toBe(true);

@@ -1,6 +1,7 @@
 import db from 'db';
 import {selectFormSubmission} from './sql';
 import {TFormSubmission} from './types';
+import {decamelizeKeys} from 'humps';
 
 export const dbInsertFormSubmission = async ({
   submission,
@@ -12,16 +13,16 @@ export const dbInsertFormSubmission = async ({
   const {insert, ColumnSet} = db.$config.pgp.helpers;
 
   const subCS = new ColumnSet(
-    ['applicantId', 'submitterId', 'formId', 'tenantId'],
+    ['applicant_id', 'submitter_id', 'form_id', 'tenant_id'],
     {table: 'form_submission'},
   );
 
   const subParams = {tenantId, applicantId, submitterId, formId};
-  const subStmt = insert(subParams, subCS) + ' RETURNING *';
+  const subStmt = insert(decamelizeKeys(subParams), subCS) + ' RETURNING *';
   const sub = await db.one(subStmt);
 
   const fieldCS = new ColumnSet(
-    ['formSubmissionId', 'formFieldId', 'submission_value'],
+    ['form_submission_id', 'form_field_id', 'submission_value'],
     {table: 'form_submission_field'},
   );
 
@@ -33,7 +34,11 @@ export const dbInsertFormSubmission = async ({
     }),
   );
 
-  const fieldStmt = insert(vals, fieldCS) + ' RETURNING *';
+  const fieldStmt =
+    insert(
+      vals.map((val) => decamelizeKeys(val)),
+      fieldCS,
+    ) + ' RETURNING *';
   return db.any(fieldStmt).then((submission) => ({
     ...sub,
     submission: submission.reduce((acc, {formFieldId, submission_value}) => {

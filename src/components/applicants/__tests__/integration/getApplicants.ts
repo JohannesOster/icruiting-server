@@ -156,7 +156,7 @@ describe('applicants', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      const filtered = res.body.filter((appl: any) => appl.screening_exists);
+      const filtered = res.body.filter((appl: any) => appl.screeningExists);
       expect(filtered.length).toBe(1);
       expect(filtered[0].applicantId).toBe(applicantId);
     });

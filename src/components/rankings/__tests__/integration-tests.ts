@@ -6,7 +6,6 @@ import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
 import {TForm, dbInsertForm} from 'components/forms';
 import {dbInsertFormSubmission} from 'components/formSubmissions';
-import {dbInsertApplicant} from 'components/applicants';
 import {TApplicant} from 'components/applicants';
 import dataGenerator from 'tests/dataGenerator';
 
@@ -54,7 +53,7 @@ describe('rankings', () => {
             jobId,
             formFieldIds,
           );
-          promises.push(dbInsertApplicant(applicant));
+          promises.push(db.applicants.insert(applicant));
         });
 
       Promise.all(promises).then((data) => {
@@ -140,7 +139,7 @@ describe('rankings', () => {
             jobId,
             formFieldIds,
           );
-          promises.push(dbInsertApplicant(applicant));
+          promises.push(db.applicants.insert(applicant));
         });
 
       Promise.all(promises).then((data) => {

@@ -38,24 +38,24 @@ jest.mock('aws-sdk', () => ({
               Username: internet.email(),
               Attributes: [
                 {Name: 'email', Value: internet.email()},
-                {Name: 'custom:tenantId', Value: mockUser.tenantId},
-                {Name: 'custom:userRole', Value: 'employee'},
+                {Name: 'custom:tenant_id', Value: mockUser.tenantId},
+                {Name: 'custom:user_role', Value: 'employee'},
               ],
             },
             {
               Username: internet.email(),
               Attributes: [
                 {Name: 'email', Value: internet.email()},
-                {Name: 'custom:tenantId', Value: mockUser.tenantId},
-                {Name: 'custom:userRole', Value: 'admin'},
+                {Name: 'custom:tenant_id', Value: mockUser.tenantId},
+                {Name: 'custom:user_role', Value: 'admin'},
               ],
             },
             {
               Username: internet.email(),
               Attributes: [
                 {Name: 'email', Value: internet.email()},
-                {Name: 'custom:tenantId', Value: random.uuid()},
-                {Name: 'custom:userRole', Value: 'employee'},
+                {Name: 'custom:tenant_id', Value: random.uuid()},
+                {Name: 'custom:user_role', Value: 'employee'},
               ],
             },
           ],
@@ -101,8 +101,8 @@ describe('employees', () => {
 
       const expectAttributes = [
         {Name: 'email', Value: emails[0]},
-        {Name: 'custom:tenantId', Value: mockUser.tenantId},
-        {Name: 'custom:userRole', Value: 'employee'},
+        {Name: 'custom:tenant_id', Value: mockUser.tenantId},
+        {Name: 'custom:user_role', Value: 'employee'},
       ];
 
       expect(resp.body[0].User.Username).toBe(emails[0]);
@@ -128,7 +128,7 @@ describe('employees', () => {
         .send({userRole: 'admin'})
         .expect(200);
 
-      const expectAttributes = [{Name: 'custom:userRole', Value: 'admin'}];
+      const expectAttributes = [{Name: 'custom:user_role', Value: 'admin'}];
 
       expect(resp.body.Attributes).toStrictEqual(expectAttributes);
     });

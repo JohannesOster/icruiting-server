@@ -6,11 +6,9 @@ import puppeteer from 'puppeteer';
 import {IncomingForm} from 'formidable';
 import {BaseError, catchAsync} from 'errorHandling';
 import {
-  dbSelectApplicants,
   dbSelectReport,
   dbDeleteApplicant,
   dbUpdateApplicant,
-  dbSelectApplicant,
   dbSelectApplicantReport,
 } from './database';
 import {getApplicantFileURLs, sortApplicants, round} from './utils';
@@ -22,20 +20,16 @@ import {
 } from '../rankings/types';
 import {dbSelectForm, TForm} from '../forms';
 import {TApplicant, TReport} from './types';
+import db from 'db';
 
 export const getApplicants = catchAsync(async (req, res) => {
-  const {jobId, applicantId} = req.query as any;
+  const jobId = req.query.jobId as string;
   const {tenantId, userId} = res.locals.user;
-  const params = {tenantId, userId, jobId, applicantId};
-
-  const applicants = await dbSelectApplicants(params);
+  const applicants = await db.applicants.findAll(tenantId, jobId, userId);
 
   // replace S3 filekeys with aws presigned URL
   const promises = applicants.map((appl: any) =>
-    getApplicantFileURLs(appl.files).then((files) => ({
-      ...appl,
-      files,
-    })),
+    getApplicantFileURLs(appl.files).then((files) => ({...appl, files})),
   );
 
   const resp: TApplicant[] = (await Promise.all(promises)) as any;
@@ -48,9 +42,8 @@ export const getApplicants = catchAsync(async (req, res) => {
 export const getApplicant = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
   const {tenantId, userId} = res.locals.user;
-  const params = {tenantId, userId, applicantId};
 
-  const applicant = await dbSelectApplicants(params).then((res: any) => res[0]);
+  const applicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Not Found');
 
   const resp = await getApplicantFileURLs(applicant.files).then((files) => ({
@@ -140,7 +133,7 @@ export const deleteApplicant = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
   const {tenantId} = res.locals.user;
 
-  const applicant: TApplicant = await dbSelectApplicant(applicantId, tenantId);
+  const applicant: TApplicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Not Found');
 
   if (applicant.files?.length) {
@@ -172,7 +165,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
       const form: TForm | undefined = await dbSelectForm(formId);
       if (!form) throw new BaseError(404, 'Form Not Found');
 
-      const applicant = await dbSelectApplicant(applicantId, tenantId);
+      const applicant = await db.applicants.find(tenantId, applicantId);
       const oldFiles = applicant?.files;
 
       const map = await form.formFields.reduce(
@@ -263,7 +256,7 @@ export const getPdfReport = catchAsync(async (req, res) => {
     formCategory?: 'screening' | 'assessment';
   };
 
-  const applicant: TApplicant = await dbSelectApplicant(applicantId, tenantId);
+  const applicant: TApplicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Applicant not Found');
 
   const applicantReport: TReport | undefined = await dbSelectApplicantReport(

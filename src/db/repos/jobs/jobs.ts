@@ -20,7 +20,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   );
 
   const all = (tenantId: string) => {
-    return db.many(sql.all, {tenant_id: tenantId});
+    return db.any(sql.all, {tenant_id: tenantId});
   };
 
   const find = (tenantId: string, jobId: string) => {

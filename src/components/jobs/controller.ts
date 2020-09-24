@@ -1,9 +1,5 @@
 import {S3} from 'aws-sdk';
-import {
-  dbSelectApplicantReport,
-  dbSelectApplicants,
-  TApplicant,
-} from 'components/applicants';
+import {dbSelectApplicantReport, TApplicant} from 'components/applicants';
 import {BaseError, catchAsync} from 'errorHandling';
 import {dbInsertApplicantReport, dbUpdateApplicantReport} from './database';
 import db from 'db';
@@ -41,8 +37,11 @@ export const deleteJob = catchAsync(async (req, res) => {
   const {jobId} = req.params;
   const {tenantId, userId} = res.locals.user;
 
-  const params = {jobId, tenantId, userId};
-  const applicants: TApplicant[] = await dbSelectApplicants(params);
+  const applicants: TApplicant[] = await db.applicants.findAll(
+    tenantId,
+    jobId,
+    userId,
+  );
 
   const fileKeys = applicants.reduce((acc, {files}) => {
     if (!files) return acc;
