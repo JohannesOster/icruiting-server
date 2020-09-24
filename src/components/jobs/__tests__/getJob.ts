@@ -40,7 +40,7 @@ describe('jobs', () => {
         .expect(200, done);
     });
 
-    it('single job if exists', async () => {
+    it('returns single job if exists', async () => {
       const resp = await request(app)
         .get(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
