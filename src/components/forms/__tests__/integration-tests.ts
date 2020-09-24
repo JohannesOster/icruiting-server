@@ -7,7 +7,6 @@ import {EFormCategory, TForm} from '../types';
 import {endConnection, truncateAllTables} from 'db/utils';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
-import deepCleaner from 'deep-cleaner';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -163,9 +162,6 @@ describe('forms', () => {
         EFormCategory.application,
       );
 
-      // remove null to pass express-validator
-      deepCleaner(form);
-
       await request(app)
         .put(`/forms/${form.form_id}`)
         .set('Accept', 'application/json')
@@ -180,9 +176,6 @@ describe('forms', () => {
         jobId,
         EFormCategory.application,
       );
-
-      // remove null to pass express-validator
-      deepCleaner(form);
 
       const updateVals = {...form};
       const placeholder = faker.random.words();
@@ -208,9 +201,6 @@ describe('forms', () => {
         jobId,
         EFormCategory.application,
       );
-
-      // remove null to pass express-validator
-      deepCleaner(form);
 
       const updateVals = {...form, form_title: faker.random.words()};
       const resp = await request(app)
