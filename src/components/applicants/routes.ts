@@ -15,12 +15,12 @@ const router = express.Router();
 
 router.use(requireAuth);
 router.get('/', validateGetApplicants, validate, getApplicants);
-router.get('/:applicant_id', getApplicant);
+router.get('/:applicantId', getApplicant);
 
 router.use(requireAdmin);
-router.get('/:applicant_id/report', validateGetReport, validate, getReport);
-router.get('/:applicant_id/pdf-report', getPdfReport);
-router.put('/:applicant_id', updateApplicant);
-router.delete('/:applicant_id', deleteApplicant);
+router.get('/:applicantId/report', validateGetReport, validate, getReport);
+router.get('/:applicantId/pdf-report', getPdfReport);
+router.put('/:applicantId', updateApplicant);
+router.delete('/:applicantId', deleteApplicant);
 
 export {router as routes};

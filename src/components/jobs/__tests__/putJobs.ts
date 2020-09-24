@@ -16,7 +16,7 @@ jest.mock('middlewares/auth', () => ({
 }));
 
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
+  await dataGenerator.insertTenant(mockUser.tenantId);
 });
 
 afterAll(async () => {
@@ -25,15 +25,15 @@ afterAll(async () => {
 });
 
 describe('jobs', () => {
-  describe('PUT /jobs/:job_id', () => {
+  describe('PUT /jobs/:jobId', () => {
     let job: TJob;
     beforeEach(async () => {
-      job = await dataGenerator.insertJob(mockUser.tenant_id);
+      job = await dataGenerator.insertJob(mockUser.tenantId);
     });
 
     it('returns 200 json response', (done) => {
       request(app)
-        .put(`/jobs/${job.job_id}`)
+        .put(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
         .send(job)
         .expect('Content-Type', /json/)
@@ -42,42 +42,42 @@ describe('jobs', () => {
 
     it('returns updated entity', async () => {
       const updateValues: TJob = job;
-      updateValues.job_title = random.alphaNumeric();
-      updateValues.job_requirements = updateValues.job_requirements.map(
-        (req) => ({...req, requirement_label: random.alphaNumeric()}),
+      updateValues.jobTitle = random.alphaNumeric();
+      updateValues.jobRequirements = updateValues.jobRequirements.map(
+        (req) => ({...req, requirementLabel: random.alphaNumeric()}),
       );
 
-      updateValues.job_requirements.shift(); // test if req gets removed
+      updateValues.jobRequirements.shift(); // test if req gets removed
 
       const resp = await request(app)
-        .put(`/jobs/${job.job_id}`)
+        .put(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
         .send(updateValues)
         .expect(200);
 
-      expect(resp.body.job_title).toBe(updateValues.job_title);
-      expect(resp.body.job_requirements).toEqual(updateValues.job_requirements);
+      expect(resp.body.jobTitle).toBe(updateValues.jobTitle);
+      expect(resp.body.jobRequirements).toEqual(updateValues.jobRequirements);
     });
 
     it('adds new requirement', async () => {
       const updateValues = job;
-      updateValues.job_title = random.alphaNumeric();
-      updateValues.job_requirements = updateValues.job_requirements.map(
-        (req) => ({...req, requirement_label: random.alphaNumeric()}),
+      updateValues.jobTitle = random.alphaNumeric();
+      updateValues.jobRequirements = updateValues.jobRequirements.map(
+        (req) => ({...req, requirementLabel: random.alphaNumeric()}),
       );
 
-      updateValues.job_requirements.push({
-        requirement_label: random.alphaNumeric(),
+      updateValues.jobRequirements.push({
+        requirementLabel: random.alphaNumeric(),
       });
 
       const resp = await request(app)
-        .put(`/jobs/${job.job_id}`)
+        .put(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
         .send(updateValues)
         .expect(200);
 
-      expect(resp.body.job_requirements.length).toEqual(
-        updateValues.job_requirements.length,
+      expect(resp.body.jobRequirements.length).toEqual(
+        updateValues.jobRequirements.length,
       );
     });
   });

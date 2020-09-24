@@ -16,7 +16,7 @@ jest.mock('middlewares/auth', () => ({
 }));
 
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
+  await dataGenerator.insertTenant(mockUser.tenantId);
 });
 
 afterAll(async () => {
@@ -26,7 +26,7 @@ afterAll(async () => {
 
 describe('jobs', () => {
   beforeAll(async () => {
-    await dataGenerator.insertJob(mockUser.tenant_id);
+    await dataGenerator.insertJob(mockUser.tenantId);
   });
 
   describe('GET /jobs', () => {
@@ -44,15 +44,15 @@ describe('jobs', () => {
         .set('Accept', 'application/json')
         .expect(200);
       expect(Array.isArray(resp.body));
-      expect(resp.body[0].job_id).toBeDefined();
-      expect(resp.body[0].job_requirements).toBeDefined();
+      expect(resp.body[0].jobId).toBeDefined();
+      expect(resp.body[0].jobRequirements).toBeDefined();
     });
 
     it('orders jobs by created_at', async () => {
       const jobsCount = faker.random.number({min: 5, max: 20});
       const promises = Array(jobsCount)
         .fill(0)
-        .map(() => dataGenerator.insertJob(mockUser.tenant_id));
+        .map(() => dataGenerator.insertJob(mockUser.tenantId));
       await Promise.all(promises);
 
       const resp = await request(app)
@@ -68,8 +68,8 @@ describe('jobs', () => {
     });
 
     it('isolates tenant jobs', async () => {
-      const {tenant_id} = await dataGenerator.insertTenant();
-      await dataGenerator.insertJob(tenant_id);
+      const {tenantId} = await dataGenerator.insertTenant();
+      await dataGenerator.insertJob(tenantId);
 
       const resp = await request(app)
         .get('/jobs')
@@ -77,7 +77,7 @@ describe('jobs', () => {
         .expect(200);
 
       resp.body.forEach((job: TJob) =>
-        expect(job.tenant_id).toBe(mockUser.tenant_id),
+        expect(job.tenantId).toBe(mockUser.tenantId),
       );
     });
   });

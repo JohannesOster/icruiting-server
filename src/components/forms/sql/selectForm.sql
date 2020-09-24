@@ -1,6 +1,6 @@
-SELECT form.*, json_agg(items.* ORDER BY row_index ASC) form_fields
+SELECT form.*, json_agg(items.* ORDER BY rowIndex ASC) formFields
 FROM form
 JOIN (SELECT * FROM form_field) as items 
-ON items.form_id = form.form_id
-WHERE form.form_id = ${form_id}
-GROUP BY form.form_id;
+ON items.formId = form.formId
+WHERE form.formId = ${formId}
+GROUP BY form.formId;

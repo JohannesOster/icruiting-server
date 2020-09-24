@@ -1,20 +1,20 @@
 import db from 'db';
 
 type DbInsertApplicantReportParams = {
-  job_id: string;
-  tenant_id: string;
+  jobId: string;
+  tenantId: string;
   attributes: string[];
   image: string;
 };
 export const dbInsertApplicantReport = async ({
-  job_id,
-  tenant_id,
+  jobId,
+  tenantId,
   attributes,
   image,
 }: DbInsertApplicantReportParams) => {
   const {insert, ColumnSet} = db.$config.pgp.helpers;
 
-  const params = {job_id, tenant_id, image};
+  const params = {jobId, tenantId, image};
   const insertApplicantReportStmt =
     insert(params, null, 'applicant_report') + ' RETURNING *';
   const insertedApplicantReport = await db.one(insertApplicantReportStmt);
@@ -23,13 +23,13 @@ export const dbInsertApplicantReport = async ({
     return Promise.resolve({attributes: [], ...insertedApplicantReport});
   }
 
-  const columns = ['applicant_report_id', 'form_field_id'];
+  const columns = ['applicantReportId', 'formFieldId'];
   const options = {table: 'applicant_report_field'};
   const cs = new ColumnSet(columns, options);
 
-  const attrs = attributes.map((form_field_id) => ({
-    applicant_report_id: insertedApplicantReport.applicant_report_id,
-    form_field_id,
+  const attrs = attributes.map((formFieldId) => ({
+    applicantReportId: insertedApplicantReport.applicantReportId,
+    formFieldId,
   }));
 
   const attrsStmt = insert(attrs, cs) + ' RETURNING *';
@@ -40,42 +40,42 @@ export const dbInsertApplicantReport = async ({
 };
 
 type DbUpdateApplicantReportParams = {
-  applicant_report_id: string;
-  tenant_id: string;
+  applicantReportId: string;
+  tenantId: string;
   attributes: string[];
   image: string;
 };
 export const dbUpdateApplicantReport = async ({
-  applicant_report_id,
-  tenant_id,
+  applicantReportId,
+  tenantId,
   attributes,
   image,
 }: DbUpdateApplicantReportParams) => {
   const {insert, ColumnSet} = db.$config.pgp.helpers;
 
   const stmt =
-    'UPDATE applicant_report SET image=${image} WHERE applicant_report_id=${applicant_report_id} AND tenant_id=${tenant_id} RETURNING *';
+    'UPDATE applicant_report SET image=${image} WHERE applicantReportId=${applicantReportId} AND tenantId=${tenantId} RETURNING *';
   const updatedReport = await db.one(stmt, {
-    applicant_report_id,
+    applicantReportId,
     image,
-    tenant_id,
+    tenantId,
   });
 
   const delStmt =
-    'DELETE FROM applicant_report_field WHERE applicant_report_id=${applicant_report_id}';
-  await db.none(delStmt, {applicant_report_id});
+    'DELETE FROM applicant_report_field WHERE applicantReportId=${applicantReportId}';
+  await db.none(delStmt, {applicantReportId});
 
   if (!attributes.length) {
     return Promise.resolve({attributes: [], ...updatedReport});
   }
 
-  const columns = ['applicant_report_id', 'form_field_id'];
+  const columns = ['applicantReportId', 'formFieldId'];
   const options = {table: 'applicant_report_field'};
   const cs = new ColumnSet(columns, options);
 
-  const attrs = attributes.map((form_field_id) => ({
-    applicant_report_id: applicant_report_id,
-    form_field_id,
+  const attrs = attributes.map((formFieldId) => ({
+    applicantReportId: applicantReportId,
+    formFieldId,
   }));
 
   const attrsStmt = insert(attrs, cs) + ' RETURNING *';

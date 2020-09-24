@@ -23,7 +23,7 @@ jest.mock('aws-sdk', () => ({
 }));
 
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
+  await dataGenerator.insertTenant(mockUser.tenantId);
 });
 
 afterAll(async () => {
@@ -32,15 +32,15 @@ afterAll(async () => {
 });
 
 describe('jobs', () => {
-  describe('DELETE /jobs/:job_id', () => {
+  describe('DELETE /jobs/:jobId', () => {
     let job: any;
     beforeEach(async () => {
-      job = await dataGenerator.insertJob(mockUser.tenant_id);
+      job = await dataGenerator.insertJob(mockUser.tenantId);
     });
 
     it('returns 200 json response', (done) => {
       request(app)
-        .del(`/jobs/${job.job_id}`)
+        .del(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -48,12 +48,12 @@ describe('jobs', () => {
 
     it('deletes job entity', async () => {
       await request(app)
-        .del(`/jobs/${job.job_id}`)
+        .del(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
         .expect(200);
 
-      const stmt = 'SELECT COUNT(*) FROM job WHERE job_id = $1';
-      const {count} = await db.one(stmt, job.job_id);
+      const stmt = 'SELECT COUNT(*) FROM job WHERE jobId = $1';
+      const {count} = await db.one(stmt, job.jobId);
       expect(parseInt(count)).toBe(0);
     });
   });

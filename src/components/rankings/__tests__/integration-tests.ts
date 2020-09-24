@@ -21,8 +21,8 @@ jest.mock('middlewares/auth', () => ({
 
 let jobId: string;
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
-  jobId = (await dataGenerator.insertJob(mockUser.tenant_id)).job_id;
+  await dataGenerator.insertTenant(mockUser.tenantId);
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 });
 
 afterAll(async () => {
@@ -38,21 +38,19 @@ describe('rankings', () => {
 
       const promises = [];
 
-      const screeningForm = fake.screeningForm(mockUser.tenant_id, jobId);
+      const screeningForm = fake.screeningForm(mockUser.tenantId, jobId);
       promises.push(dbInsertForm(screeningForm));
 
-      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const fakeApplForm = fake.applicationForm(mockUser.tenantId, jobId);
       const form: TForm = await dbInsertForm(fakeApplForm);
-      const formFieldIds = form.form_fields.map(
-        ({form_field_id}) => form_field_id!,
-      );
+      const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
           const applicant = fake.applicant(
-            mockUser.tenant_id,
+            mockUser.tenantId,
             jobId,
             formFieldIds,
           );
@@ -65,13 +63,13 @@ describe('rankings', () => {
 
         applicants.forEach((appl: TApplicant) => {
           const screening = {
-            applicant_id: appl.applicant_id!,
-            submitter_id: mockUser.user_id,
-            tenant_id: mockUser.tenant_id,
-            form_id: form.form_id!,
-            submission: form.form_fields.reduce(
-              (acc: {[form_field_id: string]: string}, item) => {
-                acc[item.form_field_id!] = faker.random
+            applicantId: appl.applicantId!,
+            submitterId: mockUser.userId,
+            tenantId: mockUser.tenantId,
+            formId: form.formId!,
+            submission: form.formFields.reduce(
+              (acc: {[formFieldId: string]: string}, item) => {
+                acc[item.formFieldId!] = faker.random
                   .number({min: 0, max: 5})
                   .toString();
                 return acc;
@@ -89,7 +87,7 @@ describe('rankings', () => {
 
     it('Returns 200 json response', (done) => {
       request(app)
-        .get(`/rankings/${jobId}?form_category=screening`)
+        .get(`/rankings/${jobId}?formCategory=screening`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -97,7 +95,7 @@ describe('rankings', () => {
 
     it('Returns result including all applicants', async (done) => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=screening`)
+        .get(`/rankings/${jobId}?formCategory=screening`)
         .set('Accept', 'application/json')
         .expect(200);
       expect(resp.body.length).toBe(applicantsCount);
@@ -106,7 +104,7 @@ describe('rankings', () => {
 
     it('Returns result ordered from highest score to lowest', async (done) => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=screening`)
+        .get(`/rankings/${jobId}?formCategory=screening`)
         .set('Accept', 'application/json')
         .expect(200);
 
@@ -127,20 +125,18 @@ describe('rankings', () => {
 
       const promises = [];
 
-      const assessmentForm = fake.assessmentForm(mockUser.tenant_id, jobId);
+      const assessmentForm = fake.assessmentForm(mockUser.tenantId, jobId);
       promises.push(dbInsertForm(assessmentForm));
-      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const fakeApplForm = fake.applicationForm(mockUser.tenantId, jobId);
       const form: TForm = await dbInsertForm(fakeApplForm);
-      const formFieldIds = form.form_fields.map(
-        ({form_field_id}) => form_field_id!,
-      );
+      const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
           const applicant = fake.applicant(
-            mockUser.tenant_id,
+            mockUser.tenantId,
             jobId,
             formFieldIds,
           );
@@ -153,13 +149,13 @@ describe('rankings', () => {
 
         applicants.forEach((appl: TApplicant) => {
           const assessment = {
-            applicant_id: appl.applicant_id!,
-            submitter_id: mockUser.user_id,
-            tenant_id: mockUser.tenant_id,
-            form_id: form.form_id!,
-            submission: form.form_fields.reduce(
-              (acc: {[form_field_id: string]: string}, item) => {
-                acc[item.form_field_id!] = faker.random
+            applicantId: appl.applicantId!,
+            submitterId: mockUser.userId,
+            tenantId: mockUser.tenantId,
+            formId: form.formId!,
+            submission: form.formFields.reduce(
+              (acc: {[formFieldId: string]: string}, item) => {
+                acc[item.formFieldId!] = faker.random
                   .number({min: 0, max: 5})
                   .toString();
                 return acc;
@@ -177,7 +173,7 @@ describe('rankings', () => {
 
     it('Returns 200 json response', (done) => {
       request(app)
-        .get(`/rankings/${jobId}?form_category=assessment`)
+        .get(`/rankings/${jobId}?formCategory=assessment`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -185,7 +181,7 @@ describe('rankings', () => {
 
     it('Returns result including all applicants', async (done) => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=assessment`)
+        .get(`/rankings/${jobId}?formCategory=assessment`)
         .set('Accept', 'application/json')
         .expect(200);
       expect(resp.body.length).toBe(applicantsCount);
@@ -194,7 +190,7 @@ describe('rankings', () => {
 
     it('Returns result ordered from highest score to lowest', async (done) => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=assessment`)
+        .get(`/rankings/${jobId}?formCategory=assessment`)
         .set('Accept', 'application/json')
         .expect(200);
 

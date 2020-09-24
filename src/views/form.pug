@@ -22,14 +22,14 @@ html
 
         each formField in formFields
           div(class="ic-form-field-container")
-            label(for=formField.form_field_id class="ic-font-300") #{formField.label}#{formField.required ? '*' : ''}
+            label(for=formField.formFieldId class="ic-font-300") #{formField.label}#{formField.required ? '*' : ''}
             span(class="ic-description ic-font-200") #{formField.description}
             case formField.component
               when "input" 
                 input(
                   class="ic-input ic-font-200",
-                  id=formField.form_field_id,
-                  name=formField.form_field_id,
+                  id=formField.formFieldId,
+                  name=formField.formFieldId,
                   placeholder=formField.placeholder,
                   required=formField.required, 
                   type=(formField.props && formField.props.type) || 'text'
@@ -38,15 +38,15 @@ html
                 input(
                   class="ic-input ic-font-200",
                   type="date",
-                  id=formField.form_field_id,
-                  name=formField.form_field_id,
+                  id=formField.formFieldId,
+                  name=formField.formFieldId,
                   required=formField.required 
                 ) 
               when "textarea"
                 textarea(
                   class="ic-textarea ic-font-200",
-                  id=formField.form_field_id,
-                  name=formField.form_field_id,
+                  id=formField.formFieldId,
+                  name=formField.formFieldId,
                   placeholder=formField.placeholder
                   required=formField.required 
                 )
@@ -54,8 +54,8 @@ html
                 div(class="ic-select-container ic-font-200")
                   select(
                     class="ic-select",
-                    id=formField.form_field_id,
-                    name=formField.form_field_id,
+                    id=formField.formFieldId,
+                    name=formField.formFieldId,
                     required=formField.required 
                   )
                     each option in formField.options
@@ -66,9 +66,9 @@ html
                   div(style="display: flex")
                     input(
                       type="radio"
-                      name=formField.form_field_id,
+                      name=formField.formFieldId,
                       value=option.value
-                      checked=formField.default_value === option.value
+                      checked=formField.defaultValue === option.value
                       required=formField.required 
                     )
                     span(style="margin-left: 5px" class="ic-font-200") #{option.label}
@@ -78,19 +78,19 @@ html
                     // required validation currently only works for single option checkbox
                     input(
                       type="checkbox"
-                      name=formField.form_field_id,
+                      name=formField.formFieldId,
                       value=option.value
-                      checked=formField.default_value === option.value
+                      checked=formField.defaultValue === option.value
                       style="margin-top: 3.5px"
                       required=formField.required && formField.options.length === 1
                     )
                     span(style="margin-left: 5px" class="ic-font-200") #{option.label}
               when "file_upload"
-                input(type="hidden", name=formField.form_field_id id=`fileKey-${formField.form_field_id}`)
+                input(type="hidden", name=formField.formFieldId id=`fileKey-${formField.formFieldId}`)
                 input(
                   type="file",
-                  id=`fileUpload-${formField.form_field_id}`,
-                  name=formField.form_field_id,
+                  id=`fileUpload-${formField.formFieldId}`,
+                  name=formField.formFieldId,
                   accept=(formField.props && formField.props.accept) || "application/pdf, image/jpeg",
                   required=formField.required 
                 )

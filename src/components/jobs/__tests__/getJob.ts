@@ -17,7 +17,7 @@ jest.mock('middlewares/auth', () => ({
 }));
 
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
+  await dataGenerator.insertTenant(mockUser.tenantId);
 });
 
 afterAll(async () => {
@@ -28,13 +28,13 @@ afterAll(async () => {
 describe('jobs', () => {
   let job: TJob;
   beforeAll(async () => {
-    job = await dataGenerator.insertJob(mockUser.tenant_id);
+    job = await dataGenerator.insertJob(mockUser.tenantId);
   });
 
-  describe('GET /jobs/:job_id', () => {
+  describe('GET /jobs/:jobId', () => {
     it('Returns 200 json response', async (done) => {
       request(app)
-        .get(`/jobs/${job.job_id}`)
+        .get(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -42,10 +42,10 @@ describe('jobs', () => {
 
     it('single job if exists', async () => {
       const resp = await request(app)
-        .get(`/jobs/${job.job_id}`)
+        .get(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
         .expect(200);
-      expect(resp.body.job_id).toEqual(job.job_id);
+      expect(resp.body.jobId).toEqual(job.jobId);
     });
 
     it('returns 404 if job does not exist', (done) => {
@@ -56,11 +56,11 @@ describe('jobs', () => {
     });
 
     it('isolates tenant', async () => {
-      const {tenant_id} = await dataGenerator.insertTenant();
-      const {job_id} = await dataGenerator.insertJob(tenant_id);
+      const {tenantId} = await dataGenerator.insertTenant();
+      const {jobId} = await dataGenerator.insertJob(tenantId);
 
       await request(app)
-        .get(`/jobs/${job_id}`)
+        .get(`/jobs/${jobId}`)
         .set('Accept', 'application/json')
         .expect(404);
     });

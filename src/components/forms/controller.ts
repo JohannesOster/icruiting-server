@@ -13,39 +13,39 @@ import {
 import {TForm} from './types';
 
 export const createForm = catchAsync(async (req, res) => {
-  const {tenant_id} = res.locals.user;
-  const params = {...req.body, tenant_id};
+  const {tenantId} = res.locals.user;
+  const params = {...req.body, tenantId};
   const resp = await dbInsertForm(params);
   res.status(201).json(resp);
 });
 
 export const getForms = catchAsync(async (req, res) => {
-  const {tenant_id} = res.locals.user;
-  const job_id = req.query.job_id as string;
-  const resp = await dbSelectForms(tenant_id, job_id);
+  const {tenantId} = res.locals.user;
+  const jobId = req.query.jobId as string;
+  const resp = await dbSelectForms(tenantId, jobId);
   res.status(200).json(resp);
 });
 
 export const renderHTMLForm = catchAsync(async (req, res) => {
-  const {form_id} = req.params;
-  const form: TForm | undefined = await dbSelectForm(form_id);
+  const {formId} = req.params;
+  const form: TForm | undefined = await dbSelectForm(formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
   const {protocol, originalUrl} = req;
   const host = req.get('host');
   const submitAction = `${protocol}://${host}${originalUrl}`;
-  const params = {formId: form_id, formFields: form.form_fields, submitAction};
+  const params = {formId: formId, formFields: form.formFields, submitAction};
 
   res.header('Content-Type', 'text/html');
   res.render('form', params);
 });
 
 export const submitHTMLForm = catchAsync(async (req, res) => {
-  const {form_id} = req.params;
-  const form: TForm | undefined = await dbSelectForm(form_id);
+  const {formId} = req.params;
+  const form: TForm | undefined = await dbSelectForm(formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
-  if (form.form_category !== 'application') {
+  if (form.formCategory !== 'application') {
     throw new BaseError(
       402,
       'Only application form are allowed to be submitted via html',
@@ -53,8 +53,8 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
   }
 
   const applicant: any = {
-    tenant_id: form.tenant_id,
-    job_id: form.job_id,
+    tenantId: form.tenantId,
+    jobId: form.jobId,
   };
 
   const formidable = new IncomingForm();
@@ -64,11 +64,11 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
     const s3 = new S3();
     const promises = [];
 
-    const map = form.form_fields.reduce(
+    const map = form.formFields.reduce(
       (acc, item) => {
         // !> filter out non submitted values
-        const fieldExists = fields[item.form_field_id];
-        const file = files[item.form_field_id];
+        const fieldExists = fields[item.formFieldId];
+        const file = files[item.formFieldId];
         const fileExists = file && file.size;
         if (!fieldExists && !fileExists) {
           if (item.required)
@@ -84,31 +84,31 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
           console.log(`Got ${item.component}, no mapping required.`);
 
           acc.attributes.push({
-            form_field_id: item.form_field_id,
-            attribute_value: fields[item.form_field_id],
+            formFieldId: item.formFieldId,
+            attributeValue: fields[item.formFieldId],
           });
         } else if (item.component === 'checkbox') {
           console.log(
             `Got ${item.component} join selected values by comma (,).`,
           );
 
-          const value = Array.isArray(fields[item.form_field_id])
-            ? fields[item.form_field_id].join(', ')
-            : fields[item.form_field_id];
+          const value = Array.isArray(fields[item.formFieldId])
+            ? fields[item.formFieldId].join(', ')
+            : fields[item.formFieldId];
 
           acc.attributes.push({
-            form_field_id: item.form_field_id,
-            attribute_value: value,
+            formFieldId: item.formFieldId,
+            attributeValue: value,
           });
         } else if (item.component === 'file_upload') {
           console.log(
             `Got ${item.component}. Upload file to S3 bucket and map value to {label, fileURL}`,
           );
 
-          const file = files[item.form_field_id];
+          const file = files[item.formFieldId];
           const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
           const fileId = (Math.random() * 1e32).toString(36);
-          const fileKey = form.tenant_id + '.' + fileId + '.' + extension;
+          const fileKey = form.tenantId + '.' + fileId + '.' + extension;
           const fileStream = fs.createReadStream(file.path);
           const params = {
             Key: fileKey,
@@ -124,8 +124,8 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
           promises.push(s3.upload(params).promise());
           acc.attributes.push({
-            form_field_id: item.form_field_id,
-            attribute_value: fileKey,
+            formFieldId: item.formFieldId,
+            attributeValue: fileKey,
           });
         }
 
@@ -152,15 +152,15 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 });
 
 export const deleteForm = catchAsync(async (req, res) => {
-  const {form_id} = req.params;
-  await dbDeleteForm(form_id);
+  const {formId} = req.params;
+  await dbDeleteForm(formId);
   res.status(200).json({});
 });
 
 export const updateForm = catchAsync(async (req, res) => {
-  const {form_id} = req.params;
-  const {tenant_id} = res.locals.user;
-  const params = {...req.body, tenant_id};
-  const resp = await dbUpdateForm(form_id, params);
+  const {formId} = req.params;
+  const {tenantId} = res.locals.user;
+  const params = {...req.body, tenantId};
+  const resp = await dbUpdateForm(formId, params);
   res.status(200).json(resp);
 });

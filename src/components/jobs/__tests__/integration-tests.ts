@@ -17,7 +17,7 @@ jest.mock('middlewares/auth', () => ({
 }));
 
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
+  await dataGenerator.insertTenant(mockUser.tenantId);
 });
 
 afterAll(async () => {
@@ -26,15 +26,15 @@ afterAll(async () => {
 });
 
 describe('jobs', () => {
-  describe('DELETE /jobs/:job_id', () => {
+  describe('DELETE /jobs/:jobId', () => {
     let job: any;
     beforeEach(async () => {
-      job = await dataGenerator.insertJob(mockUser.tenant_id);
+      job = await dataGenerator.insertJob(mockUser.tenantId);
     });
 
     it('returns 200 json response', (done) => {
       request(app)
-        .del(`/jobs/${job.job_id}`)
+        .del(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -42,31 +42,31 @@ describe('jobs', () => {
 
     it('deletes job entity', async () => {
       await request(app)
-        .del(`/jobs/${job.job_id}`)
+        .del(`/jobs/${job.jobId}`)
         .set('Accept', 'application/json')
         .expect(200);
 
-      const stmt = 'SELECT COUNT(*) FROM job WHERE job_id = $1';
-      const {count} = await db.one(stmt, job.job_id);
+      const stmt = 'SELECT COUNT(*) FROM job WHERE jobId = $1';
+      const {count} = await db.one(stmt, job.jobId);
 
       expect(parseInt(count)).toBe(0);
     });
   });
 
-  describe('POST /jobs/:job_id/applicant-reports', () => {
+  describe('POST /jobs/:jobId/applicant-reports', () => {
     let jobId: string;
     let report: any;
     beforeAll(async () => {
-      const fakeJob = fake.job(mockUser.tenant_id);
-      jobId = (await dataGenerator.insertJob(mockUser.tenant_id)).job_id;
+      const fakeJob = fake.job(mockUser.tenantId);
+      jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 
-      const fakeForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const fakeForm = fake.applicationForm(mockUser.tenantId, jobId);
       const form: TForm = await dbInsertForm(fakeForm);
 
-      report = form.form_fields.reduce(
-        (acc, {component, form_field_id}) => {
-          if (component === 'file_upload') acc.image = form_field_id;
-          else acc.attributes.push(form_field_id);
+      report = form.formFields.reduce(
+        (acc, {component, formFieldId}) => {
+          if (component === 'file_upload') acc.image = formFieldId;
+          else acc.attributes.push(formFieldId);
           return acc;
         },
         {attributes: [], image: ''} as any,
@@ -100,11 +100,11 @@ describe('jobs', () => {
         .send(report)
         .expect(201);
 
-      expect(resp.body.applicant_report_id).toBeDefined();
+      expect(resp.body.applicantReportId).toBeDefined();
 
       const {count} = await db.one(
-        'SELECT COUNT(*) FROM applicant_report WHERE applicant_report_id=$1',
-        resp.body.applicant_report_id,
+        'SELECT COUNT(*) FROM applicant_report WHERE applicantReportId=$1',
+        resp.body.applicantReportId,
       );
 
       expect(parseInt(count)).toBe(1);
@@ -131,28 +131,28 @@ describe('jobs', () => {
     });
   });
 
-  describe('PUT /jobs/:job_id/applicant-reports', () => {
+  describe('PUT /jobs/:jobId/applicant-reports', () => {
     let jobId: string;
     let report: any;
     beforeAll(async () => {
-      const fakeJob = fake.job(mockUser.tenant_id);
-      jobId = (await dataGenerator.insertJob(mockUser.tenant_id)).job_id;
+      const fakeJob = fake.job(mockUser.tenantId);
+      jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 
-      const fakeForm = fake.applicationForm(mockUser.tenant_id, jobId);
+      const fakeForm = fake.applicationForm(mockUser.tenantId, jobId);
       const form: TForm = await dbInsertForm(fakeForm);
 
-      const _report = form.form_fields.reduce(
-        (acc, {component, form_field_id}) => {
-          if (component === 'file_upload') acc.image = form_field_id;
-          else acc.attributes.push(form_field_id);
+      const _report = form.formFields.reduce(
+        (acc, {component, formFieldId}) => {
+          if (component === 'file_upload') acc.image = formFieldId;
+          else acc.attributes.push(formFieldId);
           return acc;
         },
         {attributes: [], image: ''} as any,
       );
 
       report = await dbInsertApplicantReport({
-        job_id: jobId,
-        tenant_id: mockUser.tenant_id,
+        jobId: jobId,
+        tenantId: mockUser.tenantId,
         attributes: _report.attributes,
         image: _report.image,
       });
@@ -161,7 +161,7 @@ describe('jobs', () => {
     it('returns 200 json response', (done) => {
       const updateVals = {attributes: []};
       request(app)
-        .put(`/jobs/${jobId}/applicant-reports/${report.applicant_report_id}`)
+        .put(`/jobs/${jobId}/applicant-reports/${report.applicantReportId}`)
         .set('Accept', 'application/json')
         .send(updateVals)
         .expect('Content-Type', /json/)
@@ -170,21 +170,21 @@ describe('jobs', () => {
 
     it('validates request parameters', (done) => {
       request(app)
-        .put(`/jobs/${jobId}/applicant-reports/${report.applicant_report_id}`)
+        .put(`/jobs/${jobId}/applicant-reports/${report.applicantReportId}`)
         .set('Accept', 'application/json')
         .send({})
         .expect(422, done);
     });
 
     it('returns updated entity', async () => {
-      const updateVals = {attributes: [report.attributes[0].form_field_id]};
+      const updateVals = {attributes: [report.attributes[0].formFieldId]};
       const resp = await request(app)
-        .put(`/jobs/${jobId}/applicant-reports/${report.applicant_report_id}`)
+        .put(`/jobs/${jobId}/applicant-reports/${report.applicantReportId}`)
         .set('Accept', 'application/json')
         .send(updateVals)
         .expect(200);
 
-      expect(resp.body.attributes[0].form_field_id).toStrictEqual(
+      expect(resp.body.attributes[0].formFieldId).toStrictEqual(
         updateVals.attributes[0],
       );
     });

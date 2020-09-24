@@ -4,13 +4,10 @@ import {
   selectAssessmentRanking as selectAssessmentRankingSQL,
 } from './sql';
 
-export const dbSelectScreeningRanking = (job_id: string, tenant_id: string) => {
-  return db.any(selectScreeningRankingSQL, {job_id, tenant_id});
+export const dbSelectScreeningRanking = (jobId: string, tenantId: string) => {
+  return db.any(selectScreeningRankingSQL, {jobId, tenantId});
 };
 
-export const dbSelectAssessmentRanking = (
-  job_id: string,
-  tenant_id: string,
-) => {
-  return db.any(selectAssessmentRankingSQL, {job_id, tenant_id});
+export const dbSelectAssessmentRanking = (jobId: string, tenantId: string) => {
+  return db.any(selectAssessmentRankingSQL, {jobId, tenantId});
 };

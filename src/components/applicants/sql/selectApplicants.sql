@@ -1,30 +1,29 @@
 SELECT applicant.*,
        array_agg(json_build_object(
          'key', form_field.label,
-         'value', applicant_attribute.attribute_value
+         'value', applicantAttribute.attributeValue
         )) FILTER (WHERE form_field.component != 'file_upload') AS attributes,
        array_agg(json_build_object(
          'key', form_field.label,
-         'value', applicant_attribute.attribute_value
+         'value', applicantAttribute.attributeValue
         )) FILTER (WHERE form_field.component = 'file_upload') AS files,
-       COUNT(screening.applicant_id)::int::boolean as screening_exists
+       COUNT(screening.applicantId)::int::boolean as screening_exists
 FROM applicant
-LEFT JOIN applicant_attribute
-ON applicant_attribute.applicant_id = applicant.applicant_id
+LEFT JOIN applicantAttribute
+ON applicantAttribute.applicantId = applicant.applicantId
 LEFT JOIN form_field
-ON applicant_attribute.form_field_id = form_field.form_field_id
+ON applicantAttribute.formFieldId = form_field.formFieldId
 LEFT JOIN
-  (SELECT applicant_id
+  (SELECT applicantId
    FROM form_submission
    LEFT JOIN form
-   ON form_submission.form_id = form.form_id
-   WHERE form.tenant_id = ${tenant_id} 
-     AND form.form_category = 'screening'
-     AND form_submission.submitter_id = ${user_id} 
+   ON form_submission.formId = form.formId
+   WHERE form.tenantId = ${tenantId}
+     AND form.formCategory = 'screening'
+     AND form_submission.submitterId = ${userId}
   ) as screening
-ON screening.applicant_id = applicant.applicant_id
-WHERE applicant.tenant_id = ${tenant_id}
-  AND (applicant.job_id = ${job_id} OR ${job_id} IS NULL)
-  AND (applicant.applicant_id = ${applicant_id} OR ${applicant_id} IS NULL)
-GROUP BY applicant.applicant_id
- 
+ON screening.applicantId = applicant.applicantId
+WHERE applicant.tenantId = ${tenantId}
+  AND (applicant.jobId = ${jobId} OR ${jobId} IS NULL)
+  AND (applicant.applicantId = ${applicantId} OR ${applicantId} IS NULL)
+GROUP BY applicant.applicantId

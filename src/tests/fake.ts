@@ -3,51 +3,51 @@ import {EFormCategory} from 'components/forms';
 
 const fake = {
   user: (userRole: 'admin' | 'user' = 'admin') => ({
-    tenant_id: faker.random.uuid(),
-    user_id: faker.random.uuid(),
+    tenantId: faker.random.uuid(),
+    userId: faker.random.uuid(),
     userRole,
   }),
-  tenant: (tenant_id?: string) => ({
-    tenant_id,
-    tenant_name: faker.company.companyName(),
+  tenant: (tenantId?: string) => ({
+    tenantId,
+    tenantName: faker.company.companyName(),
   }),
-  job: (tenant_id: string) => ({
-    tenant_id,
-    job_title: faker.company.companyName(),
-    job_requirements: [
-      {requirement_label: faker.commerce.productName()},
-      {requirement_label: faker.commerce.productName()},
-      {requirement_label: faker.commerce.productName()},
+  job: (tenantId: string) => ({
+    tenantId,
+    jobTitle: faker.company.companyName(),
+    jobRequirements: [
+      {requirementLabel: faker.commerce.productName()},
+      {requirementLabel: faker.commerce.productName()},
+      {requirementLabel: faker.commerce.productName()},
     ],
   }),
   applicant: (
-    tenant_id: string,
-    job_id: string,
-    form_field_ids: string[] = [],
+    tenantId: string,
+    jobId: string,
+    formFieldIds: string[] = [],
   ) => ({
-    tenant_id,
-    job_id,
-    attributes: form_field_ids.map((form_field_id) => ({
-      form_field_id,
-      attribute_value: faker.random.words(),
+    tenantId,
+    jobId,
+    attributes: formFieldIds.map((formFieldId) => ({
+      formFieldId,
+      attributeValue: faker.random.words(),
     })),
   }),
-  applicationForm: (tenant_id: string, job_id: string) => ({
-    tenant_id,
-    job_id: job_id,
-    form_category: EFormCategory.application,
-    form_fields: [
+  applicationForm: (tenantId: string, jobId: string) => ({
+    tenantId,
+    jobId: jobId,
+    formCategory: EFormCategory.application,
+    formFields: [
       {
         component: 'input',
         label: faker.random.word(),
         placeholder: faker.random.word(),
-        row_index: 0,
+        rowIndex: 0,
         required: true,
         description: faker.random.words(),
       },
       {
         component: 'checkbox',
-        row_index: 1,
+        rowIndex: 1,
         label: faker.random.word(),
         description: faker.random.words(),
         options: [
@@ -61,26 +61,26 @@ const fake = {
       {
         component: 'file_upload',
         label: faker.random.word(),
-        row_index: 2,
+        rowIndex: 2,
         description: faker.random.words(),
         editable: true,
         deletable: true,
       },
     ],
   }),
-  screeningForm: (tenant_id: string, job_id: string) => ({
-    tenant_id,
-    job_id: job_id,
-    form_category: EFormCategory.screening,
-    form_fields: [
+  screeningForm: (tenantId: string, jobId: string) => ({
+    tenantId,
+    jobId: jobId,
+    formCategory: EFormCategory.screening,
+    formFields: [
       {
         component: 'rating_group',
         label: faker.random.word(),
         placeholder: faker.random.word(),
         description: faker.random.words(),
         intent: 'sum_up',
-        row_index: 0,
-        default_value: '1',
+        rowIndex: 0,
+        defaultValue: '1',
         options: [
           {label: '1', value: '1'},
           {label: '2', value: '2'},
@@ -97,8 +97,8 @@ const fake = {
         placeholder: faker.random.word(),
         description: faker.random.words(),
         intent: 'sum_up',
-        row_index: 1,
-        default_value: '1',
+        rowIndex: 1,
+        defaultValue: '1',
         options: [
           {label: '1', value: '1'},
           {label: '2', value: '2'},
@@ -111,19 +111,19 @@ const fake = {
       },
     ],
   }),
-  assessmentForm: (tenant_id: string, job_id: string) => ({
-    tenant_id,
-    job_id: job_id,
-    form_category: EFormCategory.assessment,
-    form_title: faker.random.words(),
-    form_fields: [
+  assessmentForm: (tenantId: string, jobId: string) => ({
+    tenantId,
+    jobId: jobId,
+    formCategory: EFormCategory.assessment,
+    formTitle: faker.random.words(),
+    formFields: [
       {
         component: 'rating_group',
         label: faker.random.word(),
         placeholder: faker.random.word(),
         intent: 'sum_up',
-        row_index: 0,
-        default_value: '1',
+        rowIndex: 0,
+        defaultValue: '1',
         options: [
           {label: '1', value: '1'},
           {label: '2', value: '2'},
@@ -139,8 +139,8 @@ const fake = {
         label: faker.random.word(),
         placeholder: faker.random.word(),
         intent: 'sum_up',
-        row_index: 1,
-        default_value: '1',
+        rowIndex: 1,
+        defaultValue: '1',
         options: [
           {label: '1', value: '1'},
           {label: '2', value: '2'},
@@ -154,18 +154,18 @@ const fake = {
     ],
   }),
   formSubmission: (
-    tenant_id: string,
-    applicant_id: string,
-    submitter_id: string,
-    form_id: string,
-    form_field_ids: string[],
+    tenantId: string,
+    applicantId: string,
+    submitterId: string,
+    formId: string,
+    formFieldIds: string[],
   ) => ({
-    tenant_id,
-    applicant_id,
-    submitter_id,
-    form_id,
-    submission: form_field_ids.reduce(
-      (acc: {[form_field_id: string]: string}, curr) => {
+    tenantId,
+    applicantId,
+    submitterId,
+    formId,
+    submission: formFieldIds.reduce(
+      (acc: {[formFieldId: string]: string}, curr) => {
         acc[curr] = faker.random.number({min: 0, max: 5}).toString();
         return acc;
       },

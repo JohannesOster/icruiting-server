@@ -21,23 +21,23 @@ const router = express.Router();
 
 router.use(requireAuth);
 router.get('/', getJobs);
-router.get('/:job_id', getJob);
+router.get('/:jobId', getJob);
 
 router.use(requireAdmin);
 router.post('/', postJobsRules, validate, postJob);
-router.put('/:job_id', putJobRules, validate, putJob);
-router.delete('/:job_id', deleteJob);
+router.put('/:jobId', putJobRules, validate, putJob);
+router.delete('/:jobId', deleteJob);
 
-router.get('/:job_id/applicant-reports', getApplicantReport);
+router.get('/:jobId/applicant-reports', getApplicantReport);
 router.post(
-  '/:job_id/applicant-reports',
+  '/:jobId/applicant-reports',
   validateCreateApplicantReport,
   validate,
   createApplicantReport,
 );
 
 router.put(
-  '/:job_id/applicant-reports/:applicant_report_id',
+  '/:jobId/applicant-reports/:applicantReportId',
   validateCreateApplicantReport,
   validate,
   updateApplicantReport,

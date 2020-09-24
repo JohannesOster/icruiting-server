@@ -24,9 +24,9 @@ import {dbSelectForm, TForm} from '../forms';
 import {TApplicant, TReport} from './types';
 
 export const getApplicants = catchAsync(async (req, res) => {
-  const {job_id, applicant_id} = req.query as any;
-  const {tenant_id, user_id} = res.locals.user;
-  const params = {tenant_id, user_id, job_id, applicant_id};
+  const {jobId, applicantId} = req.query as any;
+  const {tenantId, userId} = res.locals.user;
+  const params = {tenantId, userId, jobId, applicantId};
 
   const applicants = await dbSelectApplicants(params);
 
@@ -46,9 +46,9 @@ export const getApplicants = catchAsync(async (req, res) => {
 });
 
 export const getApplicant = catchAsync(async (req, res) => {
-  const {applicant_id} = req.params;
-  const {tenant_id, user_id} = res.locals.user;
-  const params = {tenant_id, user_id, applicant_id};
+  const {applicantId} = req.params;
+  const {tenantId, userId} = res.locals.user;
+  const params = {tenantId, userId, applicantId};
 
   const applicant = await dbSelectApplicants(params).then((res: any) => res[0]);
   if (!applicant) throw new BaseError(404, 'Not Found');
@@ -62,12 +62,12 @@ export const getApplicant = catchAsync(async (req, res) => {
 });
 
 export const getReport = catchAsync(async (req, res) => {
-  const {applicant_id} = req.params;
-  const {tenant_id} = res.locals.user;
-  type QueryType = {form_category: 'screening' | 'assessment'};
-  const {form_category} = req.query as QueryType;
+  const {applicantId} = req.params;
+  const {tenantId} = res.locals.user;
+  type QueryType = {formCategory: 'screening' | 'assessment'};
+  const {formCategory} = req.query as QueryType;
 
-  const params = {applicant_id, tenant_id, form_category};
+  const params = {applicantId, tenantId, formCategory};
   const data: TRankingRow = await dbSelectReport(params);
   if (!data) throw new BaseError(404, 'Not Found');
 
@@ -83,28 +83,28 @@ export const getReport = catchAsync(async (req, res) => {
 
   const submissionsResult = submissions.reduce((acc, curr) => {
     curr.forEach(
-      ({form_field_id, intent, value, label, job_requirement_label}: any) => {
-        if (!acc[form_field_id]) {
+      ({formFieldId, intent, value, label, jobRequirementLabel}: any) => {
+        if (!acc[formFieldId]) {
           const initialVal = initialValues(intent);
-          acc[form_field_id] = {label, intent, value: initialVal};
+          acc[formFieldId] = {label, intent, value: initialVal};
         }
         switch (intent) {
           case EFormItemIntent.sumUp:
-            (acc[form_field_id].value as number) += parseFloat(value);
-            if (job_requirement_label)
-              jobres[job_requirement_label] =
-                (jobres[job_requirement_label] || 0) + parseFloat(value);
+            (acc[formFieldId].value as number) += parseFloat(value);
+            if (jobRequirementLabel)
+              jobres[jobRequirementLabel] =
+                (jobres[jobRequirementLabel] || 0) + parseFloat(value);
             break;
           case EFormItemIntent.aggregate:
             const val = value.toString();
             if (!val) break;
-            const currArray = acc[form_field_id].value as Array<string>;
-            acc[form_field_id].value = currArray.concat(val);
+            const currArray = acc[formFieldId].value as Array<string>;
+            acc[formFieldId].value = currArray.concat(val);
             break;
           case EFormItemIntent.countDistinct:
             const key = value.toString();
-            const currVal = (acc[form_field_id].value as KeyVal)[key];
-            (acc[form_field_id].value as KeyVal)[key] = (currVal || 0) + 1;
+            const currVal = (acc[formFieldId].value as KeyVal)[key];
+            (acc[formFieldId].value as KeyVal)[key] = (currVal || 0) + 1;
         }
       },
     );
@@ -129,7 +129,7 @@ export const getReport = catchAsync(async (req, res) => {
 
   const resp = {
     result: replaceSumByMean,
-    job_requirements_result: jobres,
+    jobRequirementsResult: jobres,
     ...data,
   };
 
@@ -137,13 +137,10 @@ export const getReport = catchAsync(async (req, res) => {
 });
 
 export const deleteApplicant = catchAsync(async (req, res) => {
-  const {applicant_id} = req.params;
-  const {tenant_id} = res.locals.user;
+  const {applicantId} = req.params;
+  const {tenantId} = res.locals.user;
 
-  const applicant: TApplicant = await dbSelectApplicant(
-    applicant_id,
-    tenant_id,
-  );
+  const applicant: TApplicant = await dbSelectApplicant(applicantId, tenantId);
   if (!applicant) throw new BaseError(404, 'Not Found');
 
   if (applicant.files?.length) {
@@ -155,36 +152,36 @@ export const deleteApplicant = catchAsync(async (req, res) => {
     await s3.deleteObjects(delParams).promise();
   }
 
-  await dbDeleteApplicant(applicant_id, tenant_id);
+  await dbDeleteApplicant(applicantId, tenantId);
   res.status(200).json({});
 });
 
 export const updateApplicant = catchAsync(async (req, res, next) => {
-  const {tenant_id} = res.locals.user;
-  const {applicant_id} = req.params;
+  const {tenantId} = res.locals.user;
+  const {applicantId} = req.params;
   const formidable = new IncomingForm({multiples: true} as any);
 
   formidable.parse(req, async (err: Error, fields: any, files: any) => {
     const s3 = new S3();
     const bucket = process.env.S3_BUCKET || '';
-    const {form_id} = fields;
+    const {formId} = fields;
 
     try {
-      if (!form_id) throw new BaseError(422, 'Missing form_id field');
+      if (!formId) throw new BaseError(422, 'Missing formId field');
 
-      const form: TForm | undefined = await dbSelectForm(form_id);
+      const form: TForm | undefined = await dbSelectForm(formId);
       if (!form) throw new BaseError(404, 'Form Not Found');
 
-      const applicant = await dbSelectApplicant(applicant_id, tenant_id);
+      const applicant = await dbSelectApplicant(applicantId, tenantId);
       const oldFiles = applicant?.files;
 
-      const map = await form.form_fields.reduce(
+      const map = await form.formFields.reduce(
         async (acc, item) => {
-          if (!item.form_field_id) throw new BaseError(500, '');
+          if (!item.formFieldId) throw new BaseError(500, '');
 
           // !> filter out non submitted values
           const isFile = item.component === 'file_upload';
-          if (!fields[item.form_field_id] && !isFile) {
+          if (!fields[item.formFieldId] && !isFile) {
             if (item.required) {
               throw new BaseError(422, `Missing required field: ${item.label}`);
             }
@@ -192,7 +189,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
           }
 
           if (isFile) {
-            const file = files[item.form_field_id];
+            const file = files[item.formFieldId];
 
             const oldFile = oldFiles?.find(({key}: any) => key === item.label);
             const fileExists = file && file.size;
@@ -200,8 +197,8 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
               if (!oldFile) return acc;
 
               const oldFileAttribute = {
-                form_field_id: item.form_field_id,
-                attribute_value: oldFile.value,
+                formFieldId: item.formFieldId,
+                attributeValue: oldFile.value,
               };
               (await acc).attributes.push(oldFileAttribute);
               return acc;
@@ -210,7 +207,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
             const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
 
             const fileId = (Math.random() * 1e32).toString(36);
-            let fileKey = form.tenant_id + '.' + fileId + '.' + extension;
+            let fileKey = form.tenantId + '.' + fileId + '.' + extension;
 
             if (oldFile) {
               fileKey = oldFile.value;
@@ -233,16 +230,16 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
             await s3.upload(params).promise();
 
             (await acc).attributes.push({
-              form_field_id: item.form_field_id,
-              attribute_value: fileKey,
+              formFieldId: item.formFieldId,
+              attributeValue: fileKey,
             });
 
             return acc;
           }
 
           (await acc).attributes.push({
-            form_field_id: item.form_field_id,
-            attribute_value: fields[item.form_field_id],
+            formFieldId: item.formFieldId,
+            attributeValue: fields[item.formFieldId],
           });
 
           return acc;
@@ -250,7 +247,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
         {attributes: []} as any,
       );
 
-      const appl = await dbUpdateApplicant(applicant_id, map.attributes);
+      const appl = await dbUpdateApplicant(applicantId, map.attributes);
 
       res.status(200).json(appl);
     } catch (error) {
@@ -260,21 +257,18 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 });
 
 export const getPdfReport = catchAsync(async (req, res) => {
-  const {applicant_id} = req.params;
-  const {tenant_id} = res.locals.user;
-  const {form_category = 'screening'} = req.query as {
-    form_category?: 'screening' | 'assessment';
+  const {applicantId} = req.params;
+  const {tenantId} = res.locals.user;
+  const {formCategory = 'screening'} = req.query as {
+    formCategory?: 'screening' | 'assessment';
   };
 
-  const applicant: TApplicant = await dbSelectApplicant(
-    applicant_id,
-    tenant_id,
-  );
+  const applicant: TApplicant = await dbSelectApplicant(applicantId, tenantId);
   if (!applicant) throw new BaseError(404, 'Applicant not Found');
 
   const applicantReport: TReport | undefined = await dbSelectApplicantReport(
-    tenant_id,
-    applicant.job_id,
+    tenantId,
+    applicant.jobId,
   );
 
   let htmlParams = {attributes: []} as any;
@@ -305,10 +299,10 @@ export const getPdfReport = catchAsync(async (req, res) => {
     htmlParams.attributes = attributes;
   }
 
-  const report = await dbSelectReport({tenant_id, applicant_id, form_category});
+  const report = await dbSelectReport({tenantId, applicantId, formCategory});
   htmlParams.rank = report.rank;
   htmlParams.score = report.score;
-  htmlParams.standardDeviation = report.standard_deviation;
+  htmlParams.standardDeviation = report.standardDeviation;
 
   const html = pug.renderFile(
     path.resolve(__dirname, 'report/report.pug'),

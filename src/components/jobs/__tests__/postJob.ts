@@ -15,7 +15,7 @@ jest.mock('middlewares/auth', () => ({
 }));
 
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
+  await dataGenerator.insertTenant(mockUser.tenantId);
 });
 
 afterAll(async () => {
@@ -26,7 +26,7 @@ afterAll(async () => {
 describe('jobs', () => {
   describe('POST /jobs', () => {
     it('returns 201 json response', (done) => {
-      const job = fake.job(mockUser.tenant_id);
+      const job = fake.job(mockUser.tenantId);
       request(app)
         .post('/jobs')
         .set('Accept', 'application/json')
@@ -36,53 +36,53 @@ describe('jobs', () => {
     });
 
     it('returns created job', async () => {
-      const job = fake.job(mockUser.tenant_id);
+      const job = fake.job(mockUser.tenantId);
       const resp = await request(app)
         .post('/jobs')
         .set('Accept', 'application/json')
         .send(job)
         .expect(201);
 
-      expect(resp.body.job_title).toBe(job.job_title);
+      expect(resp.body.jobTitle).toBe(job.jobTitle);
 
       // make shure all requirements are present in resp
-      const respReqs = resp.body.job_requirements;
+      const respReqs = resp.body.jobRequirements;
       let count = 0; // count equalities
-      job.job_requirements.forEach((req) => {
+      job.jobRequirements.forEach((req) => {
         for (let i = 0; i < respReqs.length; ++i) {
-          if (respReqs[i].requirement_label === req.requirement_label) ++count;
+          if (respReqs[i].requirementLabel === req.requirementLabel) ++count;
         }
       });
 
-      expect(count).toBe(job.job_requirements.length);
+      expect(count).toBe(job.jobRequirements.length);
     });
 
     it('inserts job enitity', async () => {
-      const job = fake.job(mockUser.tenant_id);
+      const job = fake.job(mockUser.tenantId);
       const resp = await request(app)
         .post('/jobs')
         .set('Accept', 'application/json')
         .send(job)
         .expect(201);
 
-      const {job_id} = resp.body;
-      const stmt = 'SELECT COUNT(*) FROM job WHERE job_id=$1';
-      const {count} = await db.one(stmt, job_id);
+      const {jobId} = resp.body;
+      const stmt = 'SELECT COUNT(*) FROM job WHERE jobId=$1';
+      const {count} = await db.one(stmt, jobId);
       expect(parseInt(count)).toBe(1);
     });
 
     it('inserts job_requirement enitities', async () => {
-      const job = fake.job(mockUser.tenant_id);
+      const job = fake.job(mockUser.tenantId);
       const resp = await request(app)
         .post('/jobs')
         .set('Accept', 'application/json')
         .send(job)
         .expect(201);
 
-      const {job_id} = resp.body;
-      const stmt = 'SELECT COUNT(*) FROM job_requirement WHERE job_id=$1';
-      const {count} = await db.one(stmt, job_id);
-      expect(parseInt(count)).toBe(job.job_requirements.length);
+      const {jobId} = resp.body;
+      const stmt = 'SELECT COUNT(*) FROM job_requirement WHERE jobId=$1';
+      const {count} = await db.one(stmt, jobId);
+      expect(parseInt(count)).toBe(job.jobRequirements.length);
     });
   });
 });

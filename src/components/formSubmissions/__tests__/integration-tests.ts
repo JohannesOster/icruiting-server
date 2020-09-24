@@ -19,8 +19,8 @@ jest.mock('middlewares/auth', () => ({
 
 let jobId: string;
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
-  jobId = (await dataGenerator.insertJob(mockUser.tenant_id)).job_id;
+  await dataGenerator.insertTenant(mockUser.tenantId);
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 });
 
 afterAll(async () => {
@@ -32,35 +32,35 @@ describe('form-submissions', () => {
   describe('POST /form-submissions', () => {
     let formSubmission: TFormSubmission;
     beforeAll(async () => {
-      const {tenant_id, user_id} = mockUser;
+      const {tenantId, userId} = mockUser;
       const screeningForm: TForm = await dataGenerator.insertForm(
-        tenant_id,
+        tenantId,
         jobId,
         EFormCategory.screening,
       );
       const applForm: TForm = await dataGenerator.insertForm(
-        tenant_id,
+        tenantId,
         jobId,
         EFormCategory.application,
       );
-      const formFieldIds = applForm.form_fields.map(
-        ({form_field_id}) => form_field_id!,
+      const formFieldIds = applForm.formFields.map(
+        ({formFieldId}) => formFieldId!,
       );
 
-      const {applicant_id} = await dataGenerator.insertApplicant(
-        tenant_id,
+      const {applicantId} = await dataGenerator.insertApplicant(
+        tenantId,
         jobId,
         formFieldIds,
       );
 
       formSubmission = {
-        tenant_id,
-        applicant_id,
-        submitter_id: user_id,
-        form_id: screeningForm.form_id!,
-        submission: screeningForm.form_fields.reduce(
-          (acc: {[form_field_id: string]: string}, item) => {
-            acc[item.form_field_id!] = faker.random
+        tenantId,
+        applicantId,
+        submitterId: userId,
+        formId: screeningForm.formId!,
+        submission: screeningForm.formFields.reduce(
+          (acc: {[formFieldId: string]: string}, item) => {
+            acc[item.formFieldId!] = faker.random
               .number({min: 0, max: 5})
               .toString();
             return acc;
@@ -87,49 +87,49 @@ describe('form-submissions', () => {
         .set('Accept', 'application/json')
         .send(formSubmission);
 
-      expect(resp.body.form_id).toBe(formSubmission.form_id);
-      expect(resp.body.applicant_id).toBe(formSubmission.applicant_id);
-      expect(resp.body.submitter_id).toBe(formSubmission.submitter_id);
+      expect(resp.body.formId).toBe(formSubmission.formId);
+      expect(resp.body.applicantId).toBe(formSubmission.applicantId);
+      expect(resp.body.submitterId).toBe(formSubmission.submitterId);
       expect(resp.body.submission).toStrictEqual(formSubmission.submission);
     });
   });
 
-  describe('PUT /form-submissions/:form_id/:applicant_id', () => {
+  describe('PUT /form-submissions/:formId/:applicantId', () => {
     let formSubmission: TFormSubmission;
     beforeAll(async () => {
-      const {tenant_id, user_id} = mockUser;
+      const {tenantId, userId} = mockUser;
       const screeningForm: TForm = await dataGenerator.insertForm(
-        tenant_id,
+        tenantId,
         jobId,
         EFormCategory.screening,
       );
       const applForm: TForm = await dataGenerator.insertForm(
-        tenant_id,
+        tenantId,
         jobId,
         EFormCategory.application,
       );
-      const formFieldIds = applForm.form_fields.map(
-        ({form_field_id}) => form_field_id!,
+      const formFieldIds = applForm.formFields.map(
+        ({formFieldId}) => formFieldId!,
       );
 
-      const {applicant_id} = await dataGenerator.insertApplicant(
-        tenant_id,
+      const {applicantId} = await dataGenerator.insertApplicant(
+        tenantId,
         jobId,
         formFieldIds,
       );
 
       formSubmission = await dataGenerator.insertFormSubmission(
-        tenant_id,
-        applicant_id,
-        user_id,
-        screeningForm.form_id,
-        screeningForm.form_fields.map(({form_field_id}) => form_field_id),
+        tenantId,
+        applicantId,
+        userId,
+        screeningForm.formId,
+        screeningForm.formFields.map(({formFieldId}) => formFieldId),
       );
     });
 
     it('returns 201 json response', async (done) => {
       request(app)
-        .put(`/form-submissions/${formSubmission.form_submission_id}`)
+        .put(`/form-submissions/${formSubmission.formSubmissionId}`)
         .set('Accept', 'application/json')
         .send({...formSubmission})
         .expect('Content-Type', /json/)
@@ -138,56 +138,56 @@ describe('form-submissions', () => {
 
     it('returns updated entity', async () => {
       const resp = await request(app)
-        .put(`/form-submissions/${formSubmission.form_submission_id}`)
+        .put(`/form-submissions/${formSubmission.formSubmissionId}`)
         .set('Accept', 'application/json')
         .send({...formSubmission})
         .expect(200);
 
       // make shure non passed properties stay unchanged
-      expect(resp.body.form_id).toBe(formSubmission.form_id);
-      expect(resp.body.applicant_id).toBe(formSubmission.applicant_id);
-      expect(resp.body.submitter_id).toBe(formSubmission.submitter_id);
+      expect(resp.body.formId).toBe(formSubmission.formId);
+      expect(resp.body.applicantId).toBe(formSubmission.applicantId);
+      expect(resp.body.submitterId).toBe(formSubmission.submitterId);
       expect(resp.body.submission).toStrictEqual(formSubmission.submission);
     });
   });
 
-  describe('GET /form-submissions/:form_id/:applicant_id', () => {
+  describe('GET /form-submissions/:formId/:applicantId', () => {
     let formSubmission: TFormSubmission;
     beforeAll(async () => {
-      const {tenant_id, user_id} = mockUser;
+      const {tenantId, userId} = mockUser;
       const screeningForm: TForm = await dataGenerator.insertForm(
-        tenant_id,
+        tenantId,
         jobId,
         EFormCategory.screening,
       );
       const applForm: TForm = await dataGenerator.insertForm(
-        tenant_id,
+        tenantId,
         jobId,
         EFormCategory.application,
       );
-      const formFieldIds = applForm.form_fields.map(
-        ({form_field_id}) => form_field_id!,
+      const formFieldIds = applForm.formFields.map(
+        ({formFieldId}) => formFieldId!,
       );
 
-      const {applicant_id} = await dataGenerator.insertApplicant(
-        tenant_id,
+      const {applicantId} = await dataGenerator.insertApplicant(
+        tenantId,
         jobId,
         formFieldIds,
       );
 
       formSubmission = await dataGenerator.insertFormSubmission(
-        tenant_id,
-        applicant_id,
-        user_id,
-        screeningForm.form_id,
-        screeningForm.form_fields.map(({form_field_id}) => form_field_id),
+        tenantId,
+        applicantId,
+        userId,
+        screeningForm.formId,
+        screeningForm.formFields.map(({formFieldId}) => formFieldId),
       );
     });
 
     it('Returns 200 json response', (done) => {
       request(app)
         .get(
-          `/form-submissions/${formSubmission.form_id}/${formSubmission.applicant_id}`,
+          `/form-submissions/${formSubmission.formId}/${formSubmission.applicantId}`,
         )
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -197,7 +197,7 @@ describe('form-submissions', () => {
     it('Returns inserted screening', async () => {
       const resp = await request(app)
         .get(
-          `/form-submissions/${formSubmission.form_id}/${formSubmission.applicant_id}`,
+          `/form-submissions/${formSubmission.formId}/${formSubmission.applicantId}`,
         )
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)

@@ -2,11 +2,15 @@ import pgPromise from 'pg-promise';
 import {IInitOptions} from 'pg-promise';
 import {IExtensions, TenantsRepository, JobssRepository} from './repos';
 import config from './config';
+import humps from 'humps';
 
 const initOptions: IInitOptions<IExtensions> = {
   extend(obj) {
     obj.tenants = TenantsRepository(obj, pgp);
     obj.jobs = JobssRepository(obj, pgp);
+  },
+  receive(data, result) {
+    result.rows = data.map((obj) => humps.camelizeKeys(obj));
   },
 };
 

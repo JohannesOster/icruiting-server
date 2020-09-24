@@ -18,8 +18,8 @@ jest.mock('middlewares/auth', () => ({
 
 let jobId: string;
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
-  jobId = (await dataGenerator.insertJob(mockUser.tenant_id)).job_id;
+  await dataGenerator.insertTenant(mockUser.tenantId);
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 });
 
 afterAll(async () => {
@@ -30,7 +30,7 @@ afterAll(async () => {
 describe('forms', () => {
   describe('POST /forms', () => {
     it('returns 201 json response', (done) => {
-      const form = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form = fake.applicationForm(mockUser.tenantId, jobId);
 
       request(app)
         .post('/forms')
@@ -41,16 +41,16 @@ describe('forms', () => {
     });
 
     it('returns created form entity', async (done) => {
-      const form = fake.applicationForm(mockUser.tenant_id, jobId);
+      const form = fake.applicationForm(mockUser.tenantId, jobId);
       const resp = await request(app)
         .post('/forms')
         .set('Accept', 'application/json')
         .send(form)
         .expect(201);
 
-      expect(resp.body.form_id).not.toBeUndefined();
-      expect(resp.body.form_category).toBe(form.form_category);
-      expect(resp.body.form_fields.length).toBe(form.form_fields.length);
+      expect(resp.body.formId).not.toBeUndefined();
+      expect(resp.body.formCategory).toBe(form.formCategory);
+      expect(resp.body.formFields.length).toBe(form.formFields.length);
 
       done();
     });
@@ -75,11 +75,11 @@ describe('forms', () => {
     });
 
     it('returns array of forms', async () => {
-      const {tenant_id} = mockUser;
+      const {tenantId} = mockUser;
       const promises = [
-        dataGenerator.insertForm(tenant_id, jobId, EFormCategory.application),
-        dataGenerator.insertForm(tenant_id, jobId, EFormCategory.screening),
-        dataGenerator.insertForm(tenant_id, jobId, EFormCategory.assessment),
+        dataGenerator.insertForm(tenantId, jobId, EFormCategory.application),
+        dataGenerator.insertForm(tenantId, jobId, EFormCategory.screening),
+        dataGenerator.insertForm(tenantId, jobId, EFormCategory.assessment),
       ];
       await Promise.all(promises);
 
@@ -90,15 +90,15 @@ describe('forms', () => {
 
       expect(Array.isArray(resp.body)).toBeTruthy();
       expect(resp.body.length).toBe(promises.length);
-      expect(resp.body[0].form_id).toBeDefined();
+      expect(resp.body[0].formId).toBeDefined();
     });
   });
 
-  describe('GET /forms/:form_id/html', () => {
+  describe('GET /forms/:formId/html', () => {
     let form: TForm;
     beforeAll(async () => {
       form = await dataGenerator.insertForm(
-        mockUser.tenant_id,
+        mockUser.tenantId,
         jobId,
         EFormCategory.application,
       );
@@ -106,18 +106,18 @@ describe('forms', () => {
 
     it('renders html without crashing', (done) => {
       request(app)
-        .get(`/forms/${form.form_id}/html`)
+        .get(`/forms/${form.formId}/html`)
         .set('Accept', 'text/html')
         .expect('Content-Type', /html/)
         .expect(200, done);
     });
   });
 
-  describe('DELETE /forms/:form_id', () => {
+  describe('DELETE /forms/:formId', () => {
     let form: TForm;
     beforeEach(async () => {
       form = await dataGenerator.insertForm(
-        mockUser.tenant_id,
+        mockUser.tenantId,
         jobId,
         EFormCategory.application,
       );
@@ -125,7 +125,7 @@ describe('forms', () => {
 
     it('returns json 200 response', (done) => {
       request(app)
-        .delete(`/forms/${form.form_id}`)
+        .delete(`/forms/${form.formId}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -133,36 +133,36 @@ describe('forms', () => {
 
     it('deletes form', async () => {
       const {count: countBefore} = await db.one(
-        'SELECT COUNT(*) FROM form WHERE form_id=$1',
-        form.form_id,
+        'SELECT COUNT(*) FROM form WHERE formId=$1',
+        form.formId,
       );
 
       expect(parseInt(countBefore)).toBe(1);
 
       await request(app)
-        .delete(`/forms/${form.form_id}`)
+        .delete(`/forms/${form.formId}`)
         .set('Accept', 'application/json')
         .expect(200);
 
       const {count} = await db.one(
-        'SELECT COUNT(*) FROM form WHERE form_id=$1',
-        form.form_id,
+        'SELECT COUNT(*) FROM form WHERE formId=$1',
+        form.formId,
       );
 
       expect(parseInt(count)).toBe(0);
     });
   });
 
-  describe('PUT /forms/:form_id', () => {
+  describe('PUT /forms/:formId', () => {
     it('returns json 200 response', async () => {
       const form = await dataGenerator.insertForm(
-        mockUser.tenant_id,
+        mockUser.tenantId,
         jobId,
         EFormCategory.application,
       );
 
       await request(app)
-        .put(`/forms/${form.form_id}`)
+        .put(`/forms/${form.formId}`)
         .set('Accept', 'application/json')
         .send({...form})
         .expect('Content-Type', /json/)
@@ -171,44 +171,44 @@ describe('forms', () => {
 
     it('returns updated form entity', async () => {
       const form: TForm = await dataGenerator.insertForm(
-        mockUser.tenant_id,
+        mockUser.tenantId,
         jobId,
         EFormCategory.application,
       );
 
       const updateVals = {...form};
       const placeholder = faker.random.words();
-      updateVals.form_fields = updateVals.form_fields.map((item) => ({
+      updateVals.formFields = updateVals.formFields.map((item) => ({
         ...item,
         placeholder,
       }));
 
       const resp = await request(app)
-        .put(`/forms/${form.form_id}`)
+        .put(`/forms/${form.formId}`)
         .set('Accept', 'application/json')
         .send(updateVals)
         .expect(200);
 
-      (resp.body as TForm).form_fields.forEach((field) => {
+      (resp.body as TForm).formFields.forEach((field) => {
         expect(field.placeholder).toBe(placeholder);
       });
     });
 
-    it('updates form_title', async () => {
+    it('updates formTitle', async () => {
       const form: TForm = await dataGenerator.insertForm(
-        mockUser.tenant_id,
+        mockUser.tenantId,
         jobId,
         EFormCategory.application,
       );
 
-      const updateVals = {...form, form_title: faker.random.words()};
+      const updateVals = {...form, formTitle: faker.random.words()};
       const resp = await request(app)
-        .put(`/forms/${form.form_id}`)
+        .put(`/forms/${form.formId}`)
         .set('Accept', 'application/json')
         .send(updateVals)
         .expect(200);
 
-      expect(resp.body.form_title).toBe(updateVals.form_title);
+      expect(resp.body.formTitle).toBe(updateVals.formTitle);
     });
   });
 });

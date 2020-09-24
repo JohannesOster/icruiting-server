@@ -38,24 +38,24 @@ jest.mock('aws-sdk', () => ({
               Username: internet.email(),
               Attributes: [
                 {Name: 'email', Value: internet.email()},
-                {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
-                {Name: 'custom:user_role', Value: 'employee'},
+                {Name: 'custom:tenantId', Value: mockUser.tenantId},
+                {Name: 'custom:userRole', Value: 'employee'},
               ],
             },
             {
               Username: internet.email(),
               Attributes: [
                 {Name: 'email', Value: internet.email()},
-                {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
-                {Name: 'custom:user_role', Value: 'admin'},
+                {Name: 'custom:tenantId', Value: mockUser.tenantId},
+                {Name: 'custom:userRole', Value: 'admin'},
               ],
             },
             {
               Username: internet.email(),
               Attributes: [
                 {Name: 'email', Value: internet.email()},
-                {Name: 'custom:tenant_id', Value: random.uuid()},
-                {Name: 'custom:user_role', Value: 'employee'},
+                {Name: 'custom:tenantId', Value: random.uuid()},
+                {Name: 'custom:userRole', Value: 'employee'},
               ],
             },
           ],
@@ -72,7 +72,7 @@ jest.mock('aws-sdk', () => ({
 }));
 
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
+  await dataGenerator.insertTenant(mockUser.tenantId);
 });
 
 afterAll(async () => {
@@ -101,8 +101,8 @@ describe('employees', () => {
 
       const expectAttributes = [
         {Name: 'email', Value: emails[0]},
-        {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
-        {Name: 'custom:user_role', Value: 'employee'},
+        {Name: 'custom:tenantId', Value: mockUser.tenantId},
+        {Name: 'custom:userRole', Value: 'employee'},
       ];
 
       expect(resp.body[0].User.Username).toBe(emails[0]);
@@ -115,7 +115,7 @@ describe('employees', () => {
       request(app)
         .put(`/employees/${internet.email()}`)
         .set('Accept', 'application/json')
-        .send({user_role: 'admin'})
+        .send({userRole: 'admin'})
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
@@ -125,19 +125,19 @@ describe('employees', () => {
       const resp = await request(app)
         .put(`/employees/${email}`)
         .set('Accept', 'application/json')
-        .send({user_role: 'admin'})
+        .send({userRole: 'admin'})
         .expect(200);
 
-      const expectAttributes = [{Name: 'custom:user_role', Value: 'admin'}];
+      const expectAttributes = [{Name: 'custom:userRole', Value: 'admin'}];
 
       expect(resp.body.Attributes).toStrictEqual(expectAttributes);
     });
 
-    it('Validates user_role param', async () => {
+    it('Validates userRole param', async () => {
       const resp = await request(app)
         .put(`/employees/${internet.email()}`)
         .set('Accept', 'application/json')
-        .send({user_role: 'invalid role'})
+        .send({userRole: 'invalid role'})
         .expect(422);
     });
   });
@@ -159,8 +159,8 @@ describe('employees', () => {
 
       resp.body.forEach((user: any) => {
         expect(user.email).toBeDefined();
-        expect(user.tenant_id).toBeDefined();
-        expect(user.user_role).toBeDefined();
+        expect(user.tenantId).toBeDefined();
+        expect(user.userRole).toBeDefined();
       });
     });
 
@@ -171,7 +171,7 @@ describe('employees', () => {
         .expect(200);
 
       resp.body.forEach((user: any) => {
-        expect(user.tenant_id).toBe(mockUser.tenant_id);
+        expect(user.tenantId).toBe(mockUser.tenantId);
       });
     });
   });

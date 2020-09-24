@@ -5,35 +5,35 @@ export enum EFormCategory {
 }
 
 type TFormFieldRequest = {
-  row_index: number;
+  rowIndex: number;
   component: string;
   label: string;
   placeholder?: string;
-  default_value?: string;
+  defaultValue?: string;
   required?: boolean;
   options?: Array<{label: string; value: string}>;
   editable?: boolean;
   deletable?: boolean;
-  job_requirement_Id?: string;
+  jobRequirementId?: string;
 };
 
 type TFormField = {
-  form_id: string;
-  form_field_id: string;
+  formId: string;
+  formFieldId: string;
 } & TFormFieldRequest;
 
 type TFormBase = {
-  tenant_id: string;
-  form_category: EFormCategory;
-  form_title?: string;
-  job_id: string;
+  tenantId: string;
+  formCategory: EFormCategory;
+  formTitle?: string;
+  jobId: string;
 };
 
 export type TFormRequest = {
-  form_fields: TFormFieldRequest[];
+  formFields: TFormFieldRequest[];
 } & TFormBase;
 
 export type TForm = {
-  form_id: string;
-  form_fields: TFormField[];
+  formId: string;
+  formFields: TFormField[];
 } & TFormBase;

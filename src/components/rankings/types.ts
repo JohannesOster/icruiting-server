@@ -1,15 +1,15 @@
 export type TRanking = Array<TRankingRow>;
 
 export type TRankingRow = {
-  applicant_id: string;
+  applicantId: string;
   score: number;
-  standard_deviation: number;
+  standardDeviation: number;
   submissions: Array<TSubmission>;
 };
 
 export type TSubmission = Array<{
-  form_field_id: string;
-  job_requirement_id?: string;
+  formFieldId: string;
+  jobRequirementId?: string;
   value: number | string;
   intent: EFormItemIntent;
   label: string;
@@ -24,7 +24,7 @@ export enum EFormItemIntent {
 export type KeyVal = {[key: string]: number};
 
 export type TRankingResultObject = {
-  [form_field_id: string]: {
+  [formFieldId: string]: {
     label: string;
     intent: EFormItemIntent;
     value: number | Array<string> | {[key: string]: number}; // sumUp, aggregate, countDistinc

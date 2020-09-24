@@ -16,15 +16,15 @@ import {requireAdmin, requireAuth} from 'middlewares';
 
 const router = express.Router();
 
-router.get('/:form_id/html', renderHTMLForm);
-router.post('/:form_id/html', submitHTMLForm);
+router.get('/:formId/html', renderHTMLForm);
+router.post('/:formId/html', submitHTMLForm);
 
 router.use(requireAuth);
 router.get('/', getForms);
 
 router.use(requireAdmin);
 router.post('/', createFormValidationRules, validate, createForm);
-router.delete('/:form_id', deleteForm);
-router.put('/:form_id', updateFormValidationRules, validate, updateForm);
+router.delete('/:formId', deleteForm);
+router.put('/:formId', updateFormValidationRules, validate, updateForm);
 
 export {router as routes};

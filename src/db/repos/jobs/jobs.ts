@@ -8,82 +8,82 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const jrColumnSet = new ColumnSet(
     [
       {
-        name: 'job_requirement_id',
+        name: 'jobRequirementId',
         def: () => rawText('uuid_generate_v4()'),
       },
-      'job_id',
-      'tenant_id',
-      'requirement_label',
+      'jobId',
+      'tenantId',
+      'requirementLabel',
     ],
     {table: 'job_requirement'},
   );
 
-  const all = (tenant_id: string) => {
-    return db.many(sql.all, {tenant_id});
+  const all = (tenantId: string) => {
+    return db.many(sql.all, {tenantId});
   };
 
-  const find = (tenant_id: string, job_id: string) => {
-    return db.oneOrNone(sql.find, {tenant_id, job_id});
+  const find = (tenantId: string, jobId: string) => {
+    return db.oneOrNone(sql.find, {tenantId, jobId});
   };
 
   const insert = async (values: {
-    job_title: string;
-    tenant_id: string;
-    job_requirements: Array<{
-      requirement_label: string;
+    jobTitle: string;
+    tenantId: string;
+    jobRequirements: Array<{
+      requirementLabel: string;
     }>;
   }) => {
-    const {job_requirements, ...job} = values;
+    const {jobRequirements, ...job} = values;
     const {insert, ColumnSet} = pgp.helpers;
     const insertedJob = await db.one(insert(job, null, 'job') + 'RETURNING *');
 
-    const requirements = job_requirements.map((req) => ({
-      job_id: insertedJob.job_id,
-      tenant_id: insertedJob.tenant_id,
+    const requirements = jobRequirements.map((req) => ({
+      jobId: insertedJob.jobId,
+      tenantId: insertedJob.tenantId,
       ...req,
     }));
 
     return db
       .any(insert(requirements, jrColumnSet) + ' RETURNING *')
-      .then((job_requirements) => ({...insertedJob, job_requirements}));
+      .then((jobRequirements) => ({...insertedJob, jobRequirements}));
   };
 
   const update = (
-    tenant_id: string,
+    tenantId: string,
     job: {
-      job_id: string;
-      job_title: string;
-      job_requirements: {
-        requirement_label: string;
+      jobId: string;
+      jobTitle: string;
+      jobRequirements: {
+        requirementLabel: string;
       }[];
     },
   ) => {
     return db
       .tx(async (t) => {
         const {insert, update, ColumnSet} = db.$config.pgp.helpers;
-        const vals = {job_title: job.job_title};
-        const stmt = update(vals, null, 'job') + ' WHERE job_id=$1';
-        await t.none(stmt, job.job_id);
+        const vals = {jobTitle: job.jobTitle};
+        const stmt = update(vals, null, 'job') + ' WHERE jobId=$1';
+        await t.none(stmt, job.jobId);
 
-        await t.any('SET CONSTRAINTS job_requirement_id_fk DEFERRED');
-        await t.none('DELETE FROM job_requirement WHERE job_id=$1', job.job_id);
+        await t.any('SET CONSTRAINTS jobRequirementId_fk DEFERRED');
+        await t.none('DELETE FROM job_requirement WHERE jobId=$1', job.jobId);
 
-        const requirements = job.job_requirements.map((req: any) => {
-          const tmp: any = {job_id: job.job_id, tenant_id, ...req};
-          if (!tmp.job_requirement_id) delete tmp.job_requirement_id; // filter out empty strings
+        const requirements = job.jobRequirements.map((req: any) => {
+          const tmp: any = {jobId: job.jobId, tenantId, ...req};
+          if (!tmp.jobRequirementId) delete tmp.jobRequirementId; // filter out empty strings
           return tmp;
         });
 
         const reqStmt = insert(requirements, jrColumnSet);
         await t.none(reqStmt);
       })
-      .then(async () => await find(tenant_id, job.job_id));
+      .then(async () => await find(tenantId, job.jobId));
   };
 
-  const remove = (tenant_id: string, job_id: string) => {
+  const remove = (tenantId: string, jobId: string) => {
     return db.none(
-      'DELETE FROM job WHERE tenant_id=${tenant_id} AND job_id=${job_id}',
-      {tenant_id, job_id},
+      'DELETE FROM job WHERE tenantId=${tenantId} AND jobId=${jobId}',
+      {tenantId, jobId},
     );
   };
 

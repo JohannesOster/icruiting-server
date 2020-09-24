@@ -21,11 +21,11 @@ router.post(
   createFormSubmission,
 );
 router.put(
-  '/:form_submission_id',
+  '/:formSubmissionId',
   updateFormSubmissionValidationRules,
   validate,
   updateFormSubmission,
 );
-router.get('/:form_id/:applicant_id', getFormSubmission);
+router.get('/:formId/:applicantId', getFormSubmission);
 
 export {router as routes};

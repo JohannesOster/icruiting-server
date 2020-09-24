@@ -1,32 +1,32 @@
 SELECT
-	applicant_id,
-	ROUND(STDDEV_POP(single_submission.score), 2) AS standard_deviation,
+	applicantId,
+	ROUND(STDDEV_POP(single_submission.score), 2) AS standardDeviation,
 	ROUND(AVG(single_submission.score), 2) AS score,
   ROW_NUMBER() OVER (ORDER BY AVG(single_submission.score) DESC) AS rank,
 	ARRAY_AGG(single_submission.submission) AS submissions
 FROM
 	(SELECT
-		submitter_id,
-		applicant_id,
+		submitterId,
+		applicantId,
 		SUM(submission_value::NUMERIC) FILTER (WHERE form_field.intent = 'sum_up') AS score,
 		JSON_AGG(JSON_BUILD_OBJECT(
-			'form_field_id', form_field.form_field_id,
+			'formFieldId', form_field.formFieldId,
 			'label', form_field.label,
 			'intent', form_field.intent,
 			'value', submission_value
 		)) AS submission
 	FROM form
 	JOIN form_field
-	ON form_field.form_id = form.form_id
+	ON form_field.formId = form.formId
 	JOIN
-		(SELECT form_submission.*, form_field_id, submission_value
+		(SELECT form_submission.*, formFieldId, submission_value
 			FROM form_submission
 			JOIN form_submission_field
-			ON form_submission.form_submission_id = form_submission_field.form_submission_id) AS submission_field
-	ON submission_field.form_field_id = form_field.form_field_id
-	WHERE form.form_category='screening'
-		AND form.tenant_id=${tenant_id}
-		AND form.job_id=${job_id}
-	GROUP BY submitter_id, applicant_id) AS single_submission
-GROUP BY applicant_id
+			ON form_submission.formSubmissionId = form_submission_field.formSubmissionId) AS submission_field
+	ON submission_field.formFieldId = form_field.formFieldId
+	WHERE form.formCategory='screening'
+		AND form.tenantId=${tenantId}
+		AND form.jobId=${jobId}
+	GROUP BY submitterId, applicantId) AS single_submission
+GROUP BY applicantId
 ORDER BY rank;

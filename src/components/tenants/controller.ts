@@ -3,17 +3,17 @@ import {catchAsync} from 'errorHandling';
 import db from 'db';
 
 export const createTenant = catchAsync(async (req, res) => {
-  const {tenant_name} = req.body;
-  const resp = await db.tenants.insert({tenant_name});
+  const {tenantName} = req.body;
+  const resp = await db.tenants.insert({tenantName});
   res.status(201).json(resp);
 });
 
 export const deleteTenant = catchAsync(async (req, res) => {
-  const {userPoolID, tenant_id} = res.locals.user;
+  const {userPoolID, tenantId} = res.locals.user;
 
   const s3 = new S3();
   const bucket = process.env.S3_BUCKET || '';
-  const listParams = {Bucket: bucket, Prefix: tenant_id};
+  const listParams = {Bucket: bucket, Prefix: tenantId};
 
   const {Contents} = await s3.listObjects(listParams).promise();
   if (Contents?.length) {
@@ -25,7 +25,7 @@ export const deleteTenant = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const params = {
     UserPoolId: userPoolID,
-    AttributesToGet: ['email', 'custom:tenant_id'],
+    AttributesToGet: ['email', 'custom:tenantId'],
   };
 
   const users = await cIdp
@@ -44,7 +44,7 @@ export const deleteTenant = catchAsync(async (req, res) => {
       });
 
       // filter out foreign orgs
-      return userMaps?.filter((user) => user['custom:tenant_id'] === tenant_id);
+      return userMaps?.filter((user) => user['custom:tenantId'] === tenantId);
     });
 
   const promises = users?.map((user) => {
@@ -53,7 +53,7 @@ export const deleteTenant = catchAsync(async (req, res) => {
   });
 
   await Promise.all(promises || []);
-  await db.tenants.delete(tenant_id);
+  await db.tenants.delete(tenantId);
 
   res.status(200).json();
 });

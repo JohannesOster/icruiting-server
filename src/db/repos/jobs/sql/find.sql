@@ -1,7 +1,7 @@
-select job.*, json_agg(jr) job_requirements
+select job.*, json_agg(jr) jobRequirements
 from job
-join (select * from job_requirement) as jr 
-on jr.job_id = job.job_id
-where job.tenant_id = ${tenant_id}
-  and job.job_id = ${job_id}
-group by job.job_id
+join (select * from job_requirement) as jr
+on jr.jobId = job.jobId
+where job.tenantId = ${tenantId}
+  and job.jobId = ${jobId}
+group by job.jobId

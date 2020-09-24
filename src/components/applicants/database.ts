@@ -8,88 +8,86 @@ import {
 import {TApplicantDb} from './types';
 
 export const dbInsertApplicant = async ({
-  tenant_id,
-  job_id,
+  tenantId,
+  jobId,
   attributes,
 }: TApplicantDb) => {
   const helpers = db.$config.pgp.helpers;
 
   try {
-    const params = {tenant_id, job_id};
+    const params = {tenantId, jobId};
     const applStmt = helpers.insert(params, null, 'applicant') + ' RETURNING *';
-    const {applicant_id} = await db.one(applStmt);
+    const {applicantId} = await db.one(applStmt);
 
-    const columns = ['applicant_id', 'form_field_id', 'attribute_value'];
-    const options = {table: 'applicant_attribute'};
+    const columns = ['applicantId', 'formFieldId', 'attributeValue'];
+    const options = {table: 'applicantAttribute'};
     const cs = new helpers.ColumnSet(columns, options);
     const attrs = attributes.map((attribute) => ({
       ...attribute,
-      applicant_id,
+      applicantId,
     }));
     const attrStmt = helpers.insert(attrs, cs);
     await db.any(attrStmt);
 
-    return dbSelectApplicant(applicant_id, tenant_id);
+    return dbSelectApplicant(applicantId, tenantId);
   } catch (error) {
     return Promise.reject(error);
   }
 };
 
 export const dbSelectApplicants = (params: {
-  job_id?: string;
-  applicant_id?: string;
-  tenant_id: string;
-  user_id: string;
+  jobId?: string;
+  applicantId?: string;
+  tenantId: string;
+  userId: string;
 }) => {
-  const defaultParams = {job_id: null, applicant_id: null};
+  const defaultParams = {jobId: null, applicantId: null};
   return db.any(selectApplicants, {...defaultParams, ...params});
 };
 
-export const dbSelectApplicant = (applicant_id: string, tenant_id: string) => {
-  return db
-    .any(selectApplicant, {applicant_id, tenant_id})
-    .then((res) => res[0]);
+export const dbSelectApplicant = (applicantId: string, tenantId: string) => {
+  return db.any(selectApplicant, {applicantId, tenantId}).then((res) => res[0]);
 };
 
 export const dbSelectReport = (params: {
-  tenant_id: string;
-  applicant_id: string;
-  form_category: 'screening' | 'assessment';
+  tenantId: string;
+  applicantId: string;
+  formCategory: 'screening' | 'assessment';
 }) => {
   return db.any(selectReport, params).then((resp) => resp[0]);
 };
 
-export const dbDeleteApplicant = (applicant_id: string, tenant_id: string) => {
+export const dbDeleteApplicant = (applicantId: string, tenantId: string) => {
   const stmt =
     'DELETE FROM applicant' +
-    ' WHERE applicant_id=${applicant_id} AND tenant_id=${tenant_id}';
-  return db.none(stmt, {applicant_id, tenant_id});
+    ' WHERE applicantId=${applicantId} AND tenantId=${tenantId}';
+  return db.none(stmt, {applicantId, tenantId});
 };
 
 export const dbUpdateApplicant = async (
-  applicant_id: string,
-  applicant_attributes: [{form_field_id: string; attriubte_value: string}],
+  applicantId: string,
+  applicantAttributes: [{formFieldId: string; attriubteValue: string}],
 ) => {
   const helpers = db.$config.pgp.helpers;
 
-  const delCond = ' WHERE applicant_id=${applicant_id}';
-  const delStmt = 'DELETE FROM applicant_attribute' + delCond;
-  await db.none(delStmt, {applicant_id});
+  const delCond = ' WHERE applicantId=${applicantId}';
+  const delStmt = 'DELETE FROM applicantAttribute' + delCond;
+  await db.none(delStmt, {applicantId});
 
-  const columns = ['applicant_id', 'form_field_id', 'attribute_value'];
-  const options = {table: 'applicant_attribute'};
+  const columns = ['applicantId', 'formFieldId', 'attributeValue'];
+  const options = {table: 'applicantAttribute'};
   const cs = new helpers.ColumnSet(columns, options);
-  const attributes = applicant_attributes.map((attribute) => ({
+  const attributes = applicantAttributes.map((attribute) => ({
     ...attribute,
-    applicant_id,
+    applicantId,
   }));
 
   const stmt = helpers.insert(attributes, cs);
   return db.any(stmt);
 };
 
-export const dbSelectApplicantReport = (tenant_id: string, job_id: string) => {
+export const dbSelectApplicantReport = (tenantId: string, jobId: string) => {
   return db
-    .any(selectApplicantReportSQL, {tenant_id, job_id})
+    .any(selectApplicantReportSQL, {tenantId, jobId})
     .then((resp) => resp[0]);
 };

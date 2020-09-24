@@ -33,7 +33,7 @@ jest.mock('aws-sdk', () => ({
               Username: faker.internet.email(),
               Attributes: [
                 {Name: 'email', Value: faker.internet.email()},
-                {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
+                {Name: 'custom:tenantId', Value: mockUser.tenantId},
               ],
             },
           ],
@@ -76,15 +76,16 @@ describe('tenants', () => {
         .set('Accept', 'application/json')
         .send(tenant)
         .expect(201);
+      console.log(resp.body);
 
-      expect(resp.body.tenant_name).toBe(tenant.tenant_name);
-      expect(!!resp.body.tenant_id).toBe(true);
+      expect(resp.body.tenantName).toBe(tenant.tenantName);
+      expect(!!resp.body.tenantId).toBe(true);
     });
   });
 
   describe('DELETE /tenants', () => {
     beforeEach(async () => {
-      await dataGenerator.insertTenant(mockUser.tenant_id);
+      await dataGenerator.insertTenant(mockUser.tenantId);
     });
 
     it('returns 200 json response', (done) => {
@@ -96,8 +97,8 @@ describe('tenants', () => {
     });
 
     it('deletes tenant of authenticated user', async () => {
-      const stmt = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
-      const {count} = await db.one(stmt, mockUser.tenant_id);
+      const stmt = 'SELECT COUNT(*) FROM tenant WHERE tenantId=$1';
+      const {count} = await db.one(stmt, mockUser.tenantId);
       expect(parseInt(count)).toBe(1);
 
       await request(app)
@@ -106,7 +107,7 @@ describe('tenants', () => {
         .expect('Content-Type', /json/)
         .expect(200);
 
-      const {count: countAfter} = await db.one(stmt, mockUser.tenant_id);
+      const {count: countAfter} = await db.one(stmt, mockUser.tenantId);
       expect(parseInt(countAfter)).toBe(0);
     });
   });
