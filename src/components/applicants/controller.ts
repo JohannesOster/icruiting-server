@@ -68,71 +68,69 @@ export const getReport = catchAsync(async (req, res) => {
   const {form_category} = req.query as QueryType;
 
   const params = {applicant_id, tenant_id, form_category};
-  const data = await dbSelectReport(params);
+  const data: TRankingRow = await dbSelectReport(params);
 
-  const resp = data.map((row: TRankingRow) => {
-    const {submissions} = row;
-    const jobres = {} as any;
-    const initialValues = (key: EFormItemIntent) => {
-      return {
-        [EFormItemIntent.sumUp]: 0,
-        [EFormItemIntent.aggregate]: [],
-        [EFormItemIntent.countDistinct]: {},
-      }[key];
-    };
+  const {submissions} = data;
+  const jobres = {} as any;
+  const initialValues = (key: EFormItemIntent) => {
+    return {
+      [EFormItemIntent.sumUp]: 0,
+      [EFormItemIntent.aggregate]: [],
+      [EFormItemIntent.countDistinct]: {},
+    }[key];
+  };
 
-    const submissionsResult = submissions.reduce((acc, curr) => {
-      curr.forEach(
-        ({form_field_id, intent, value, label, job_requirement_label}: any) => {
-          if (!acc[form_field_id]) {
-            const initialVal = initialValues(intent);
-            acc[form_field_id] = {label, intent, value: initialVal};
-          }
-          switch (intent) {
-            case EFormItemIntent.sumUp:
-              (acc[form_field_id].value as number) += parseFloat(value);
-              if (job_requirement_label)
-                jobres[job_requirement_label] =
-                  (jobres[job_requirement_label] || 0) + parseFloat(value);
-              break;
-            case EFormItemIntent.aggregate:
-              const val = value.toString();
-              if (!val) break;
-              const currArray = acc[form_field_id].value as Array<string>;
-              acc[form_field_id].value = currArray.concat(val);
-              break;
-            case EFormItemIntent.countDistinct:
-              const key = value.toString();
-              const currVal = (acc[form_field_id].value as KeyVal)[key];
-              (acc[form_field_id].value as KeyVal)[key] = (currVal || 0) + 1;
-          }
-        },
-      );
-
-      return acc;
-    }, {} as TRankingResultObject);
-
-    const replaceSumByMean = Object.entries(submissionsResult).reduce(
-      (acc, [key, value]) => {
-        if (value.intent === EFormItemIntent.sumUp) {
-          const val = value.value as number;
-          const average = round(val / submissions.length);
-          acc[key] = {...value, value: average};
-          return acc;
+  const submissionsResult = submissions.reduce((acc, curr) => {
+    curr.forEach(
+      ({form_field_id, intent, value, label, job_requirement_label}: any) => {
+        if (!acc[form_field_id]) {
+          const initialVal = initialValues(intent);
+          acc[form_field_id] = {label, intent, value: initialVal};
         }
-
-        acc[key] = value;
-        return acc;
+        switch (intent) {
+          case EFormItemIntent.sumUp:
+            (acc[form_field_id].value as number) += parseFloat(value);
+            if (job_requirement_label)
+              jobres[job_requirement_label] =
+                (jobres[job_requirement_label] || 0) + parseFloat(value);
+            break;
+          case EFormItemIntent.aggregate:
+            const val = value.toString();
+            if (!val) break;
+            const currArray = acc[form_field_id].value as Array<string>;
+            acc[form_field_id].value = currArray.concat(val);
+            break;
+          case EFormItemIntent.countDistinct:
+            const key = value.toString();
+            const currVal = (acc[form_field_id].value as KeyVal)[key];
+            (acc[form_field_id].value as KeyVal)[key] = (currVal || 0) + 1;
+        }
       },
-      {} as any,
     );
 
-    return {
-      result: replaceSumByMean,
-      job_requirements_result: jobres,
-      ...row,
-    };
-  });
+    return acc;
+  }, {} as TRankingResultObject);
+
+  const replaceSumByMean = Object.entries(submissionsResult).reduce(
+    (acc, [key, value]) => {
+      if (value.intent === EFormItemIntent.sumUp) {
+        const val = value.value as number;
+        const average = round(val / submissions.length);
+        acc[key] = {...value, value: average};
+        return acc;
+      }
+
+      acc[key] = value;
+      return acc;
+    },
+    {} as any,
+  );
+
+  const resp = {
+    result: replaceSumByMean,
+    job_requirements_result: jobres,
+    ...data,
+  };
 
   res.status(200).json(resp);
 });
@@ -163,7 +161,7 @@ export const deleteApplicant = catchAsync(async (req, res) => {
 export const updateApplicant = catchAsync(async (req, res, next) => {
   const {tenant_id} = res.locals.user;
   const {applicant_id} = req.params;
-  const formidable = new IncomingForm();
+  const formidable = new IncomingForm({multiples: true} as any);
 
   formidable.parse(req, async (err: Error, fields: any, files: any) => {
     const s3 = new S3();
@@ -209,8 +207,6 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
             }
 
             const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
-            const isPDF = extension === 'pdf';
-            const fileType = isPDF ? 'application/pdf' : 'image/jpeg';
 
             const fileId = (Math.random() * 1e32).toString(36);
             let fileKey = form.tenant_id + '.' + fileId + '.' + extension;
@@ -225,7 +221,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
             const params = {
               Key: fileKey,
               Bucket: bucket,
-              ContentType: fileType,
+              ContentType: file.type,
               Body: fileStream,
             };
 
@@ -309,7 +305,9 @@ export const getPdfReport = catchAsync(async (req, res) => {
   }
 
   const report = await dbSelectReport({tenant_id, applicant_id, form_category});
-  console.log(report);
+  htmlParams.rank = report.rank;
+  htmlParams.score = report.score;
+  htmlParams.standardDeviation = report.standard_deviation;
 
   const html = pug.renderFile(
     path.resolve(__dirname, 'report/report.pug'),

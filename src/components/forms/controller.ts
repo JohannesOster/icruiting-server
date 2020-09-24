@@ -107,15 +107,13 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
           const file = files[item.form_field_id];
           const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
-          const fileType =
-            extension === 'pdf' ? 'application/pdf' : 'image/jpeg';
           const fileId = (Math.random() * 1e32).toString(36);
           const fileKey = form.tenant_id + '.' + fileId + '.' + extension;
           const fileStream = fs.createReadStream(file.path);
           const params = {
             Key: fileKey,
             Bucket: process.env.S3_BUCKET || '',
-            ContentType: fileType,
+            ContentType: file.type,
             Body: fileStream,
           };
 

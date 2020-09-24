@@ -10,12 +10,25 @@ html
       h1 Bewerber*innengutachten
       header(class="header-container")
         if !!imageURL
-          img(src=imageURL height="150px" width="auto")
-        section(style="display:grid;row-gap:8px;")
-          h4 Bewerber*in
+          img(src=imageURL height="150px" width="auto" style="margin-right:16px;")
+        section(style="display:grid;row-gap:8px;flex:1;")
           table
             tbody
               for attribute in attributes
                 tr
                   td #{attribute.key}:
                   td #{attribute.value}
+      section(style="display:grid;row-gap:8px;")
+        h4 Übersicht
+        table
+          tbody
+            tr
+              td Rang:
+              td #{rank}
+            tr
+              td Gesamtscore:
+              td #{score}
+            tr
+              td Standardabweichung:
+              td #{standardDeviation}
+
