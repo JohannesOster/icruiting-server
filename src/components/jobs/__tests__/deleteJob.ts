@@ -52,7 +52,7 @@ describe('jobs', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      const stmt = 'SELECT COUNT(*) FROM job WHERE jobId = $1';
+      const stmt = 'SELECT COUNT(*) FROM job WHERE job_id = $1';
       const {count} = await db.one(stmt, job.jobId);
       expect(parseInt(count)).toBe(0);
     });

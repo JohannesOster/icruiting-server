@@ -1,6 +1,7 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {rawText} from '../../utils';
+import {decamelizeKeys} from 'humps';
 
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const {ColumnSet} = pgp.helpers;
@@ -8,22 +9,22 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const jrColumnSet = new ColumnSet(
     [
       {
-        name: 'jobRequirementId',
+        name: 'job_requirement_id',
         def: () => rawText('uuid_generate_v4()'),
       },
-      'jobId',
-      'tenantId',
-      'requirementLabel',
+      'job_id',
+      'tenant_id',
+      'requirement_label',
     ],
     {table: 'job_requirement'},
   );
 
   const all = (tenantId: string) => {
-    return db.many(sql.all, {tenantId});
+    return db.many(sql.all, {tenant_id: tenantId});
   };
 
   const find = (tenantId: string, jobId: string) => {
-    return db.oneOrNone(sql.find, {tenantId, jobId});
+    return db.oneOrNone(sql.find, {tenant_id: tenantId, job_id: jobId});
   };
 
   const insert = async (values: {
@@ -34,8 +35,11 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     }>;
   }) => {
     const {jobRequirements, ...job} = values;
-    const {insert, ColumnSet} = pgp.helpers;
-    const insertedJob = await db.one(insert(job, null, 'job') + 'RETURNING *');
+    const {insert} = pgp.helpers;
+    const jobVals = decamelizeKeys(job);
+    const insertedJob = await db.one(
+      insert(jobVals, null, 'job') + 'RETURNING *',
+    );
 
     const requirements = jobRequirements.map((req) => ({
       jobId: insertedJob.jobId,
@@ -43,8 +47,9 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       ...req,
     }));
 
+    const reqVals = requirements.map((req) => decamelizeKeys(req));
     return db
-      .any(insert(requirements, jrColumnSet) + ' RETURNING *')
+      .any(insert(reqVals, jrColumnSet) + ' RETURNING *')
       .then((jobRequirements) => ({...insertedJob, jobRequirements}));
   };
 
@@ -60,13 +65,13 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   ) => {
     return db
       .tx(async (t) => {
-        const {insert, update, ColumnSet} = db.$config.pgp.helpers;
-        const vals = {jobTitle: job.jobTitle};
-        const stmt = update(vals, null, 'job') + ' WHERE jobId=$1';
+        const {insert, update} = db.$config.pgp.helpers;
+        const vals = {job_title: job.jobTitle};
+        const stmt = update(vals, null, 'job') + ' WHERE job_id=$1';
         await t.none(stmt, job.jobId);
 
-        await t.any('SET CONSTRAINTS jobRequirementId_fk DEFERRED');
-        await t.none('DELETE FROM job_requirement WHERE jobId=$1', job.jobId);
+        await t.any('SET CONSTRAINTS job_requirement_id_fk DEFERRED');
+        await t.none('DELETE FROM job_requirement WHERE job_id=$1', job.jobId);
 
         const requirements = job.jobRequirements.map((req: any) => {
           const tmp: any = {jobId: job.jobId, tenantId, ...req};
@@ -74,7 +79,8 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
           return tmp;
         });
 
-        const reqStmt = insert(requirements, jrColumnSet);
+        const reqVals = requirements.map((req) => decamelizeKeys(req));
+        const reqStmt = insert(reqVals, jrColumnSet);
         await t.none(reqStmt);
       })
       .then(async () => await find(tenantId, job.jobId));
@@ -82,8 +88,8 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
 
   const remove = (tenantId: string, jobId: string) => {
     return db.none(
-      'DELETE FROM job WHERE tenantId=${tenantId} AND jobId=${jobId}',
-      {tenantId, jobId},
+      'DELETE FROM job WHERE tenant_id=${tenant_id} AND job_id=${job_id}',
+      {tenant_id: tenantId, job_id: jobId},
     );
   };
 

@@ -97,7 +97,7 @@ describe('tenants', () => {
     });
 
     it('deletes tenant of authenticated user', async () => {
-      const stmt = 'SELECT COUNT(*) FROM tenant WHERE tenantId=$1';
+      const stmt = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
       const {count} = await db.one(stmt, mockUser.tenantId);
       expect(parseInt(count)).toBe(1);
 

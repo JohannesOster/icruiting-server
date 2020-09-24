@@ -48,7 +48,7 @@ describe('jobs', () => {
       expect(resp.body[0].jobRequirements).toBeDefined();
     });
 
-    it('orders jobs by created_at', async () => {
+    it('orders jobs by createdAt', async () => {
       const jobsCount = faker.random.number({min: 5, max: 20});
       const promises = Array(jobsCount)
         .fill(0)
@@ -61,8 +61,8 @@ describe('jobs', () => {
         .expect(200);
 
       for (let i = 0; i < jobsCount - 1; ++i) {
-        const curr = new Date(resp.body[i].created_at);
-        const following = new Date(resp.body[i + 1].created_at);
+        const curr = new Date(resp.body[i].createdAt);
+        const following = new Date(resp.body[i + 1].createdAt);
         expect(curr.valueOf()).toBeGreaterThanOrEqual(following.valueOf());
       }
     });

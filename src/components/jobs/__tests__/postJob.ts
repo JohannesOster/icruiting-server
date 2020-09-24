@@ -66,7 +66,7 @@ describe('jobs', () => {
         .expect(201);
 
       const {jobId} = resp.body;
-      const stmt = 'SELECT COUNT(*) FROM job WHERE jobId=$1';
+      const stmt = 'SELECT COUNT(*) FROM job WHERE job_id=$1';
       const {count} = await db.one(stmt, jobId);
       expect(parseInt(count)).toBe(1);
     });
@@ -80,7 +80,7 @@ describe('jobs', () => {
         .expect(201);
 
       const {jobId} = resp.body;
-      const stmt = 'SELECT COUNT(*) FROM job_requirement WHERE jobId=$1';
+      const stmt = 'SELECT COUNT(*) FROM job_requirement WHERE job_id=$1';
       const {count} = await db.one(stmt, jobId);
       expect(parseInt(count)).toBe(job.jobRequirements.length);
     });
