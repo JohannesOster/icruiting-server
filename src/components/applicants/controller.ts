@@ -5,12 +5,7 @@ import {S3} from 'aws-sdk';
 import puppeteer from 'puppeteer';
 import {IncomingForm} from 'formidable';
 import {BaseError, catchAsync} from 'errorHandling';
-import {
-  dbSelectReport,
-  dbDeleteApplicant,
-  dbUpdateApplicant,
-  dbSelectApplicantReport,
-} from './database';
+import {dbSelectReport, dbSelectApplicantReport} from './database';
 import {getApplicantFileURLs, sortApplicants, round} from './utils';
 import {
   TRankingRow,
@@ -145,7 +140,7 @@ export const deleteApplicant = catchAsync(async (req, res) => {
     await s3.deleteObjects(delParams).promise();
   }
 
-  await dbDeleteApplicant(applicantId, tenantId);
+  await db.applicants.remove(tenantId, applicantId);
   res.status(200).json({});
 });
 
@@ -154,7 +149,9 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
   const {applicantId} = req.params;
   const formidable = new IncomingForm({multiples: true} as any);
 
+  let applicant;
   formidable.parse(req, async (err: Error, fields: any, files: any) => {
+    if (err) throw err;
     const s3 = new S3();
     const bucket = process.env.S3_BUCKET || '';
     const {formId} = fields;
@@ -165,7 +162,8 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
       const form: TForm | undefined = await dbSelectForm(formId);
       if (!form) throw new BaseError(404, 'Form Not Found');
 
-      const applicant = await db.applicants.find(tenantId, applicantId);
+      applicant = await db.applicants.find(tenantId, applicantId);
+      if (!applicant) throw new BaseError(404, 'Not Found');
       const oldFiles = applicant?.files;
 
       const map = await form.formFields.reduce(
@@ -240,7 +238,13 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
         {attributes: []} as any,
       );
 
-      const appl = await dbUpdateApplicant(applicantId, map.attributes);
+      const params = {
+        tenantId,
+        applicantId,
+        jobId: applicant.jobId,
+        attributes: map.attributes,
+      };
+      const appl = await db.applicants.update(params);
 
       res.status(200).json(appl);
     } catch (error) {

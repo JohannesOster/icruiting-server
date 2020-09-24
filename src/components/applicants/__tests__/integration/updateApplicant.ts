@@ -1,6 +1,6 @@
 import request from 'supertest';
+import {random} from 'faker';
 import app from 'app';
-import db from 'db';
 import {endConnection, truncateAllTables} from 'db/setup';
 import {TApplicant} from '../../types';
 import {TForm, EFormCategory} from 'components/forms';
@@ -18,14 +18,12 @@ jest.mock('middlewares/auth', () => ({
 
 jest.mock('aws-sdk', () => ({
   S3: jest.fn().mockImplementation(() => ({
-    deleteObjects: () => ({promise: () => Promise.resolve()}),
+    getSignedUrlPromise: () => Promise.resolve(''),
   })),
 }));
 
-let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 });
 
 afterAll(async () => {
@@ -35,39 +33,33 @@ afterAll(async () => {
 });
 
 describe('applicants', () => {
-  describe('DELETE /applicants/:applicantId', () => {
+  describe('PUT /applicants/:applicantId', () => {
     let applicant: TApplicant;
-    beforeEach(async () => {
-      const form: TForm = await dataGenerator.insertForm(
-        mockUser.tenantId,
+    let form: TForm;
+    beforeAll(async () => {
+      const {tenantId} = mockUser;
+      const {jobId} = await dataGenerator.insertJob(tenantId);
+      form = await dataGenerator.insertForm(
+        tenantId,
         jobId,
         EFormCategory.application,
       );
-
       applicant = await dataGenerator.insertApplicant(
-        mockUser.tenantId,
+        tenantId,
         jobId,
         form.formFields.map(({formFieldId}) => formFieldId),
       );
     });
 
-    it('returns 200 json response', (done) => {
+    it('returns json 200 response', (done) => {
       request(app)
-        .del(`/applicants/${applicant.applicantId}`)
+        .put(`/applicants/${applicant.applicantId}`)
         .set('Accept', 'application/json')
+        .field('formId', form.formId)
+        .field(applicant.attributes[0].key, random.words())
+        // att field for every attribute
         .expect('Content-Type', /json/)
-        .expect(200, done);
-    });
-
-    it('deletes applicant', async () => {
-      await request(app)
-        .del(`/applicants/${applicant.applicantId}`)
-        .set('Accept', 'application/json');
-
-      const stmt = 'SELECT COUNT(*) FROM applicant WHERE applicant_id = $1';
-      const {count} = await db.one(stmt, applicant.applicantId);
-
-      expect(parseInt(count)).toBe(0);
+        .expect(422, {asdf: 'Asdf'}, done);
     });
   });
 });

@@ -1,6 +1,7 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
+import {String} from 'aws-sdk/clients/cloudhsm';
 
 export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const findAll = (tenantId: string, jobId: string, userId: string) => {
@@ -41,5 +42,43 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     }
   };
 
-  return {findAll, find, insert};
+  const remove = (tenantId: string, applicantId: string) => {
+    const stmt =
+      'DELETE FROM applicant' +
+      ' WHERE tenant_id=${tenant_id} AND applicant_id=${applicant_id} ';
+    return db.none(stmt, {tenant_id: tenantId, applicant_id: applicantId});
+  };
+
+  const update = async (params: {
+    tenantId: string;
+    applicantId: String;
+    jobId: string;
+    attributes: {formFieldId: string; attributeValue: string}[];
+  }) => {
+    const helpers = db.$config.pgp.helpers;
+
+    const delCond =
+      ' WHERE applicant_id=${applicant_id} AND tenant_id=${tenant_id}';
+    const delStmt = 'DELETE FROM applicant_attribute' + delCond;
+    await db.none(delStmt, {
+      tenant_id: params.tenantId,
+      applicant_id: params.applicantId,
+    });
+
+    const columns = ['applicant_id', 'form_field_id', 'attribute_value'];
+    const options = {table: 'applicant_attribute'};
+    const cs = new helpers.ColumnSet(columns, options);
+    const attributes = params.attributes.map((attribute) => ({
+      ...attribute,
+      applicantId: params.applicantId,
+    }));
+
+    const stmt = helpers.insert(
+      attributes.map((attr) => decamelizeKeys(attr)),
+      cs,
+    );
+    return db.any(stmt);
+  };
+
+  return {findAll, find, insert, remove, update};
 };
