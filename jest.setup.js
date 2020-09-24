@@ -1,4 +1,4 @@
-const {createAllTables} = require('./src/db/utils');
+const {createAllTables} = require('./src/db/setup');
 
 module.exports = async () => {
   await createAllTables();

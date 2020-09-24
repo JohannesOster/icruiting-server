@@ -1,11 +1,6 @@
-import {QueryFile} from 'pg-promise';
-import path from 'path';
+import {join} from 'path';
+import {sql} from '../utils';
 
-const queryFile = (filname: string) => {
-  const fullPath = path.join(__dirname, filname);
-  return new QueryFile(fullPath, {minify: true});
-};
-
-export const createTables = queryFile('createTables.sql');
-export const dropTables = queryFile('dropTables.sql');
-export const truncateAll = queryFile('truncateAll.sql');
+export const createTables = sql(join(__dirname, 'createTables.sql'));
+export const dropTables = sql(join(__dirname, 'dropTables.sql'));
+export const truncateAll = sql(join(__dirname, 'truncateAll.sql'));

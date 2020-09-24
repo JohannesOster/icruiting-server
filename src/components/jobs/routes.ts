@@ -1,15 +1,19 @@
 import express from 'express';
 import {
   getJobs,
-  createJob,
-  updateJob,
+  postJob,
+  putJob,
   deleteJob,
   getJob,
   getApplicantReport,
   createApplicantReport,
   updateApplicantReport,
 } from './controller';
-import {validateCreateJob, validateCreateApplicantReport} from './validation';
+import {
+  postJobsRules,
+  putJobRules,
+  validateCreateApplicantReport,
+} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth, requireAdmin} from 'middlewares';
 
@@ -20,8 +24,8 @@ router.get('/', getJobs);
 router.get('/:job_id', getJob);
 
 router.use(requireAdmin);
-router.post('/', validateCreateJob, validate, createJob);
-router.put('/:job_id', updateJob);
+router.post('/', postJobsRules, validate, postJob);
+router.put('/:job_id', putJobRules, validate, putJob);
 router.delete('/:job_id', deleteJob);
 
 router.get('/:job_id/applicant-reports', getApplicantReport);

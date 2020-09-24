@@ -1,18 +1,18 @@
-import {dbInsertTenant} from 'components/tenants';
-import {dbInsertJob} from 'components/jobs';
+import db from 'db';
 import {dbInsertApplicant} from 'components/applicants';
 import fake from './fake';
+import {random} from 'faker';
 import {EFormCategory, TFormRequest, dbInsertForm} from 'components/forms';
 import {dbInsertFormSubmission} from 'components/formSubmissions';
 
 const dataGenerator = {
-  insertTenant: (tenant_id: string) => {
+  insertTenant: (tenant_id: string = random.uuid()) => {
     const tenant = fake.tenant(tenant_id);
-    return dbInsertTenant(tenant);
+    return db.tenants.insert(tenant);
   },
   insertJob: (tenant_id: string) => {
     const job = fake.job(tenant_id);
-    return dbInsertJob(job);
+    return db.jobs.insert(job);
   },
   insertForm: (
     tenant_id: string,

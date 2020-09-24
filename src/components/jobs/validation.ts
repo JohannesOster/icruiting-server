@@ -1,7 +1,13 @@
 import {body} from 'express-validator';
 
-export const validateCreateJob = [
+export const postJobsRules = [
   body('job_title').exists().isString(),
+  body('job_requirements').exists(),
+];
+
+export const putJobRules = [
+  body('job_id').isUUID(),
+  body('job_title').isString(),
   body('job_requirements').exists(),
 ];
 

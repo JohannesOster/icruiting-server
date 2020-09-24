@@ -1,7 +1,7 @@
 import request from 'supertest';
 import {internet, random} from 'faker';
 import app from 'app';
-import {endConnection, truncateAllTables} from 'db/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
 

@@ -5,41 +5,35 @@ import {
   TApplicant,
 } from 'components/applicants';
 import {BaseError, catchAsync} from 'errorHandling';
-import {
-  dbInsertJob,
-  dbSelectJobs,
-  dbUpdateJob,
-  dbDeleteJob,
-  dbInsertApplicantReport,
-  dbUpdateApplicantReport,
-} from './database';
-
-export const createJob = catchAsync(async (req, res) => {
-  const {job_title, job_requirements} = req.body;
-  const {tenant_id} = res.locals.user;
-  const params = {job_title, tenant_id, job_requirements};
-  const resp = await dbInsertJob(params);
-  res.status(201).json(resp);
-});
+import {dbInsertApplicantReport, dbUpdateApplicantReport} from './database';
+import db from 'db';
 
 export const getJobs = catchAsync(async (req, res) => {
   const {tenant_id} = res.locals.user;
-  const resp = await dbSelectJobs(tenant_id);
+  const resp = await db.jobs.all(tenant_id);
   res.status(200).json(resp);
 });
 
 export const getJob = catchAsync(async (req, res) => {
   const {job_id} = req.params;
   const {tenant_id} = res.locals.user;
-  const resp = await dbSelectJobs(tenant_id, job_id).then((resp) => resp[0]);
+  const resp = await db.jobs.find(tenant_id, job_id);
   if (!resp) throw new BaseError(404, 'Not Found');
   res.status(200).json(resp);
 });
 
-export const updateJob = catchAsync(async (req, res) => {
+export const postJob = catchAsync(async (req, res) => {
+  const {job_title, job_requirements} = req.body;
+  const {tenant_id} = res.locals.user;
+  const params = {job_title, tenant_id, job_requirements};
+  const resp = await db.jobs.insert(params);
+  res.status(201).json(resp);
+});
+
+export const putJob = catchAsync(async (req, res) => {
   const {job_id} = req.params;
   const {tenant_id} = res.locals.user;
-  const resp = await dbUpdateJob(job_id, tenant_id, req.body);
+  const resp = await db.jobs.update(tenant_id, {...req.body, job_id});
   res.status(200).json(resp);
 });
 
@@ -64,7 +58,7 @@ export const deleteJob = catchAsync(async (req, res) => {
     await s3.deleteObjects(delParams).promise();
   }
 
-  await dbDeleteJob(job_id, tenant_id);
+  await db.jobs.remove(tenant_id, job_id);
 
   res.status(200).json({});
 });

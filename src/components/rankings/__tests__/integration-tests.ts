@@ -3,13 +3,12 @@ import faker from 'faker';
 import app from 'app';
 import db from 'db';
 import fake from 'tests/fake';
-import {endConnection, truncateAllTables} from 'db/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import {TForm, dbInsertForm} from 'components/forms';
 import {dbInsertFormSubmission} from 'components/formSubmissions';
 import {dbInsertApplicant} from 'components/applicants';
-import {dbInsertTenant} from 'components/tenants';
-import {dbInsertJob} from 'components/jobs';
 import {TApplicant} from 'components/applicants';
+import dataGenerator from 'tests/dataGenerator';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -21,15 +20,9 @@ jest.mock('middlewares/auth', () => ({
 }));
 
 let jobId: string;
-beforeAll(async (done) => {
-  const tenant = fake.tenant(mockUser.tenant_id);
-  const {tenant_id} = await dbInsertTenant(tenant);
-
-  const job = fake.job(tenant_id);
-  const {job_id} = await dbInsertJob(job);
-  jobId = job_id;
-
-  done();
+beforeAll(async () => {
+  await dataGenerator.insertTenant(mockUser.tenant_id);
+  jobId = (await dataGenerator.insertJob(mockUser.tenant_id)).job_id;
 });
 
 afterAll(async () => {

@@ -1,12 +1,10 @@
-import db from '.';
-import {createTables, dropTables, truncateAll} from './sql';
+import {QueryFile} from 'pg-promise';
 
-export const createAllTables = () => db.any(createTables);
-export const dropAllTables = () => db.any(dropTables);
-export const endConnection = () => db.$pool.end();
-export const truncateAllTables = () => db.any(truncateAll);
-
-require('make-runnable');
+export const sql = (path: string) => {
+  const qf = new QueryFile(path, {minify: true});
+  if (qf.error) console.error(qf.error);
+  return qf;
+};
 
 export const rawText = (text: string) => ({
   toPostgres: () => text,
