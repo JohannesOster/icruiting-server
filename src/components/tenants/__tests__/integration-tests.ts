@@ -1,10 +1,10 @@
 import request from 'supertest';
 import app from 'app';
-import db from 'database';
+import db from 'db';
 import faker from 'faker';
-import {endConnection, truncateAllTables} from 'database/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import fake from 'tests/fake';
-import {dbInsertTenant} from '../database';
+import dataGenerator from 'tests/dataGenerator';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -84,8 +84,7 @@ describe('tenants', () => {
 
   describe('DELETE /tenants', () => {
     beforeEach(async () => {
-      const fakeTenant = fake.tenant(mockUser.tenant_id);
-      await dbInsertTenant(fakeTenant);
+      await dataGenerator.insertTenant(mockUser.tenant_id);
     });
 
     it('returns 200 json response', (done) => {

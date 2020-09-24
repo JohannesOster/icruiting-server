@@ -8,8 +8,8 @@
     "start": "NODE_PATH=dist/src node dist/src/index.js",
     "build": "rimraf ./dist && tsc && npm run copy-files",
     "copy-files": "copyfiles src/**/*.sql src/**/*.pug src/**/*.css src/**/*.svg dist/",
-    "db-setup": "env NODE_ENV=development npx ts-node ./src/database/utils.ts createAllTables",
-    "db-drop": "env NODE_ENV=development npx ts-node ./src/database/utils.ts dropAllTables",
+    "db-setup": "env NODE_ENV=development npx ts-node ./src/db/setup.ts createAllTables",
+    "db-drop": "env NODE_ENV=development npx ts-node ./src/db/setup.ts dropAllTables",
     "test": "npx jest --runInBand --detectOpenHandles",
     "heroku-prebuild": "npm install --dev"
   },

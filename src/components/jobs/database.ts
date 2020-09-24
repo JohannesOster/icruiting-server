@@ -1,5 +1,5 @@
-import db from 'database';
-import {rawText} from 'database/utils';
+import db from 'db';
+import {rawText} from 'db/setup';
 import {selectJobs as selectJobsSQL, selectJob as selectJobSQL} from './sql';
 import {TJob} from './types';
 

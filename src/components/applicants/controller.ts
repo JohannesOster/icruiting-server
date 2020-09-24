@@ -31,7 +31,7 @@ export const getApplicants = catchAsync(async (req, res) => {
   const applicants = await dbSelectApplicants(params);
 
   // replace S3 filekeys with aws presigned URL
-  const promises = applicants.map((appl) =>
+  const promises = applicants.map((appl: any) =>
     getApplicantFileURLs(appl.files).then((files) => ({
       ...appl,
       files,
@@ -50,7 +50,7 @@ export const getApplicant = catchAsync(async (req, res) => {
   const {tenant_id, user_id} = res.locals.user;
   const params = {tenant_id, user_id, applicant_id};
 
-  const applicant = await dbSelectApplicants(params).then((res) => res[0]);
+  const applicant = await dbSelectApplicants(params).then((res: any) => res[0]);
   if (!applicant) throw new BaseError(404, 'Not Found');
 
   const resp = await getApplicantFileURLs(applicant.files).then((files) => ({

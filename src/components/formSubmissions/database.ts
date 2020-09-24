@@ -1,4 +1,4 @@
-import db from 'database';
+import db from 'db';
 import {selectFormSubmission} from './sql';
 import {TFormSubmission} from './types';
 

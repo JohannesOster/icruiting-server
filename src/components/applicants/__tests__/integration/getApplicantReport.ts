@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from 'app';
-import {endConnection, truncateAllTables} from 'database/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import {TApplicant} from '../../types';
 import {TForm, EFormCategory} from 'components/forms';
 import fake from 'tests/fake';

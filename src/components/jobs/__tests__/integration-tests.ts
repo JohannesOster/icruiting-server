@@ -1,13 +1,13 @@
 import faker, {random} from 'faker';
 import request from 'supertest';
 import app from 'app';
-import db from 'database';
+import db from 'db';
 import fake from 'tests/fake';
-import {endConnection, truncateAllTables} from 'database/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import {dbInsertApplicantReport, dbInsertJob} from '../database';
 import {TJob} from '../types';
-import {dbInsertTenant} from 'components/tenants';
 import {dbInsertForm, TForm} from 'components/forms';
+import dataGenerator from 'tests/dataGenerator';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -26,10 +26,8 @@ jest.mock('aws-sdk', () => ({
   })),
 }));
 
-beforeAll(async (done) => {
-  const fakeTenant = fake.tenant(mockUser.tenant_id);
-  await dbInsertTenant(fakeTenant);
-  done();
+beforeAll(async () => {
+  await dataGenerator.insertTenant(mockUser.tenant_id);
 });
 
 afterAll(async () => {
@@ -38,75 +36,6 @@ afterAll(async () => {
 });
 
 describe('jobs', () => {
-  describe('POST /jobs', () => {
-    it('Returns 202 json response', (done) => {
-      const job = fake.job(mockUser.tenant_id);
-      request(app)
-        .post('/jobs')
-        .set('Accept', 'application/json')
-        .send(job)
-        .expect('Content-Type', /json/)
-        .expect(201, done);
-    });
-
-    it('Returns created job entity as json object', async (done) => {
-      const job = fake.job(mockUser.tenant_id);
-      const resp = await request(app)
-        .post('/jobs')
-        .set('Accept', 'application/json')
-        .send(job)
-        .expect(201);
-
-      expect(resp.body.job_title).toBe(job.job_title);
-
-      // make shure all requirements are present in resp
-      const respReqs = resp.body.job_requirements;
-      let count = 0; // count equalities
-      job.job_requirements.forEach((req) => {
-        for (let i = 0; i < respReqs.length; ++i) {
-          if (respReqs[i].requirement_label === req.requirement_label) ++count;
-        }
-      });
-
-      expect(count).toBe(job.job_requirements.length);
-
-      done();
-    });
-
-    it('Actually inserts job enitity', async (done) => {
-      const job = fake.job(mockUser.tenant_id);
-      const resp = await request(app)
-        .post('/jobs')
-        .set('Accept', 'application/json')
-        .send(job)
-        .expect(201);
-      const {job_id} = resp.body;
-
-      const stmt = 'SELECT COUNT(*) FROM job WHERE job_id=$1';
-      const {count} = await db.one(stmt, job_id);
-      expect(parseInt(count)).toBe(1);
-
-      done();
-    });
-
-    it('Actually inserts job_requirement enitities', async (done) => {
-      const job = fake.job(mockUser.tenant_id);
-      const resp = await request(app)
-        .post('/jobs')
-        .set('Accept', 'application/json')
-        .send(job)
-        .expect(201);
-
-      const {job_id} = resp.body;
-
-      const stmt = 'SELECT COUNT(*) FROM job_requirement WHERE job_id=$1';
-      const {count} = await db.one(stmt, job_id);
-      expect(parseInt(count)).toBe(job.job_requirements.length);
-
-      done();
-    });
-  });
-
   describe('GET /jobs', () => {
     afterEach(async () => await db.none('TRUNCATE job CASCADE'));
 
@@ -154,9 +83,7 @@ describe('jobs', () => {
     });
 
     it('Isolates tenant jobs', async (done) => {
-      const {tenant_id} = await dbInsertTenant({
-        tenant_name: fake.tenant().tenant_name,
-      });
+      const {tenant_id} = await dataGenerator.insertTenant();
 
       // jobs for own tenant
       const jobsCount = faker.random.number({min: 1, max: 10});

@@ -1,10 +1,9 @@
 import faker from 'faker';
 import request from 'supertest';
 import app from 'app';
-import db from 'database';
-import {dbInsertForm} from '../database';
+import db from 'db';
 import {EFormCategory, TForm} from '../types';
-import {endConnection, truncateAllTables} from 'database/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
 import deepCleaner from 'deep-cleaner';

@@ -1,9 +1,9 @@
 import request from 'supertest';
 import faker from 'faker';
 import app from 'app';
-import db from 'database';
+import db from 'db';
 import fake from 'tests/fake';
-import {endConnection, truncateAllTables} from 'database/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import {TForm, EFormCategory} from 'components/forms';
 import {TFormSubmission} from '../types';
 import dataGenerator from 'tests/dataGenerator';

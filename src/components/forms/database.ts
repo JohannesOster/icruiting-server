@@ -1,4 +1,4 @@
-import db from 'database';
+import db from 'db';
 import {
   selectForms as selectFormsSQL,
   selectForm as selectFormSQL,
