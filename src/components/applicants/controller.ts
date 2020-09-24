@@ -69,6 +69,7 @@ export const getReport = catchAsync(async (req, res) => {
 
   const params = {applicant_id, tenant_id, form_category};
   const data: TRankingRow = await dbSelectReport(params);
+  if (!data) throw new BaseError(404, 'Not Found');
 
   const {submissions} = data;
   const jobres = {} as any;

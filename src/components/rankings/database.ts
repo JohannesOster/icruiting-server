@@ -1,4 +1,4 @@
-import db from 'db';
+import db from 'database';
 import {
   selectScreeningRanking as selectScreeningRankingSQL,
   selectAssessmentRanking as selectAssessmentRankingSQL,

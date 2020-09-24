@@ -1,9 +1,9 @@
 import faker, {random} from 'faker';
 import request from 'supertest';
 import app from 'app';
-import db from 'db';
+import db from 'database';
 import fake from 'tests/fake';
-import {endConnection, truncateAllTables} from 'db/utils';
+import {endConnection, truncateAllTables} from 'database/utils';
 import {dbInsertApplicantReport, dbInsertJob} from '../database';
 import {TJob} from '../types';
 import {dbInsertTenant} from 'components/tenants';

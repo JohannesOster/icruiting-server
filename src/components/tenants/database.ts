@@ -1,4 +1,4 @@
-import db from 'db';
+import db from 'database';
 import {tenant} from './types';
 
 export const dbInsertTenant = (params: tenant) => {

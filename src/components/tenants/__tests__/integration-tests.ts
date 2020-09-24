@@ -1,8 +1,8 @@
 import request from 'supertest';
 import app from 'app';
-import db from 'db';
+import db from 'database';
 import faker from 'faker';
-import {endConnection, truncateAllTables} from 'db/utils';
+import {endConnection, truncateAllTables} from 'database/utils';
 import fake from 'tests/fake';
 import {dbInsertTenant} from '../database';
 
