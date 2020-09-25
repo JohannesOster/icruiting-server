@@ -1,11 +1,6 @@
 import db from 'db';
 import {TForm} from './types';
 
-export const dbDeleteForm = (formId: string) => {
-  const stmt = 'DELETE FROM form WHERE formId=$1';
-  return db.none(stmt, formId);
-};
-
 export const dbUpdateForm = async (
   formId: string,
   {formFields, ...form}: TForm,

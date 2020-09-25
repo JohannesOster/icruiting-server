@@ -81,5 +81,11 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
     return db.any(stmt).then((items) => ({...insertedForm, formFields: items}));
   };
 
-  return {findAll, find, insert};
+  const remove = (tenantId: string, formId: string) => {
+    const stmt =
+      'DELETE FROM form WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
+    return db.none(stmt, {tenant_id: tenantId, form_id: formId});
+  };
+
+  return {findAll, find, insert, remove};
 };

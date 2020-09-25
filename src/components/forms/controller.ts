@@ -2,7 +2,7 @@ import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import {catchAsync, BaseError} from 'errorHandling';
-import {dbDeleteForm, dbUpdateForm} from './database';
+import {dbUpdateForm} from './database';
 import {TForm} from './types';
 import db from 'db';
 
@@ -155,7 +155,8 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
 export const deleteForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  await dbDeleteForm(formId);
+  const {tenantId} = res.locals.user;
+  await db.forms.remove(tenantId, formId);
   res.status(200).json({});
 });
 
