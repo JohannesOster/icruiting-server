@@ -41,7 +41,7 @@ export const requireAuth: RequestHandler = catchAsync(
 export const requireAdmin: RequestHandler = catchAsync(
   async (req, res, next) => {
     const userRole = res.locals.user.userRole;
-    if (userRole !== 'admin') throw new BaseError(401, 'Admin required');
+    if (userRole !== 'admin') throw new BaseError(403, 'Admin required');
     next();
   },
 );
