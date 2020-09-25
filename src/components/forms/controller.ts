@@ -4,6 +4,7 @@ import {S3} from 'aws-sdk';
 import {catchAsync, BaseError} from 'errorHandling';
 import {TForm} from './types';
 import db from 'db';
+import config from 'config';
 
 export const getForms = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
@@ -46,10 +47,11 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
   const form: TForm | undefined = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
-  const {protocol, originalUrl} = req;
-  const host = req.get('host');
-  const submitAction = `${protocol}://${host}${originalUrl}`;
-  const params = {formId: formId, formFields: form.formFields, submitAction};
+  const params = {
+    formId: formId,
+    formFields: form.formFields,
+    submitAction: config.baseURL + req.originalUrl,
+  };
 
   res.header('Content-Type', 'text/html');
   res.render('form', params);
