@@ -2,7 +2,7 @@ import {CognitoIdentityServiceProvider} from 'aws-sdk';
 import {catchAsync} from 'errorHandling';
 import {removePrefix} from './utils';
 
-export const createEmployee = catchAsync(async (req, res) => {
+export const createMember = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {emails} = req.body;
   const {userPoolID, tenantId} = res.locals.user;
@@ -15,7 +15,7 @@ export const createEmployee = catchAsync(async (req, res) => {
       UserAttributes: [
         {Name: 'email', Value: email},
         {Name: 'custom:tenant_id', Value: tenantId},
-        {Name: 'custom:user_role', Value: 'employee'},
+        {Name: 'custom:user_role', Value: 'member'},
       ],
     };
 
@@ -26,7 +26,7 @@ export const createEmployee = catchAsync(async (req, res) => {
   res.status(201).json(resp);
 });
 
-export const getEmployees = catchAsync(async (req, res) => {
+export const getMembers = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {userPoolID, tenantId, email} = res.locals.user;
   const params = {
@@ -49,23 +49,23 @@ export const getEmployees = catchAsync(async (req, res) => {
   });
 
   // filter out foreign orgs
-  const filtered = userMaps?.filter((user) => user['tenantId'] === tenantId);
+  const filtered = userMaps?.filter((user) => user['tenant_id'] === tenantId);
   // filter out requesting user
   const withoutMe = filtered?.filter((user) => user.email !== email);
 
   res.status(200).json(withoutMe);
 });
 
-export const updateEmployee = catchAsync(async (req, res) => {
+export const updateMember = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {userPoolID} = res.locals.user;
-  const {userRole} = req.body;
+  const {user_role} = req.body;
   const {username} = req.params;
 
   const params = {
     UserPoolId: userPoolID,
     Username: username,
-    UserAttributes: [{Name: 'custom:user_role', Value: userRole}],
+    UserAttributes: [{Name: 'custom:user_role', Value: user_role}],
   };
   const resp = await cIdp.adminUpdateUserAttributes(params).promise();
 

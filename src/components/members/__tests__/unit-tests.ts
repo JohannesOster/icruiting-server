@@ -1,7 +1,7 @@
 import faker from 'faker';
 import {removePrefix} from '../utils';
 
-describe('employees', () => {
+describe('members', () => {
   describe('removePrefix', () => {
     it('Removes prefix', () => {
       const prefix = 'custom:';
