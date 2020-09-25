@@ -26,33 +26,6 @@ afterAll(async () => {
 });
 
 describe('jobs', () => {
-  describe('DELETE /jobs/:jobId', () => {
-    let job: any;
-    beforeEach(async () => {
-      job = await dataGenerator.insertJob(mockUser.tenantId);
-    });
-
-    it('returns 200 json response', (done) => {
-      request(app)
-        .del(`/jobs/${job.jobId}`)
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200, done);
-    });
-
-    it('deletes job entity', async () => {
-      await request(app)
-        .del(`/jobs/${job.jobId}`)
-        .set('Accept', 'application/json')
-        .expect(200);
-
-      const stmt = 'SELECT COUNT(*) FROM job WHERE jobId = $1';
-      const {count} = await db.one(stmt, job.jobId);
-
-      expect(parseInt(count)).toBe(0);
-    });
-  });
-
   describe('POST /jobs/:jobId/applicant-reports', () => {
     let jobId: string;
     let report: any;

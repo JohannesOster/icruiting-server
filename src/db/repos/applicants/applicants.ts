@@ -50,20 +50,15 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
   };
 
   const update = async (params: {
-    tenantId: string;
     applicantId: String;
     jobId: string;
     attributes: {formFieldId: string; attributeValue: string}[];
   }) => {
     const helpers = db.$config.pgp.helpers;
 
-    const delCond =
-      ' WHERE applicant_id=${applicant_id} AND tenant_id=${tenant_id}';
+    const delCond = ' WHERE applicant_id=${applicant_id}';
     const delStmt = 'DELETE FROM applicant_attribute' + delCond;
-    await db.none(delStmt, {
-      tenant_id: params.tenantId,
-      applicant_id: params.applicantId,
-    });
+    await db.none(delStmt, {applicant_id: params.applicantId});
 
     const columns = ['applicant_id', 'form_field_id', 'attribute_value'];
     const options = {table: 'applicant_attribute'};

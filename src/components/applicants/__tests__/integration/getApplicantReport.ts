@@ -42,6 +42,20 @@ describe('applicants', () => {
         jobId,
         form.formFields.map(({formFieldId}) => formFieldId),
       );
+
+      const screeningForm: TForm = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        EFormCategory.screening,
+      );
+
+      await dataGenerator.insertFormSubmission(
+        mockUser.tenantId,
+        applicant.applicantId!,
+        mockUser.userId,
+        screeningForm.formId,
+        screeningForm.formFields.map(({formFieldId}) => formFieldId),
+      );
     });
 
     it('returns 200 json response', (done) => {

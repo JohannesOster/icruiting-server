@@ -6,6 +6,7 @@ import {TApplicant} from '../../types';
 import {TForm, EFormCategory} from 'components/forms';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
+import db from 'db';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -44,11 +45,16 @@ describe('applicants', () => {
         jobId,
         EFormCategory.application,
       );
-      applicant = await dataGenerator.insertApplicant(
-        tenantId,
-        jobId,
-        form.formFields.map(({formFieldId}) => formFieldId),
-      );
+
+      const _applicant = {
+        tenantId: mockUser.tenantId,
+        jobId: jobId,
+        attributes: [
+          {formFieldId: form.formFields[0].formFieldId, attributeValue: '1'},
+        ],
+      };
+
+      applicant = await db.applicants.insert(_applicant);
     });
 
     it('returns json 200 response', (done) => {
@@ -56,10 +62,9 @@ describe('applicants', () => {
         .put(`/applicants/${applicant.applicantId}`)
         .set('Accept', 'application/json')
         .field('formId', form.formId)
-        .field(applicant.attributes[0].key, random.words())
-        // att field for every attribute
+        .field(form.formFields[0].formFieldId, random.words())
         .expect('Content-Type', /json/)
-        .expect(422, {asdf: 'Asdf'}, done);
+        .expect(200, done);
     });
   });
 });

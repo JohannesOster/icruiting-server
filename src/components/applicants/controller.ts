@@ -239,7 +239,6 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
       );
 
       const params = {
-        tenantId,
         applicantId,
         jobId: applicant.jobId,
         attributes: map.attributes,
