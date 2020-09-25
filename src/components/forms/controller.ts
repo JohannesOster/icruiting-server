@@ -157,7 +157,7 @@ export const deleteForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
   const {tenantId} = res.locals.user;
   await db.forms.remove(tenantId, formId);
-  res.status(200).json({});
+  res.status(200).json();
 });
 
 export const updateForm = catchAsync(async (req, res) => {
