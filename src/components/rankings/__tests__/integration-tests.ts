@@ -31,7 +31,7 @@ afterAll(async () => {
 describe('rankings', () => {
   describe('GET screening rankings', () => {
     let applicantsCount: number;
-    beforeAll(async (done) => {
+    beforeAll(async () => {
       await db.none('DELETE FROM form');
 
       const promises = [];
@@ -63,7 +63,7 @@ describe('rankings', () => {
           promises.push(db.applicants.insert(applicant));
         });
 
-      Promise.all(promises).then((data) => {
+      await Promise.all(promises).then(async (data) => {
         const promises: Array<Promise<any>> = [];
         const [form, ...applicants] = data as [TForm, ...Array<TApplicant>];
 
@@ -87,11 +87,11 @@ describe('rankings', () => {
           promises.push(db.formSubmissions.insert(screening));
         });
 
-        Promise.all(promises).finally(done);
+        await Promise.all(promises);
       });
     });
 
-    it('Returns 200 json response', (done) => {
+    it('returns 200 json response', (done) => {
       request(app)
         .get(`/rankings/${jobId}?formCategory=screening`)
         .set('Accept', 'application/json')
@@ -99,16 +99,15 @@ describe('rankings', () => {
         .expect(200, done);
     });
 
-    it('Returns result including all applicants', async (done) => {
+    it('Returns result including all applicants', async () => {
       const resp = await request(app)
         .get(`/rankings/${jobId}?formCategory=screening`)
         .set('Accept', 'application/json')
         .expect(200);
       expect(resp.body.length).toBe(applicantsCount);
-      done();
     });
 
-    it('Returns result ordered from highest score to lowest', async (done) => {
+    it('Returns result ordered from highest score to lowest', async () => {
       const resp = await request(app)
         .get(`/rankings/${jobId}?formCategory=screening`)
         .set('Accept', 'application/json')
@@ -119,23 +118,24 @@ describe('rankings', () => {
           parseInt(resp.body[i + 1].score),
         );
       }
-
-      done();
     });
   });
 
   describe('GET assessment rankings', () => {
     let applicantsCount: number;
-    beforeAll(async (done) => {
+    beforeAll(async () => {
       await db.none('DELETE FROM form');
 
       const promises: Promise<any>[] = [];
 
-      const assessmentForm: TForm = await dataGenerator.insertForm(
-        mockUser.tenantId,
-        jobId,
-        EFormCategory.assessment,
+      promises.push(
+        dataGenerator.insertForm(
+          mockUser.tenantId,
+          jobId,
+          EFormCategory.assessment,
+        ),
       );
+
       const form: TForm = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
@@ -156,7 +156,7 @@ describe('rankings', () => {
           promises.push(db.applicants.insert(applicant));
         });
 
-      Promise.all(promises).then((data) => {
+      await Promise.all(promises).then(async (data) => {
         const promises: Array<Promise<any>> = [];
         const [form, ...applicants] = data as [TForm, ...Array<TApplicant>];
 
@@ -180,7 +180,7 @@ describe('rankings', () => {
           promises.push(db.formSubmissions.insert(assessment));
         });
 
-        Promise.all(promises).finally(done);
+        await Promise.all(promises);
       });
     });
 
@@ -192,16 +192,15 @@ describe('rankings', () => {
         .expect(200, done);
     });
 
-    it('Returns result including all applicants', async (done) => {
+    it('Returns result including all applicants', async () => {
       const resp = await request(app)
         .get(`/rankings/${jobId}?formCategory=assessment`)
         .set('Accept', 'application/json')
         .expect(200);
       expect(resp.body.length).toBe(applicantsCount);
-      done();
     });
 
-    it('Returns result ordered from highest score to lowest', async (done) => {
+    it('Returns result ordered from highest score to lowest', async () => {
       const resp = await request(app)
         .get(`/rankings/${jobId}?formCategory=assessment`)
         .set('Accept', 'application/json')
@@ -212,8 +211,6 @@ describe('rankings', () => {
           parseInt(resp.body[i + 1].score),
         );
       }
-
-      done();
     });
   });
 });

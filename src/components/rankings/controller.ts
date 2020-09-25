@@ -1,23 +1,18 @@
 import {BaseError, catchAsync} from 'errorHandling';
-import {dbSelectScreeningRanking, dbSelectAssessmentRanking} from './database';
 import {
   TRankingRow,
   TRankingResultObject,
   EFormItemIntent,
   KeyVal,
 } from './types';
+import db from 'db';
 
 export const getRanking = catchAsync(async (req, res) => {
   const jobId = req.params.jobId;
   const {tenantId} = res.locals.user;
 
-  const formCategory = req.query.formCategory;
-  let data;
-  if (formCategory === 'screening') {
-    data = await dbSelectScreeningRanking(jobId, tenantId);
-  } else if (formCategory === 'assessment') {
-    data = await dbSelectAssessmentRanking(jobId, tenantId);
-  } else throw new BaseError(402, `Invalid formCategory: ${formCategory}`);
+  const formCategory = req.query.formCategory as string;
+  const data = await db.rankings.find(tenantId, jobId, formCategory);
 
   const tmp = data.map((row: TRankingRow) => {
     const {submissions} = row;

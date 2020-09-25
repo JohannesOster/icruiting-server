@@ -7,6 +7,7 @@ import {
   ApplicantsRepository,
   FormsRepository,
   FormSubmissionsRepository,
+  RankingsRepository,
 } from './repos';
 import config from './config';
 import humps from 'humps';
@@ -18,6 +19,7 @@ const initOptions: IInitOptions<IExtensions> = {
     obj.applicants = ApplicantsRepository(obj, pgp);
     obj.forms = FormsRepository(obj, pgp);
     obj.formSubmissions = FormSubmissionsRepository(obj, pgp);
+    obj.rankings = RankingsRepository(obj, pgp);
   },
   receive(data, result) {
     result.rows = data.map((obj) => humps.camelizeKeys(obj));
