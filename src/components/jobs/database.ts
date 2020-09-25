@@ -1,4 +1,5 @@
 import db from 'db';
+import {decamelizeKeys} from 'humps';
 
 type DbInsertApplicantReportParams = {
   jobId: string;
@@ -14,7 +15,7 @@ export const dbInsertApplicantReport = async ({
 }: DbInsertApplicantReportParams) => {
   const {insert, ColumnSet} = db.$config.pgp.helpers;
 
-  const params = {jobId, tenantId, image};
+  const params = decamelizeKeys({jobId, tenantId, image});
   const insertApplicantReportStmt =
     insert(params, null, 'applicant_report') + ' RETURNING *';
   const insertedApplicantReport = await db.one(insertApplicantReportStmt);
@@ -23,7 +24,7 @@ export const dbInsertApplicantReport = async ({
     return Promise.resolve({attributes: [], ...insertedApplicantReport});
   }
 
-  const columns = ['applicantReportId', 'formFieldId'];
+  const columns = ['applicant_report_id', 'form_field_id'];
   const options = {table: 'applicant_report_field'};
   const cs = new ColumnSet(columns, options);
 
@@ -32,7 +33,11 @@ export const dbInsertApplicantReport = async ({
     formFieldId,
   }));
 
-  const attrsStmt = insert(attrs, cs) + ' RETURNING *';
+  const attrsStmt =
+    insert(
+      attrs.map((attr) => decamelizeKeys(attr)),
+      cs,
+    ) + ' RETURNING *';
 
   return db
     .any(attrsStmt)
@@ -54,22 +59,25 @@ export const dbUpdateApplicantReport = async ({
   const {insert, ColumnSet} = db.$config.pgp.helpers;
 
   const stmt =
-    'UPDATE applicant_report SET image=${image} WHERE applicantReportId=${applicantReportId} AND tenantId=${tenantId} RETURNING *';
-  const updatedReport = await db.one(stmt, {
-    applicantReportId,
-    image,
-    tenantId,
-  });
+    'UPDATE applicant_report SET image=${image} WHERE applicant_report_id=${applicant_report_id} AND tenant_id=${tenant_id} RETURNING *';
+  const updatedReport = await db.one(
+    stmt,
+    decamelizeKeys({
+      applicantReportId,
+      image,
+      tenantId,
+    }),
+  );
 
   const delStmt =
-    'DELETE FROM applicant_report_field WHERE applicantReportId=${applicantReportId}';
-  await db.none(delStmt, {applicantReportId});
+    'DELETE FROM applicant_report_field WHERE applicant_report_id=${applicant_report_id}';
+  await db.none(delStmt, decamelizeKeys({applicantReportId}));
 
   if (!attributes.length) {
     return Promise.resolve({attributes: [], ...updatedReport});
   }
 
-  const columns = ['applicantReportId', 'formFieldId'];
+  const columns = ['applicant_report_id', 'form_field_id'];
   const options = {table: 'applicant_report_field'};
   const cs = new ColumnSet(columns, options);
 
@@ -78,7 +86,11 @@ export const dbUpdateApplicantReport = async ({
     formFieldId,
   }));
 
-  const attrsStmt = insert(attrs, cs) + ' RETURNING *';
+  const attrsStmt =
+    insert(
+      attrs.map((attr) => decamelizeKeys(attr)),
+      cs,
+    ) + ' RETURNING *';
 
   return db
     .any(attrsStmt)

@@ -79,7 +79,7 @@ describe('jobs', () => {
       expect(resp.body.applicantReportId).toBeDefined();
 
       const {count} = await db.one(
-        'SELECT COUNT(*) FROM applicant_report WHERE applicantReportId=$1',
+        'SELECT COUNT(*) FROM applicant_report WHERE applicant_report_id=$1',
         resp.body.applicantReportId,
       );
 
