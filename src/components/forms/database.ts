@@ -1,63 +1,6 @@
 import db from 'db';
-import {
-  selectForms as selectFormsSQL,
-  selectForm as selectFormSQL,
-} from './sql';
 import {TFormRequest, TForm} from './types';
 import {decamelizeKeys} from 'humps';
-
-export const dbInsertForm = async ({formFields, ...form}: TFormRequest) => {
-  const helpers = db.$config.pgp.helpers;
-
-  // - insert form
-  const formStmt =
-    helpers.insert(decamelizeKeys(form), null, 'form') + ' RETURNING *';
-  const insertedForm = await db.one(formStmt);
-
-  // - insert formFields
-  const cs = new helpers.ColumnSet(
-    [
-      'form_id',
-      'tenant_id',
-      {name: 'job_requirement_id', def: null},
-      'component',
-      'row_index',
-      'label',
-      {name: 'intent', def: null},
-      {name: 'placeholder', def: null},
-      {name: 'description', def: null},
-      {name: 'default_value', def: null},
-      {name: 'required', def: null, cast: 'boolean'},
-      {name: 'options', mod: ':json', cast: 'jsonb', def: null},
-      {name: 'props', mod: ':json', cast: 'jsonb', def: null},
-      {name: 'editable', def: false},
-      {name: 'deletable', def: false},
-    ],
-    {table: 'form_field'},
-  );
-
-  const values = formFields.map((item) => ({
-    ...item,
-    tenantId: form.tenantId,
-    formId: insertedForm.formId,
-  }));
-
-  const stmt =
-    helpers.insert(
-      values.map((val) => decamelizeKeys(val)),
-      cs,
-    ) + ' RETURNING *';
-
-  return db.any(stmt).then((items) => ({...insertedForm, formFields: items}));
-};
-
-export const dbSelectForms = (tenantId: string, jobId?: string) => {
-  return db.any(selectFormsSQL, {tenantId, jobId});
-};
-
-export const dbSelectForm = (formId: string) => {
-  return db.any(selectFormSQL, {formId}).then((resp) => resp[0]);
-};
 
 export const dbDeleteForm = (formId: string) => {
   const stmt = 'DELETE FROM form WHERE formId=$1';
@@ -70,7 +13,7 @@ export const dbUpdateForm = async (
 ) => {
   const helpers = db.$config.pgp.helpers;
   const condition = ' WHERE formId=${formId} AND tenantId=${tenantId}';
-  const orgignialForm: TForm = await dbSelectForm(formId);
+  const orgignialForm: TForm = await db.forms.find(formId);
 
   await db.tx(async (t) => {
     // await t.none('SET CONSTRAINTS formId_rowIndex_unique DEFERRED');
@@ -170,5 +113,5 @@ export const dbUpdateForm = async (
     }
   });
 
-  return dbSelectForm(formId);
+  return db.forms.find(formId);
 };

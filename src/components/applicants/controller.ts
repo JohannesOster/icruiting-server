@@ -13,7 +13,7 @@ import {
   EFormItemIntent,
   KeyVal,
 } from '../rankings/types';
-import {dbSelectForm, TForm} from '../forms';
+import {TForm} from '../forms';
 import {TApplicant, TReport} from './types';
 import db from 'db';
 
@@ -159,7 +159,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
     try {
       if (!formId) throw new BaseError(422, 'Missing formId field');
 
-      const form: TForm | undefined = await dbSelectForm(formId);
+      const form: TForm | undefined = await db.forms.find(formId);
       if (!form) throw new BaseError(404, 'Form Not Found');
 
       applicant = await db.applicants.find(tenantId, applicantId);

@@ -2,33 +2,27 @@ import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import {catchAsync, BaseError} from 'errorHandling';
-import {
-  dbInsertForm,
-  dbSelectForms,
-  dbSelectForm,
-  dbDeleteForm,
-  dbUpdateForm,
-} from './database';
+import {dbDeleteForm, dbUpdateForm} from './database';
 import {TForm} from './types';
 import db from 'db';
-
-export const createForm = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
-  const params = {...req.body, tenantId};
-  const resp = await dbInsertForm(params);
-  res.status(201).json(resp);
-});
 
 export const getForms = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
   const jobId = req.query.jobId as string;
-  const resp = await dbSelectForms(tenantId, jobId);
+  const resp = await db.forms.findAll(tenantId, jobId);
   res.status(200).json(resp);
+});
+
+export const createForm = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+  const params = {...req.body, tenantId};
+  const resp = await db.forms.insert(params);
+  res.status(201).json(resp);
 });
 
 export const renderHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const form: TForm | undefined = await dbSelectForm(formId);
+  const form: TForm | undefined = await db.forms.find(formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
   const {protocol, originalUrl} = req;
@@ -42,7 +36,7 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
 
 export const submitHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const form: TForm | undefined = await dbSelectForm(formId);
+  const form: TForm | undefined = await db.forms.find(formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
   if (form.formCategory !== 'application') {

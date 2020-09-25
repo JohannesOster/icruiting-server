@@ -4,7 +4,7 @@ import app from 'app';
 import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {TForm, dbInsertForm} from 'components/forms';
+import {EFormCategory, TForm} from 'components/forms';
 import {dbInsertFormSubmission} from 'components/formSubmissions';
 import {TApplicant} from 'components/applicants';
 import dataGenerator from 'tests/dataGenerator';
@@ -37,11 +37,19 @@ describe('rankings', () => {
 
       const promises = [];
 
-      const screeningForm = fake.screeningForm(mockUser.tenantId, jobId);
-      promises.push(dbInsertForm(screeningForm));
+      promises.push(
+        dataGenerator.insertForm(
+          mockUser.tenantId,
+          jobId,
+          EFormCategory.screening,
+        ),
+      );
 
-      const fakeApplForm = fake.applicationForm(mockUser.tenantId, jobId);
-      const form: TForm = await dbInsertForm(fakeApplForm);
+      const form: TForm = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        EFormCategory.application,
+      );
       const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
 
       applicantsCount = faker.random.number({min: 5, max: 20});
@@ -122,12 +130,19 @@ describe('rankings', () => {
     beforeAll(async (done) => {
       await db.none('DELETE FROM form');
 
-      const promises = [];
+      const promises: Promise<any>[] = [];
 
-      const assessmentForm = fake.assessmentForm(mockUser.tenantId, jobId);
-      promises.push(dbInsertForm(assessmentForm));
-      const fakeApplForm = fake.applicationForm(mockUser.tenantId, jobId);
-      const form: TForm = await dbInsertForm(fakeApplForm);
+      const assessmentForm: TForm = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        EFormCategory.assessment,
+      );
+      const form: TForm = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        EFormCategory.application,
+      );
+
       const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
 
       applicantsCount = faker.random.number({min: 5, max: 20});
