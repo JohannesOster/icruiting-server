@@ -6,5 +6,5 @@ export const validateCreateEmployee = [
 ];
 
 export const validateUpdateEmployee = [
-  body('user_role').isIn(['admin', 'employee']),
+  body('userRole').isIn(['admin', 'employee']),
 ];

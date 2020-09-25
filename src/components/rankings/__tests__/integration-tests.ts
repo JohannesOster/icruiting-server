@@ -3,13 +3,10 @@ import faker from 'faker';
 import app from 'app';
 import db from 'db';
 import fake from 'tests/fake';
-import {endConnection, truncateAllTables} from 'db/utils';
-import {TForm, dbInsertForm} from 'components/forms';
-import {dbInsertFormSubmission} from 'components/formSubmissions';
-import {dbInsertApplicant} from 'components/applicants';
-import {dbInsertTenant} from 'components/tenants';
-import {dbInsertJob} from 'components/jobs';
+import {endConnection, truncateAllTables} from 'db/setup';
+import {EFormCategory, TForm} from 'components/forms';
 import {TApplicant} from 'components/applicants';
+import dataGenerator from 'tests/dataGenerator';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -21,15 +18,9 @@ jest.mock('middlewares/auth', () => ({
 }));
 
 let jobId: string;
-beforeAll(async (done) => {
-  const tenant = fake.tenant(mockUser.tenant_id);
-  const {tenant_id} = await dbInsertTenant(tenant);
-
-  const job = fake.job(tenant_id);
-  const {job_id} = await dbInsertJob(job);
-  jobId = job_id;
-
-  done();
+beforeAll(async () => {
+  await dataGenerator.insertTenant(mockUser.tenantId);
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 });
 
 afterAll(async () => {
@@ -40,45 +31,51 @@ afterAll(async () => {
 describe('rankings', () => {
   describe('GET screening rankings', () => {
     let applicantsCount: number;
-    beforeAll(async (done) => {
+    beforeAll(async () => {
       await db.none('DELETE FROM form');
 
       const promises = [];
 
-      const screeningForm = fake.screeningForm(mockUser.tenant_id, jobId);
-      promises.push(dbInsertForm(screeningForm));
-
-      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
-      const form: TForm = await dbInsertForm(fakeApplForm);
-      const formFieldIds = form.form_fields.map(
-        ({form_field_id}) => form_field_id!,
+      promises.push(
+        dataGenerator.insertForm(
+          mockUser.tenantId,
+          jobId,
+          EFormCategory.screening,
+        ),
       );
+
+      const form: TForm = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        EFormCategory.application,
+      );
+      const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
           const applicant = fake.applicant(
-            mockUser.tenant_id,
+            mockUser.tenantId,
             jobId,
             formFieldIds,
           );
-          promises.push(dbInsertApplicant(applicant));
+          promises.push(db.applicants.insert(applicant));
         });
 
-      Promise.all(promises).then((data) => {
+      await Promise.all(promises).then(async (data) => {
         const promises: Array<Promise<any>> = [];
         const [form, ...applicants] = data as [TForm, ...Array<TApplicant>];
 
         applicants.forEach((appl: TApplicant) => {
           const screening = {
-            applicant_id: appl.applicant_id!,
-            submitter_id: mockUser.user_id,
-            tenant_id: mockUser.tenant_id,
-            form_id: form.form_id!,
-            submission: form.form_fields.reduce(
-              (acc: {[form_field_id: string]: string}, item) => {
-                acc[item.form_field_id!] = faker.random
+            applicantId: appl.applicantId!,
+            submitterId: mockUser.userId,
+            tenantId: mockUser.tenantId,
+            formId: form.formId!,
+            submission: form.formFields.reduce(
+              (acc: {[formFieldId: string]: string}, item) => {
+                acc[item.formFieldId!] = faker.random
                   .number({min: 0, max: 5})
                   .toString();
                 return acc;
@@ -87,33 +84,32 @@ describe('rankings', () => {
             ),
           };
 
-          promises.push(dbInsertFormSubmission(screening));
+          promises.push(db.formSubmissions.insert(screening));
         });
 
-        Promise.all(promises).finally(done);
+        await Promise.all(promises);
       });
     });
 
-    it('Returns 200 json response', (done) => {
+    it('returns 200 json response', (done) => {
       request(app)
-        .get(`/rankings/${jobId}?form_category=screening`)
+        .get(`/rankings/${jobId}?formCategory=screening`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
 
-    it('Returns result including all applicants', async (done) => {
+    it('Returns result including all applicants', async () => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=screening`)
+        .get(`/rankings/${jobId}?formCategory=screening`)
         .set('Accept', 'application/json')
         .expect(200);
       expect(resp.body.length).toBe(applicantsCount);
-      done();
     });
 
-    it('Returns result ordered from highest score to lowest', async (done) => {
+    it('Returns result ordered from highest score to lowest', async () => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=screening`)
+        .get(`/rankings/${jobId}?formCategory=screening`)
         .set('Accept', 'application/json')
         .expect(200);
 
@@ -122,51 +118,57 @@ describe('rankings', () => {
           parseInt(resp.body[i + 1].score),
         );
       }
-
-      done();
     });
   });
 
   describe('GET assessment rankings', () => {
     let applicantsCount: number;
-    beforeAll(async (done) => {
+    beforeAll(async () => {
       await db.none('DELETE FROM form');
 
-      const promises = [];
+      const promises: Promise<any>[] = [];
 
-      const assessmentForm = fake.assessmentForm(mockUser.tenant_id, jobId);
-      promises.push(dbInsertForm(assessmentForm));
-      const fakeApplForm = fake.applicationForm(mockUser.tenant_id, jobId);
-      const form: TForm = await dbInsertForm(fakeApplForm);
-      const formFieldIds = form.form_fields.map(
-        ({form_field_id}) => form_field_id!,
+      promises.push(
+        dataGenerator.insertForm(
+          mockUser.tenantId,
+          jobId,
+          EFormCategory.assessment,
+        ),
       );
+
+      const form: TForm = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        EFormCategory.application,
+      );
+
+      const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
         .fill(0)
         .forEach(() => {
           const applicant = fake.applicant(
-            mockUser.tenant_id,
+            mockUser.tenantId,
             jobId,
             formFieldIds,
           );
-          promises.push(dbInsertApplicant(applicant));
+          promises.push(db.applicants.insert(applicant));
         });
 
-      Promise.all(promises).then((data) => {
+      await Promise.all(promises).then(async (data) => {
         const promises: Array<Promise<any>> = [];
         const [form, ...applicants] = data as [TForm, ...Array<TApplicant>];
 
         applicants.forEach((appl: TApplicant) => {
           const assessment = {
-            applicant_id: appl.applicant_id!,
-            submitter_id: mockUser.user_id,
-            tenant_id: mockUser.tenant_id,
-            form_id: form.form_id!,
-            submission: form.form_fields.reduce(
-              (acc: {[form_field_id: string]: string}, item) => {
-                acc[item.form_field_id!] = faker.random
+            applicantId: appl.applicantId!,
+            submitterId: mockUser.userId,
+            tenantId: mockUser.tenantId,
+            formId: form.formId!,
+            submission: form.formFields.reduce(
+              (acc: {[formFieldId: string]: string}, item) => {
+                acc[item.formFieldId!] = faker.random
                   .number({min: 0, max: 5})
                   .toString();
                 return acc;
@@ -175,33 +177,32 @@ describe('rankings', () => {
             ),
           };
 
-          promises.push(dbInsertFormSubmission(assessment));
+          promises.push(db.formSubmissions.insert(assessment));
         });
 
-        Promise.all(promises).finally(done);
+        await Promise.all(promises);
       });
     });
 
     it('Returns 200 json response', (done) => {
       request(app)
-        .get(`/rankings/${jobId}?form_category=assessment`)
+        .get(`/rankings/${jobId}?formCategory=assessment`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
 
-    it('Returns result including all applicants', async (done) => {
+    it('Returns result including all applicants', async () => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=assessment`)
+        .get(`/rankings/${jobId}?formCategory=assessment`)
         .set('Accept', 'application/json')
         .expect(200);
       expect(resp.body.length).toBe(applicantsCount);
-      done();
     });
 
-    it('Returns result ordered from highest score to lowest', async (done) => {
+    it('Returns result ordered from highest score to lowest', async () => {
       const resp = await request(app)
-        .get(`/rankings/${jobId}?form_category=assessment`)
+        .get(`/rankings/${jobId}?formCategory=assessment`)
         .set('Accept', 'application/json')
         .expect(200);
 
@@ -210,8 +211,6 @@ describe('rankings', () => {
           parseInt(resp.body[i + 1].score),
         );
       }
-
-      done();
     });
   });
 });

@@ -1,23 +1,18 @@
 import {BaseError, catchAsync} from 'errorHandling';
-import {dbSelectScreeningRanking, dbSelectAssessmentRanking} from './database';
 import {
   TRankingRow,
   TRankingResultObject,
   EFormItemIntent,
   KeyVal,
 } from './types';
+import db from 'db';
 
 export const getRanking = catchAsync(async (req, res) => {
-  const jobId = req.params.job_id;
-  const {tenant_id} = res.locals.user;
+  const jobId = req.params.jobId;
+  const {tenantId} = res.locals.user;
 
-  const formCategory = req.query.form_category;
-  let data;
-  if (formCategory === 'screening') {
-    data = await dbSelectScreeningRanking(jobId, tenant_id);
-  } else if (formCategory === 'assessment') {
-    data = await dbSelectAssessmentRanking(jobId, tenant_id);
-  } else throw new BaseError(402, `Invalid form_category: ${formCategory}`);
+  const formCategory = req.query.formCategory as string;
+  const data = await db.rankings.find(tenantId, jobId, formCategory);
 
   const tmp = data.map((row: TRankingRow) => {
     const {submissions} = row;
@@ -30,25 +25,25 @@ export const getRanking = catchAsync(async (req, res) => {
       }[key];
     };
     const submissionsResult = submissions.reduce((acc, curr) => {
-      curr.forEach(({form_field_id, intent, value, label}) => {
-        if (!acc[form_field_id]) {
+      curr.forEach(({formFieldId, intent, value, label}) => {
+        if (!acc[formFieldId]) {
           const initialVal = initialValues(intent);
-          acc[form_field_id] = {label, intent, value: initialVal};
+          acc[formFieldId] = {label, intent, value: initialVal};
         }
         switch (intent) {
           case EFormItemIntent.sumUp:
-            (acc[form_field_id].value as number) += +value;
+            (acc[formFieldId].value as number) += +value;
             break;
           case EFormItemIntent.aggregate:
             const val = value.toString();
             if (!val) break;
-            const currArray = acc[form_field_id].value as Array<string>;
-            acc[form_field_id].value = currArray.concat(val);
+            const currArray = acc[formFieldId].value as Array<string>;
+            acc[formFieldId].value = currArray.concat(val);
             break;
           case EFormItemIntent.countDistinct:
             const key = value.toString();
-            const currVal = (acc[form_field_id].value as KeyVal)[key];
-            (acc[form_field_id].value as KeyVal)[key] = (currVal || 0) + 1;
+            const currVal = (acc[formFieldId].value as KeyVal)[key];
+            (acc[formFieldId].value as KeyVal)[key] = (currVal || 0) + 1;
         }
       });
 

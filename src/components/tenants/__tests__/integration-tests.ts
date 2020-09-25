@@ -2,9 +2,9 @@ import request from 'supertest';
 import app from 'app';
 import db from 'db';
 import faker from 'faker';
-import {endConnection, truncateAllTables} from 'db/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import fake from 'tests/fake';
-import {dbInsertTenant} from '../database';
+import dataGenerator from 'tests/dataGenerator';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -33,7 +33,7 @@ jest.mock('aws-sdk', () => ({
               Username: faker.internet.email(),
               Attributes: [
                 {Name: 'email', Value: faker.internet.email()},
-                {Name: 'custom:tenant_id', Value: mockUser.tenant_id},
+                {Name: 'custom:tenant_id', Value: mockUser.tenantId},
               ],
             },
           ],
@@ -77,15 +77,14 @@ describe('tenants', () => {
         .send(tenant)
         .expect(201);
 
-      expect(resp.body.tenant_name).toBe(tenant.tenant_name);
-      expect(!!resp.body.tenant_id).toBe(true);
+      expect(resp.body.tenantName).toBe(tenant.tenantName);
+      expect(!!resp.body.tenantId).toBe(true);
     });
   });
 
   describe('DELETE /tenants', () => {
     beforeEach(async () => {
-      const fakeTenant = fake.tenant(mockUser.tenant_id);
-      await dbInsertTenant(fakeTenant);
+      await dataGenerator.insertTenant(mockUser.tenantId);
     });
 
     it('returns 200 json response', (done) => {
@@ -98,7 +97,7 @@ describe('tenants', () => {
 
     it('deletes tenant of authenticated user', async () => {
       const stmt = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
-      const {count} = await db.one(stmt, mockUser.tenant_id);
+      const {count} = await db.one(stmt, mockUser.tenantId);
       expect(parseInt(count)).toBe(1);
 
       await request(app)
@@ -107,7 +106,7 @@ describe('tenants', () => {
         .expect('Content-Type', /json/)
         .expect(200);
 
-      const {count: countAfter} = await db.one(stmt, mockUser.tenant_id);
+      const {count: countAfter} = await db.one(stmt, mockUser.tenantId);
       expect(parseInt(countAfter)).toBe(0);
     });
   });

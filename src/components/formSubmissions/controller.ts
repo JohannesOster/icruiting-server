@@ -1,31 +1,27 @@
 import {BaseError, catchAsync} from 'errorHandling';
-import {
-  dbSelectFormSubmission,
-  dbInsertFormSubmission,
-  dbUpdateFormSubmission,
-} from './database';
+import db from 'db';
 
 export const getFormSubmission = catchAsync(async (req, res) => {
-  const {user_id, tenant_id} = res.locals.user;
-  const {form_id, applicant_id} = req.params;
-  const params = {form_id, applicant_id, submitter_id: user_id, tenant_id};
-  const resp = await dbSelectFormSubmission(params);
+  const {userId, tenantId} = res.locals.user;
+  const {formId, applicantId} = req.params;
+  const params = {formId, applicantId, submitterId: userId, tenantId};
+  const resp = await db.formSubmissions.find(params);
   if (!resp) throw new BaseError(404, 'Not Found');
   res.status(200).json(resp);
 });
 
-export const createFormSubmission = catchAsync(async (req, res) => {
-  const {user_id, tenant_id} = res.locals.user;
-  const params = {...req.body, submitter_id: user_id, tenant_id};
-  const resp = await dbInsertFormSubmission(params);
+export const postFormSubmission = catchAsync(async (req, res) => {
+  const {userId, tenantId} = res.locals.user;
+  const params = {...req.body, submitterId: userId, tenantId};
+  const resp = await db.formSubmissions.insert(params);
   res.status(201).json(resp);
 });
 
-export const updateFormSubmission = catchAsync(async (req, res) => {
-  const {tenant_id} = res.locals.user;
-  const {form_submission_id} = req.params;
+export const putFormSubmission = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+  const {formSubmissionId} = req.params;
   const {submission} = req.body;
-  const params = {submission, form_submission_id, tenant_id};
-  const resp = await dbUpdateFormSubmission(params);
+  const params = {submission, formSubmissionId, tenantId};
+  const resp = await db.formSubmissions.update(params);
   res.status(200).json(resp);
 });

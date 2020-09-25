@@ -1,11 +1,11 @@
 import {body} from 'express-validator';
 
 const formRules = [
-  body('job_id').isUUID(),
-  body('form_category').isIn(['application', 'screening', 'assessment']),
-  body('form_title').optional({nullable: true}).isString(),
-  body('form_fields').isArray({min: 1}),
-  body('form_fields[*].component').isIn([
+  body('jobId').isUUID(),
+  body('formCategory').isIn(['application', 'screening', 'assessment']),
+  body('formTitle').optional({nullable: true}).isString(),
+  body('formFields').isArray({min: 1}),
+  body('formFields[*].component').isIn([
     'input',
     'textarea',
     'select',
@@ -15,16 +15,16 @@ const formRules = [
     'checkbox',
     'date_picker',
   ]),
-  body('form_fields[*].label').isString(),
-  body('form_fields[*].placeholder').optional({nullable: true}).isString(),
-  body('form_fields[*].default_value').optional({nullable: true}),
-  body('form_fields[*].row_index').isInt(),
-  body('form_fields[*].required').optional({nullable: true}).isBoolean(),
-  body('form_fields[*].options[*].label').optional({nullable: true}).isString(),
-  body('form_fields[*].options[*].value').optional({nullable: true}),
-  body('form_fields[*].editable').optional({nullable: true}).isBoolean(),
-  body('form_fields[*].deletable').optional({nullable: true}).isBoolean(),
+  body('formFields[*].label').isString(),
+  body('formFields[*].placeholder').optional({nullable: true}).isString(),
+  body('formFields[*].defaultValue').optional({nullable: true}),
+  body('formFields[*].rowIndex').isInt(),
+  body('formFields[*].required').optional({nullable: true}).isBoolean(),
+  body('formFields[*].options[*].label').optional({nullable: true}).isString(),
+  body('formFields[*].options[*].value').optional({nullable: true}),
+  body('formFields[*].editable').optional({nullable: true}).isBoolean(),
+  body('formFields[*].deletable').optional({nullable: true}).isBoolean(),
 ];
 
-export const createFormValidationRules = formRules;
-export const updateFormValidationRules = [...formRules, body('form_id')];
+export const postFormRules = formRules;
+export const putFormRules = [...formRules, body('formId')];

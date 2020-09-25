@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from 'app';
 import db from 'db';
-import {endConnection, truncateAllTables} from 'db/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import {TApplicant} from '../../types';
 import {TForm, EFormCategory} from 'components/forms';
 import fake from 'tests/fake';
@@ -24,8 +24,8 @@ jest.mock('aws-sdk', () => ({
 
 let jobId: string;
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
-  jobId = (await dataGenerator.insertJob(mockUser.tenant_id)).job_id;
+  await dataGenerator.insertTenant(mockUser.tenantId);
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 });
 
 afterAll(async () => {
@@ -35,25 +35,25 @@ afterAll(async () => {
 });
 
 describe('applicants', () => {
-  describe('DELETE /applicants/:applicant_id', () => {
+  describe('DELETE /applicants/:applicantId', () => {
     let applicant: TApplicant;
     beforeEach(async () => {
       const form: TForm = await dataGenerator.insertForm(
-        mockUser.tenant_id,
+        mockUser.tenantId,
         jobId,
         EFormCategory.application,
       );
 
       applicant = await dataGenerator.insertApplicant(
-        mockUser.tenant_id,
+        mockUser.tenantId,
         jobId,
-        form.form_fields.map(({form_field_id}) => form_field_id),
+        form.formFields.map(({formFieldId}) => formFieldId),
       );
     });
 
     it('returns 200 json response', (done) => {
       request(app)
-        .del(`/applicants/${applicant.applicant_id}`)
+        .del(`/applicants/${applicant.applicantId}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -61,11 +61,11 @@ describe('applicants', () => {
 
     it('deletes applicant', async () => {
       await request(app)
-        .del(`/applicants/${applicant.applicant_id}`)
+        .del(`/applicants/${applicant.applicantId}`)
         .set('Accept', 'application/json');
 
       const stmt = 'SELECT COUNT(*) FROM applicant WHERE applicant_id = $1';
-      const {count} = await db.one(stmt, applicant.applicant_id);
+      const {count} = await db.one(stmt, applicant.applicantId);
 
       expect(parseInt(count)).toBe(0);
     });

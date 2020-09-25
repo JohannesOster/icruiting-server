@@ -8,6 +8,6 @@ const router = express.Router();
 
 router.use(requireAuth);
 router.use(requireAdmin);
-router.get('/:job_id', validateGetRanking, validate, getRanking);
+router.get('/:jobId', validateGetRanking, validate, getRanking);
 
 export {router as routes};

@@ -30,9 +30,9 @@ describe('applicants', () => {
     it('sorts applicants based on sort key', async () => {
       const sortKey = random.alphaNumeric();
       const base = {
-        job_id: random.uuid(),
-        tenant_id: random.uuid(),
-        applicant_id: random.uuid(),
+        jobId: random.uuid(),
+        tenantId: random.uuid(),
+        applicantId: random.uuid(),
       };
       const applicants = [
         {

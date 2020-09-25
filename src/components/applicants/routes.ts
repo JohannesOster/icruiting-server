@@ -7,20 +7,20 @@ import {
   updateApplicant,
   getPdfReport,
 } from './controller';
-import {validateGetApplicants, validateGetReport} from './validation';
+import {getApplicantsRules, validateGetReport} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth, requireAdmin} from 'middlewares';
 
 const router = express.Router();
 
 router.use(requireAuth);
-router.get('/', validateGetApplicants, validate, getApplicants);
-router.get('/:applicant_id', getApplicant);
+router.get('/', getApplicantsRules, validate, getApplicants);
+router.get('/:applicantId', getApplicant);
 
 router.use(requireAdmin);
-router.get('/:applicant_id/report', validateGetReport, validate, getReport);
-router.get('/:applicant_id/pdf-report', getPdfReport);
-router.put('/:applicant_id', updateApplicant);
-router.delete('/:applicant_id', deleteApplicant);
+router.get('/:applicantId/report', validateGetReport, validate, getReport);
+router.get('/:applicantId/pdf-report', getPdfReport);
+router.put('/:applicantId', updateApplicant);
+router.delete('/:applicantId', deleteApplicant);
 
 export {router as routes};

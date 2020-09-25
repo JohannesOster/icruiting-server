@@ -1,22 +1,32 @@
 import pgPromise from 'pg-promise';
-import dotenv from 'dotenv';
+import {IInitOptions} from 'pg-promise';
+import {
+  IExtensions,
+  TenantsRepository,
+  JobssRepository,
+  ApplicantsRepository,
+  FormsRepository,
+  FormSubmissionsRepository,
+  RankingsRepository,
+} from './repos';
+import config from './config';
+import humps from 'humps';
 
-dotenv.config();
-
-const pgp = pgPromise({capSQL: true});
-
-const dbURL = () => {
-  switch (process.env.NODE_ENV) {
-    case 'production':
-      return process.env.DATABASE_URL;
-    case 'development':
-      console.log('Running development database');
-      return process.env.DEV_DB_URL;
-    default:
-      //console.log('Running testing database');
-      return process.env.TEST_DB_URL;
-  }
+const initOptions: IInitOptions<IExtensions> = {
+  extend(obj) {
+    obj.tenants = TenantsRepository(obj, pgp);
+    obj.jobs = JobssRepository(obj, pgp);
+    obj.applicants = ApplicantsRepository(obj, pgp);
+    obj.forms = FormsRepository(obj, pgp);
+    obj.formSubmissions = FormSubmissionsRepository(obj, pgp);
+    obj.rankings = RankingsRepository(obj, pgp);
+  },
+  receive(data, result) {
+    result.rows = data.map((obj) => humps.camelizeKeys(obj));
+  },
 };
-const db = pgp(dbURL() || '');
+
+const pgp = pgPromise(initOptions);
+const db = pgp(config.url);
 
 export {db as default, pgp};

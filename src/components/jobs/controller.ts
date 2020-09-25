@@ -1,54 +1,47 @@
 import {S3} from 'aws-sdk';
-import {
-  dbSelectApplicantReport,
-  dbSelectApplicants,
-  TApplicant,
-} from 'components/applicants';
+import {dbSelectApplicantReport, TApplicant} from 'components/applicants';
 import {BaseError, catchAsync} from 'errorHandling';
-import {
-  dbInsertJob,
-  dbSelectJobs,
-  dbUpdateJob,
-  dbDeleteJob,
-  dbInsertApplicantReport,
-  dbUpdateApplicantReport,
-} from './database';
-
-export const createJob = catchAsync(async (req, res) => {
-  const {job_title, job_requirements} = req.body;
-  const {tenant_id} = res.locals.user;
-  const params = {job_title, tenant_id, job_requirements};
-  const resp = await dbInsertJob(params);
-  res.status(201).json(resp);
-});
+import {dbInsertApplicantReport, dbUpdateApplicantReport} from './database';
+import db from 'db';
 
 export const getJobs = catchAsync(async (req, res) => {
-  const {tenant_id} = res.locals.user;
-  const resp = await dbSelectJobs(tenant_id);
+  const {tenantId} = res.locals.user;
+  const resp = await db.jobs.all(tenantId);
   res.status(200).json(resp);
 });
 
 export const getJob = catchAsync(async (req, res) => {
-  const {job_id} = req.params;
-  const {tenant_id} = res.locals.user;
-  const resp = await dbSelectJobs(tenant_id, job_id).then((resp) => resp[0]);
+  const {jobId} = req.params;
+  const {tenantId} = res.locals.user;
+  const resp = await db.jobs.find(tenantId, jobId);
   if (!resp) throw new BaseError(404, 'Not Found');
   res.status(200).json(resp);
 });
 
-export const updateJob = catchAsync(async (req, res) => {
-  const {job_id} = req.params;
-  const {tenant_id} = res.locals.user;
-  const resp = await dbUpdateJob(job_id, tenant_id, req.body);
+export const postJob = catchAsync(async (req, res) => {
+  const {jobTitle, jobRequirements} = req.body;
+  const {tenantId} = res.locals.user;
+  const params = {jobTitle, tenantId, jobRequirements};
+  const resp = await db.jobs.insert(params);
+  res.status(201).json(resp);
+});
+
+export const putJob = catchAsync(async (req, res) => {
+  const {jobId} = req.params;
+  const {tenantId} = res.locals.user;
+  const resp = await db.jobs.update(tenantId, {...req.body, jobId});
   res.status(200).json(resp);
 });
 
 export const deleteJob = catchAsync(async (req, res) => {
-  const {job_id} = req.params;
-  const {tenant_id, user_id} = res.locals.user;
+  const {jobId} = req.params;
+  const {tenantId, userId} = res.locals.user;
 
-  const params = {job_id, tenant_id, user_id};
-  const applicants: TApplicant[] = await dbSelectApplicants(params);
+  const applicants: TApplicant[] = await db.applicants.findAll(
+    tenantId,
+    jobId,
+    userId,
+  );
 
   const fileKeys = applicants.reduce((acc, {files}) => {
     if (!files) return acc;
@@ -64,31 +57,31 @@ export const deleteJob = catchAsync(async (req, res) => {
     await s3.deleteObjects(delParams).promise();
   }
 
-  await dbDeleteJob(job_id, tenant_id);
+  await db.jobs.remove(tenantId, jobId);
 
   res.status(200).json({});
 });
 
 export const createApplicantReport = catchAsync(async (req, res) => {
-  const {tenant_id} = res.locals.user;
-  const {job_id} = req.params;
-  const params = {tenant_id, job_id, ...req.body};
+  const {tenantId} = res.locals.user;
+  const {jobId} = req.params;
+  const params = {tenantId, jobId, ...req.body};
   const report = await dbInsertApplicantReport(params);
   res.status(201).json(report);
 });
 
 export const updateApplicantReport = catchAsync(async (req, res) => {
-  const {tenant_id} = res.locals.user;
-  const {applicant_report_id} = req.params;
-  const params = {tenant_id, applicant_report_id, ...req.body};
+  const {tenantId} = res.locals.user;
+  const {applicantReportId} = req.params;
+  const params = {tenantId, applicantReportId, ...req.body};
   const report = await dbUpdateApplicantReport(params);
   res.status(200).json(report);
 });
 
 export const getApplicantReport = catchAsync(async (req, res) => {
-  const {tenant_id} = res.locals.user;
-  const {job_id} = req.params;
-  const report = await dbSelectApplicantReport(tenant_id, job_id);
+  const {tenantId} = res.locals.user;
+  const {jobId} = req.params;
+  const report = await dbSelectApplicantReport(tenantId, jobId);
   if (!report) throw new BaseError(404, 'Not Found');
   res.status(200).json(report);
 });

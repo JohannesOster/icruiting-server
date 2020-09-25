@@ -1,4 +1,4 @@
-const {dropAllTables, endConnection} = require('./src/db/utils');
+const {dropAllTables, endConnection} = require('./src/db/setup');
 
 module.exports = async () => {
   await dropAllTables();

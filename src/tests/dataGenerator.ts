@@ -1,58 +1,56 @@
-import {dbInsertTenant} from 'components/tenants';
-import {dbInsertJob} from 'components/jobs';
-import {dbInsertApplicant} from 'components/applicants';
+import db from 'db';
 import fake from './fake';
-import {EFormCategory, TFormRequest, dbInsertForm} from 'components/forms';
-import {dbInsertFormSubmission} from 'components/formSubmissions';
+import {random} from 'faker';
+import {EFormCategory, TFormRequest} from 'components/forms';
 
 const dataGenerator = {
-  insertTenant: (tenant_id: string) => {
-    const tenant = fake.tenant(tenant_id);
-    return dbInsertTenant(tenant);
+  insertTenant: (tenantId: string = random.uuid()) => {
+    const tenant = fake.tenant(tenantId);
+    return db.tenants.insert(tenant);
   },
-  insertJob: (tenant_id: string) => {
-    const job = fake.job(tenant_id);
-    return dbInsertJob(job);
+  insertJob: (tenantId: string) => {
+    const job = fake.job(tenantId);
+    return db.jobs.insert(job);
   },
   insertForm: (
-    tenant_id: string,
-    job_id: string,
-    form_category: EFormCategory,
+    tenantId: string,
+    jobId: string,
+    formCategory: EFormCategory,
   ) => {
     let form: TFormRequest;
-    if (form_category === EFormCategory.application) {
-      form = fake.applicationForm(tenant_id, job_id);
-    } else if (form_category === EFormCategory.screening) {
-      form = fake.screeningForm(tenant_id, job_id);
+    if (formCategory === EFormCategory.application) {
+      form = fake.applicationForm(tenantId, jobId);
+    } else if (formCategory === EFormCategory.screening) {
+      form = fake.screeningForm(tenantId, jobId);
     } else {
-      form = fake.assessmentForm(tenant_id, job_id);
+      form = fake.assessmentForm(tenantId, jobId);
     }
 
-    return dbInsertForm(form);
+    return db.forms.insert(form);
   },
   insertApplicant: (
-    tenant_id: string,
-    job_id: string,
-    form_field_ids: string[],
+    tenantId: string,
+    jobId: string,
+    formFieldIds: string[],
   ) => {
-    const applicant = fake.applicant(tenant_id, job_id, form_field_ids);
-    return dbInsertApplicant(applicant);
+    const applicant = fake.applicant(tenantId, jobId, formFieldIds);
+    return db.applicants.insert(applicant);
   },
   insertFormSubmission: (
-    tenant_id: string,
-    applicant_id: string,
-    submitter_id: string,
-    form_id: string,
-    form_field_ids: string[],
+    tenantId: string,
+    applicantId: string,
+    submitterId: string,
+    formId: string,
+    formFieldIds: string[],
   ) => {
     const formSubmission = fake.formSubmission(
-      tenant_id,
-      applicant_id,
-      submitter_id,
-      form_id,
-      form_field_ids,
+      tenantId,
+      applicantId,
+      submitterId,
+      formId,
+      formFieldIds,
     );
-    return dbInsertFormSubmission(formSubmission);
+    return db.formSubmissions.insert(formSubmission);
   },
 };
 

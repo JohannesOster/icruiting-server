@@ -1,6 +1,6 @@
 import request from 'supertest';
 import app from 'app';
-import {endConnection, truncateAllTables} from 'db/utils';
+import {endConnection, truncateAllTables} from 'db/setup';
 import {TApplicant} from '../../types';
 import {TForm, EFormCategory} from 'components/forms';
 import fake from 'tests/fake';
@@ -17,8 +17,8 @@ jest.mock('middlewares/auth', () => ({
 
 let jobId: string;
 beforeAll(async () => {
-  await dataGenerator.insertTenant(mockUser.tenant_id);
-  jobId = (await dataGenerator.insertJob(mockUser.tenant_id)).job_id;
+  await dataGenerator.insertTenant(mockUser.tenantId);
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 });
 
 afterAll(async () => {
@@ -28,35 +28,49 @@ afterAll(async () => {
 });
 
 describe('applicants', () => {
-  describe('GET applicants/:applicant_id/report', () => {
+  describe('GET applicants/:applicantId/report', () => {
     let applicant: TApplicant;
     beforeEach(async () => {
       const form: TForm = await dataGenerator.insertForm(
-        mockUser.tenant_id,
+        mockUser.tenantId,
         jobId,
         EFormCategory.application,
       );
 
       applicant = await dataGenerator.insertApplicant(
-        mockUser.tenant_id,
+        mockUser.tenantId,
         jobId,
-        form.form_fields.map(({form_field_id}) => form_field_id),
+        form.formFields.map(({formFieldId}) => formFieldId),
+      );
+
+      const screeningForm: TForm = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        EFormCategory.screening,
+      );
+
+      await dataGenerator.insertFormSubmission(
+        mockUser.tenantId,
+        applicant.applicantId!,
+        mockUser.userId,
+        screeningForm.formId,
+        screeningForm.formFields.map(({formFieldId}) => formFieldId),
       );
     });
 
     it('returns 200 json response', (done) => {
       request(app)
         .get(
-          `/applicants/${applicant.applicant_id}/report?form_category=screening`,
+          `/applicants/${applicant.applicantId}/report?formCategory=screening`,
         )
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
 
-    it('requires form_category query', (done) => {
+    it('requires formCategory query', (done) => {
       request(app)
-        .get(`/applicants/${applicant.applicant_id}/report`)
+        .get(`/applicants/${applicant.applicantId}/report`)
         .set('Accept', 'application/json')
         .expect(422, done);
     });
