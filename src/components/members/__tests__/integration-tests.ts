@@ -39,7 +39,7 @@ jest.mock('aws-sdk', () => ({
               Attributes: [
                 {Name: 'email', Value: internet.email()},
                 {Name: 'custom:tenant_id', Value: mockUser.tenantId},
-                {Name: 'custom:user_role', Value: 'employee'},
+                {Name: 'custom:user_role', Value: 'member'},
               ],
             },
             {
@@ -55,7 +55,7 @@ jest.mock('aws-sdk', () => ({
               Attributes: [
                 {Name: 'email', Value: internet.email()},
                 {Name: 'custom:tenant_id', Value: random.uuid()},
-                {Name: 'custom:user_role', Value: 'employee'},
+                {Name: 'custom:user_role', Value: 'member'},
               ],
             },
           ],
@@ -80,11 +80,11 @@ afterAll(async () => {
   endConnection();
 });
 
-describe('employees', () => {
-  describe('POST /employees', () => {
+describe('members', () => {
+  describe('POST /members', () => {
     it('Returns 201 json response', (done) => {
       request(app)
-        .post('/employees')
+        .post('/members')
         .send({emails: [internet.email()]})
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -94,7 +94,7 @@ describe('employees', () => {
     it('Returns created user', async () => {
       const emails = [internet.email()];
       const resp = await request(app)
-        .post('/employees')
+        .post('/members')
         .send({emails})
         .set('Accept', 'application/json')
         .expect(201);
@@ -102,7 +102,7 @@ describe('employees', () => {
       const expectAttributes = [
         {Name: 'email', Value: emails[0]},
         {Name: 'custom:tenant_id', Value: mockUser.tenantId},
-        {Name: 'custom:user_role', Value: 'employee'},
+        {Name: 'custom:user_role', Value: 'member'},
       ];
 
       expect(resp.body[0].User.Username).toBe(emails[0]);
@@ -110,12 +110,12 @@ describe('employees', () => {
     });
   });
 
-  describe('PUT /employees/:username', () => {
+  describe('PUT /members/:username', () => {
     it('Returns 200 json response', (done) => {
       request(app)
-        .put(`/employees/${internet.email()}`)
+        .put(`/members/${internet.email()}`)
         .set('Accept', 'application/json')
-        .send({userRole: 'admin'})
+        .send({user_role: 'admin'})
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
@@ -123,29 +123,28 @@ describe('employees', () => {
     it('Returns updated User', async () => {
       const email = internet.email();
       const resp = await request(app)
-        .put(`/employees/${email}`)
+        .put(`/members/${email}`)
         .set('Accept', 'application/json')
-        .send({userRole: 'admin'})
+        .send({user_role: 'admin'})
         .expect(200);
 
       const expectAttributes = [{Name: 'custom:user_role', Value: 'admin'}];
-
       expect(resp.body.Attributes).toStrictEqual(expectAttributes);
     });
 
     it('Validates userRole param', async () => {
       const resp = await request(app)
-        .put(`/employees/${internet.email()}`)
+        .put(`/members/${internet.email()}`)
         .set('Accept', 'application/json')
-        .send({userRole: 'invalid role'})
+        .send({user_role: 'invalid role'})
         .expect(422);
     });
   });
 
-  describe('GET /employees', () => {
+  describe('GET /members', () => {
     it('Returns 200 json response', (done) => {
       request(app)
-        .get('/employees')
+        .get('/members')
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -153,25 +152,25 @@ describe('employees', () => {
 
     it('Removes custom keywoard before custom attributes', async () => {
       const resp = await request(app)
-        .get('/employees')
+        .get('/members')
         .set('Accept', 'application/json')
         .expect(200);
 
       resp.body.forEach((user: any) => {
         expect(user.email).toBeDefined();
-        expect(user.tenantId).toBeDefined();
-        expect(user.userRole).toBeDefined();
+        expect(user.tenant_id).toBeDefined();
+        expect(user.user_role).toBeDefined();
       });
     });
 
-    it('Isolates tenant employees', async () => {
+    it('Isolates tenant members', async () => {
       const resp = await request(app)
-        .get('/employees')
+        .get('/members')
         .set('Accept', 'application/json')
         .expect(200);
 
       resp.body.forEach((user: any) => {
-        expect(user.tenantId).toBe(mockUser.tenantId);
+        expect(user.tenant_id).toBe(mockUser.tenantId);
       });
     });
   });
