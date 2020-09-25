@@ -1,7 +1,15 @@
-SELECT form.*, json_agg(items.* ORDER BY row_index ASC) form_fields
-FROM form
-JOIN (SELECT * FROM form_field) as items
-ON items.form_id = form.form_id
-WHERE (form.tenant_id = ${tenant_id} OR ${tenant_id} Is NULL)
-  AND form.form_id = ${form_id}
-GROUP BY form.form_id;
+SELECT 
+  form_submission.*,
+  array_agg(
+     json_build_object(
+       'form_field_id', form_field_id,
+       'submission_value', submission_value) 
+  ) as submission
+FROM form_submission
+JOIN form_submission_field
+ON form_submission_field.form_submission_id=form_submission.form_submission_id
+WHERE submitter_id=${submitter_id}
+  AND applicant_id=${applicant_id}
+  AND form_id=${form_id}
+  AND tenant_id=${tenant_id}
+GROUP BY form_submission.form_submission_id;

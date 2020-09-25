@@ -5,7 +5,6 @@ import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
 import {EFormCategory, TForm} from 'components/forms';
-import {dbInsertFormSubmission} from 'components/formSubmissions';
 import {TApplicant} from 'components/applicants';
 import dataGenerator from 'tests/dataGenerator';
 
@@ -85,7 +84,7 @@ describe('rankings', () => {
             ),
           };
 
-          promises.push(dbInsertFormSubmission(screening));
+          promises.push(db.formSubmissions.insert(screening));
         });
 
         Promise.all(promises).finally(done);
@@ -178,7 +177,7 @@ describe('rankings', () => {
             ),
           };
 
-          promises.push(dbInsertFormSubmission(assessment));
+          promises.push(db.formSubmissions.insert(assessment));
         });
 
         Promise.all(promises).finally(done);

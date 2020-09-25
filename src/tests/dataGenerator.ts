@@ -2,7 +2,6 @@ import db from 'db';
 import fake from './fake';
 import {random} from 'faker';
 import {EFormCategory, TFormRequest} from 'components/forms';
-import {dbInsertFormSubmission} from 'components/formSubmissions';
 
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {
@@ -51,7 +50,7 @@ const dataGenerator = {
       formId,
       formFieldIds,
     );
-    return dbInsertFormSubmission(formSubmission);
+    return db.formSubmissions.insert(formSubmission);
   },
 };
 

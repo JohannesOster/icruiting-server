@@ -1,13 +1,10 @@
 import express from 'express';
 import {
   postFormSubmission,
-  updateFormSubmission,
+  putFormSubmission,
   getFormSubmission,
 } from './controller';
-import {
-  postFormSubmissionRules,
-  updateFormSubmissionValidationRules,
-} from './validation';
+import {postFormSubmissionRules, putFormSubmissionRules} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth} from 'middlewares';
 
@@ -17,9 +14,9 @@ router.use(requireAuth);
 router.post('/', postFormSubmissionRules, validate, postFormSubmission);
 router.put(
   '/:formSubmissionId',
-  updateFormSubmissionValidationRules,
+  putFormSubmissionRules,
   validate,
-  updateFormSubmission,
+  putFormSubmission,
 );
 router.get('/:formId/:applicantId', getFormSubmission);
 

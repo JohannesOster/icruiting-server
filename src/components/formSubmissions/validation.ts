@@ -6,7 +6,7 @@ export const postFormSubmissionRules = [
   body('submission').exists(),
 ];
 
-export const updateFormSubmissionValidationRules = [
+export const putFormSubmissionRules = [
   body('formId').isUUID(),
   body('applicantId').isUUID(),
   body('formSubmissionId').isUUID(),
