@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS form_field (
   CONSTRAINT form_field_id_pk PRIMARY KEY (form_field_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE,
-  CONSTRAINT job_requirement_id_fk FOREIGN KEY (job_requirement_id) REFERENCES job_requirement(job_requirement_id) ON DELETE NO ACTION DEFERRABLE,
+  CONSTRAINT job_requirement_id_fk FOREIGN KEY (job_requirement_id) REFERENCES job_requirement(job_requirement_id) ON DELETE SET DEFAULT DEFERRABLE,
   CONSTRAINT row_index_check CHECK (row_index >= 0),
   CONSTRAINT form_id_row_index_unique UNIQUE (form_id, row_index) DEFERRABLE, -- make shure the index inside of the form is unique
   CONSTRAINT options_conditional_not_null CHECK(

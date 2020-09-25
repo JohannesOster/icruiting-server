@@ -34,7 +34,6 @@ describe('forms', () => {
         jobId,
         EFormCategory.application,
       );
-
       await request(app)
         .put(`/forms/${form.formId}`)
         .set('Accept', 'application/json')
@@ -49,20 +48,17 @@ describe('forms', () => {
         jobId,
         EFormCategory.application,
       );
-
       const updateVals = {...form};
       const placeholder = random.words();
       updateVals.formFields = updateVals.formFields.map((item) => ({
         ...item,
         placeholder,
       }));
-
       const resp = await request(app)
         .put(`/forms/${form.formId}`)
         .set('Accept', 'application/json')
         .send(updateVals)
         .expect(200);
-
       (resp.body as TForm).formFields.forEach((field) => {
         expect(field.placeholder).toBe(placeholder);
       });
@@ -74,14 +70,12 @@ describe('forms', () => {
         jobId,
         EFormCategory.application,
       );
-
       const updateVals = {...form, formTitle: random.words()};
       const resp = await request(app)
         .put(`/forms/${form.formId}`)
         .set('Accept', 'application/json')
         .send(updateVals)
         .expect(200);
-
       expect(resp.body.formTitle).toBe(updateVals.formTitle);
     });
   });

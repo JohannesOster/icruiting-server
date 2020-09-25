@@ -1,6 +1,7 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
+import {TForm} from 'components/forms';
 
 enum EFormCategory {
   application = 'application',
@@ -81,11 +82,150 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
     return db.any(stmt).then((items) => ({...insertedForm, formFields: items}));
   };
 
+  const update = async (params: {
+    tenantId: string;
+    formId: string;
+    formTitle?: string;
+    formFields: {
+      formId?: string;
+      formFieldId?: string;
+      rowIndex: number;
+      component: string;
+      label: string;
+      placeholder?: string;
+      defaultValue?: string;
+      required?: boolean;
+      options?: Array<{label: string; value: string}>;
+      editable?: boolean;
+      deletable?: boolean;
+      jobRequirementId?: string;
+    }[];
+  }) => {
+    const orgignialForm: TForm = await find(params.tenantId, params.formId);
+    const {update, insert, ColumnSet} = pgp.helpers;
+
+    await db.tx(async (t) => {
+      let promises: Promise<any>[] = [];
+      if (params.formTitle !== orgignialForm.formTitle) {
+        const columns = ['?tenant_id', '?form_id', 'form_title'];
+        const cs = new ColumnSet(columns, {table: 'form'});
+        const values = {
+          tenant_id: params.tenantId,
+          form_id: params.formId,
+          form_title: params.formTitle,
+        };
+        const stmt =
+          update(values, cs) +
+          ' WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
+        const promise = t.none(stmt, {
+          tenant_id: params.tenantId,
+          form_id: params.formId,
+        });
+
+        promises.push(promise);
+      }
+
+      const fieldsMap = {
+        shouldDelete: [], // exists in original but does not exist in params
+        shouldUpdate: [], // exists in original and exists in params
+        shouldInsert: [], // does not exist in original but in params = does not have a formFieldId
+      } as {[key: string]: typeof params.formFields};
+
+      params.formFields.forEach((field) => {
+        if (!field.formFieldId) fieldsMap.shouldInsert.push(field);
+        else fieldsMap.shouldUpdate.push(field);
+      });
+
+      orgignialForm.formFields.forEach((field) => {
+        const newFormField = params.formFields.find(
+          ({formFieldId}) => formFieldId === field.formFieldId,
+        );
+        if (!newFormField) fieldsMap.shouldDelete.push(field);
+      });
+
+      /** DELETE ======================== */
+      promises.concat(
+        fieldsMap.shouldDelete.map(async ({formFieldId}) => {
+          return t.none(
+            'DELETE FROM form_field WHERE form_field_id=$1',
+            formFieldId,
+          );
+        }),
+      );
+
+      /** INSERT ========================= */
+      if (fieldsMap.shouldInsert.length) {
+        const cs = new ColumnSet(
+          [
+            {name: 'form_id', cast: 'uuid'},
+            {name: 'tenant_id', cast: 'uuid'},
+            {name: 'job_requirement_id', def: null, cast: 'uuid'},
+            {name: 'component', cast: 'form_field_component'},
+            'row_index',
+            'label',
+            {name: 'intent', def: null, cast: 'form_field_intent'},
+            {name: 'placeholder', def: null},
+            {name: 'default_value', def: null},
+            {name: 'description', def: null},
+            {name: 'required', def: null, cast: 'boolean'},
+            {name: 'options', mod: ':json', cast: 'jsonb', def: null},
+            {name: 'props', mod: ':json', cast: 'jsonb', def: null},
+            {name: 'editable', def: false},
+            {name: 'deletable', def: false},
+          ],
+          {table: 'form_field'},
+        );
+
+        const fields = fieldsMap.shouldInsert.map((item) => ({
+          ...item,
+          tenantId: params.tenantId,
+          formId: params.formId,
+        }));
+
+        const values = decamelizeKeys(fields);
+        const stmt = insert(values, cs);
+        promises.push(t.any(stmt));
+      }
+
+      /** UPDATE ========================== */
+      if (fieldsMap.shouldUpdate.length) {
+        const csUpdate = new ColumnSet(
+          [
+            '?form_field_id',
+            {name: 'job_requirement_id', def: null, cast: 'uuid'},
+            {name: 'component', cast: 'form_field_component'},
+            'row_index',
+            'label',
+            {name: 'intent', def: null, cast: 'form_field_intent'},
+            {name: 'placeholder', def: null},
+            {name: 'default_value', def: null},
+            {name: 'description', def: null},
+            {name: 'required', def: null, cast: 'boolean'},
+            {name: 'options', mod: ':json', cast: 'jsonb', def: null},
+            {name: 'props', mod: ':json', cast: 'jsonb', def: null},
+            {name: 'editable', def: false},
+            {name: 'deletable', def: false},
+          ],
+          {table: 'form_field'},
+        );
+
+        const values = decamelizeKeys(fieldsMap.shouldUpdate);
+        const updateStmt =
+          update(values, csUpdate) +
+          ' WHERE v.form_field_id::uuid = t.form_field_id';
+        promises.push(t.any(updateStmt));
+      }
+      return t.batch(promises);
+    });
+
+    return find(params.tenantId, params.formId);
+  };
+
   const remove = (tenantId: string, formId: string) => {
     const stmt =
       'DELETE FROM form WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
     return db.none(stmt, {tenant_id: tenantId, form_id: formId});
   };
 
-  return {findAll, find, insert, remove};
+  return {findAll, find, insert, update, remove};
 };

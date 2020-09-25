@@ -1,17 +1,14 @@
 import express from 'express';
 import {
-  createForm,
-  updateForm,
+  postForm,
+  putForm,
   deleteForm,
   getForms,
   getForm,
   renderHTMLForm,
   submitHTMLForm,
 } from './controller';
-import {
-  createFormValidationRules,
-  updateFormValidationRules,
-} from './validation';
+import {postFormRules, putFormRules} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAdmin, requireAuth} from 'middlewares';
 
@@ -25,8 +22,8 @@ router.get('/', getForms);
 router.get('/:formId', getForm);
 
 router.use(requireAdmin);
-router.post('/', createFormValidationRules, validate, createForm);
+router.post('/', postFormRules, validate, postForm);
 router.delete('/:formId', deleteForm);
-router.put('/:formId', updateFormValidationRules, validate, updateForm);
+router.put('/:formId', putFormRules, validate, putForm);
 
 export {router as routes};

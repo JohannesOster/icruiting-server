@@ -2,7 +2,6 @@ import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import {catchAsync, BaseError} from 'errorHandling';
-import {dbUpdateForm} from './database';
 import {TForm} from './types';
 import db from 'db';
 
@@ -21,11 +20,25 @@ export const getForm = catchAsync(async (req, res) => {
   res.status(200).json(resp);
 });
 
-export const createForm = catchAsync(async (req, res) => {
+export const postForm = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
   const params = {...req.body, tenantId};
   const resp = await db.forms.insert(params);
   res.status(201).json(resp);
+});
+
+export const putForm = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+  const params = {...req.body, tenantId};
+  const resp = await db.forms.update(params);
+  res.status(200).json(resp);
+});
+
+export const deleteForm = catchAsync(async (req, res) => {
+  const {formId} = req.params;
+  const {tenantId} = res.locals.user;
+  await db.forms.remove(tenantId, formId);
+  res.status(200).json();
 });
 
 export const renderHTMLForm = catchAsync(async (req, res) => {
@@ -151,19 +164,4 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
         res.render('form-submission', {error: err});
       });
   });
-});
-
-export const deleteForm = catchAsync(async (req, res) => {
-  const {formId} = req.params;
-  const {tenantId} = res.locals.user;
-  await db.forms.remove(tenantId, formId);
-  res.status(200).json();
-});
-
-export const updateForm = catchAsync(async (req, res) => {
-  const {formId} = req.params;
-  const {tenantId} = res.locals.user;
-  const params = {...req.body, tenantId};
-  const resp = await dbUpdateForm(formId, params);
-  res.status(200).json(resp);
 });
