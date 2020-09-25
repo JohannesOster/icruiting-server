@@ -13,6 +13,14 @@ export const getForms = catchAsync(async (req, res) => {
   res.status(200).json(resp);
 });
 
+export const getForm = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+  const {formId} = req.params;
+  const resp = await db.forms.find(tenantId, formId);
+  if (!resp) throw new BaseError(404, 'Not Found');
+  res.status(200).json(resp);
+});
+
 export const createForm = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
   const params = {...req.body, tenantId};
@@ -22,7 +30,7 @@ export const createForm = catchAsync(async (req, res) => {
 
 export const renderHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const form: TForm | undefined = await db.forms.find(formId);
+  const form: TForm | undefined = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
   const {protocol, originalUrl} = req;
@@ -36,7 +44,7 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
 
 export const submitHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const form: TForm | undefined = await db.forms.find(formId);
+  const form: TForm | undefined = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
   if (form.formCategory !== 'application') {

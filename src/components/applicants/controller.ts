@@ -159,7 +159,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
     try {
       if (!formId) throw new BaseError(422, 'Missing formId field');
 
-      const form: TForm | undefined = await db.forms.find(formId);
+      const form: TForm | undefined = await db.forms.find(null, formId);
       if (!form) throw new BaseError(404, 'Form Not Found');
 
       applicant = await db.applicants.find(tenantId, applicantId);

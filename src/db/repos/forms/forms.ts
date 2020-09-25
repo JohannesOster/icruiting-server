@@ -13,8 +13,8 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
     return db.any(sql.all, {tenant_id: tenantId, job_id: jobId});
   };
 
-  const find = (formId: string) => {
-    return db.oneOrNone(sql.find, {form_id: formId});
+  const find = (tenantId: string | null, formId: string) => {
+    return db.oneOrNone(sql.find, {tenant_id: tenantId, form_id: formId});
   };
 
   const insert = async (params: {

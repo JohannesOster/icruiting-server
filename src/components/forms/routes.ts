@@ -4,6 +4,7 @@ import {
   updateForm,
   deleteForm,
   getForms,
+  getForm,
   renderHTMLForm,
   submitHTMLForm,
 } from './controller';
@@ -21,6 +22,7 @@ router.post('/:formId/html', submitHTMLForm);
 
 router.use(requireAuth);
 router.get('/', getForms);
+router.get('/:formId', getForm);
 
 router.use(requireAdmin);
 router.post('/', createFormValidationRules, validate, createForm);

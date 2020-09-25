@@ -1,6 +1,5 @@
 import db from 'db';
-import {TFormRequest, TForm} from './types';
-import {decamelizeKeys} from 'humps';
+import {TForm} from './types';
 
 export const dbDeleteForm = (formId: string) => {
   const stmt = 'DELETE FROM form WHERE formId=$1';
@@ -13,7 +12,7 @@ export const dbUpdateForm = async (
 ) => {
   const helpers = db.$config.pgp.helpers;
   const condition = ' WHERE formId=${formId} AND tenantId=${tenantId}';
-  const orgignialForm: TForm = await db.forms.find(formId);
+  const orgignialForm: TForm = await db.forms.find(form.tenantId, formId);
 
   await db.tx(async (t) => {
     // await t.none('SET CONSTRAINTS formId_rowIndex_unique DEFERRED');
@@ -113,5 +112,5 @@ export const dbUpdateForm = async (
     }
   });
 
-  return db.forms.find(formId);
+  return db.forms.find(form.tenantId, formId);
 };
