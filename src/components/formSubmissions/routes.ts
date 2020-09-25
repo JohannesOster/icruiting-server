@@ -1,11 +1,11 @@
 import express from 'express';
 import {
-  createFormSubmission,
+  postFormSubmission,
   updateFormSubmission,
   getFormSubmission,
 } from './controller';
 import {
-  createFormSubmissionValidationRules,
+  postFormSubmissionRules,
   updateFormSubmissionValidationRules,
 } from './validation';
 import {validate} from 'middlewares/common';
@@ -14,12 +14,7 @@ import {requireAuth} from 'middlewares';
 const router = express.Router();
 
 router.use(requireAuth);
-router.post(
-  '/',
-  createFormSubmissionValidationRules,
-  validate,
-  createFormSubmission,
-);
+router.post('/', postFormSubmissionRules, validate, postFormSubmission);
 router.put(
   '/:formSubmissionId',
   updateFormSubmissionValidationRules,

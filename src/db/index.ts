@@ -6,6 +6,7 @@ import {
   JobssRepository,
   ApplicantsRepository,
   FormsRepository,
+  FormSubmissionsRepository,
 } from './repos';
 import config from './config';
 import humps from 'humps';
@@ -16,6 +17,7 @@ const initOptions: IInitOptions<IExtensions> = {
     obj.jobs = JobssRepository(obj, pgp);
     obj.applicants = ApplicantsRepository(obj, pgp);
     obj.forms = FormsRepository(obj, pgp);
+    obj.formSubmissions = FormSubmissionsRepository(obj, pgp);
   },
   receive(data, result) {
     result.rows = data.map((obj) => humps.camelizeKeys(obj));

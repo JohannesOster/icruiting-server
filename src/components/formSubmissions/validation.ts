@@ -1,6 +1,6 @@
 import {body} from 'express-validator';
 
-export const createFormSubmissionValidationRules = [
+export const postFormSubmissionRules = [
   body('formId').isUUID(),
   body('applicantId').isUUID(),
   body('submission').exists(),
