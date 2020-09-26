@@ -62,7 +62,7 @@ export const deleteJob = catchAsync(async (req, res) => {
   res.status(200).json({});
 });
 
-export const createApplicantReport = catchAsync(async (req, res) => {
+export const postApplicantReport = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
   const {jobId} = req.params;
   const params = {tenantId, jobId, ...req.body};

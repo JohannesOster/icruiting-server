@@ -6,13 +6,13 @@ import {
   deleteJob,
   getJob,
   getApplicantReport,
-  createApplicantReport,
+  postApplicantReport,
   updateApplicantReport,
 } from './controller';
 import {
   postJobsRules,
   putJobRules,
-  validateCreateApplicantReport,
+  postApplicantReportRules,
 } from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth, requireAdmin} from 'middlewares';
@@ -31,14 +31,13 @@ router.delete('/:jobId', deleteJob);
 router.get('/:jobId/applicant-reports', getApplicantReport);
 router.post(
   '/:jobId/applicant-reports',
-  validateCreateApplicantReport,
+  postApplicantReportRules,
   validate,
-  createApplicantReport,
+  postApplicantReport,
 );
-
 router.put(
   '/:jobId/applicant-reports/:applicantReportId',
-  validateCreateApplicantReport,
+  postApplicantReportRules,
   validate,
   updateApplicantReport,
 );
