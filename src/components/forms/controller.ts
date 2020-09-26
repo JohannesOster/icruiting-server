@@ -93,11 +93,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
           return acc;
         }
 
-        if (
-          ['input', 'textarea', 'date_picker', 'select', 'radio'].includes(
-            item.component,
-          )
-        ) {
+        if (['input', 'textarea', 'select', 'radio'].includes(item.component)) {
           console.log(`Got ${item.component}, no mapping required.`);
 
           acc.attributes.push({

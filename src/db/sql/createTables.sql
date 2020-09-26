@@ -40,11 +40,10 @@ CREATE TABLE IF NOT EXISTS form (
 );
 
 CREATE TYPE form_field_intent AS ENUM ('aggregate', 'count_distinct', 'sum_up');
-CREATE TYPE form_field_component AS ENUM ('input','date_picker', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group');
+CREATE TYPE form_field_component AS ENUM ('input', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group');
 CREATE TABLE IF NOT EXISTS form_field (
   form_field_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
-  tenant_id UUID NOT NULL,
   job_requirement_id UUID DEFAULT NULL,
   intent form_field_intent DEFAULT NULL,
   component form_field_component NOT NULL,
@@ -60,7 +59,6 @@ CREATE TABLE IF NOT EXISTS form_field (
   deletable BOOLEAN DEFAULT FALSE,
   CONSTRAINT form_field_id_pk PRIMARY KEY (form_field_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
-  CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE,
   CONSTRAINT job_requirement_id_fk FOREIGN KEY (job_requirement_id) REFERENCES job_requirement(job_requirement_id) ON DELETE SET DEFAULT DEFERRABLE,
   CONSTRAINT row_index_check CHECK (row_index >= 0),
   CONSTRAINT form_id_row_index_unique UNIQUE (form_id, row_index) DEFERRABLE, -- make shure the index inside of the form is unique
