@@ -105,6 +105,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
     const {update, insert, ColumnSet} = pgp.helpers;
 
     await db.tx(async (t) => {
+      await t.none('SET CONSTRAINTS ALL DEFERRED');
       let promises: Promise<any>[] = [];
       if (params.formTitle !== orgignialForm.formTitle) {
         const columns = ['?tenant_id', '?form_id', 'form_title'];
