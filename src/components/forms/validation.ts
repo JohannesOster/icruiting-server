@@ -13,7 +13,6 @@ const formRules = [
     'file_upload',
     'rating_group',
     'checkbox',
-    'date_picker',
   ]),
   body('formFields[*].label').isString(),
   body('formFields[*].placeholder').optional({nullable: true}).isString(),

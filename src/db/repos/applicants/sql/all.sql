@@ -1,4 +1,5 @@
 SELECT applicant.*,
+       array_agg(applicant_attribute) AS foo,
        array_agg(json_build_object(
          'key', form_field.label,
          'value', applicant_attribute.attribute_value

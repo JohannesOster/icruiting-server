@@ -34,14 +34,6 @@ html
                   required=formField.required, 
                   type=(formField.props && formField.props.type) || 'text'
                 )
-              when "date_picker"
-                input(
-                  class="ic-input ic-font-200",
-                  type="date",
-                  id=formField.formFieldId,
-                  name=formField.formFieldId,
-                  required=formField.required 
-                ) 
               when "textarea"
                 textarea(
                   class="ic-textarea ic-font-200",
@@ -86,7 +78,6 @@ html
                 input(type="hidden", name=formField.formFieldId id=`fileKey-${formField.formFieldId}`)
                 input(
                   type="file",
-                  id=`fileUpload-${formField.formFieldId}`,
                   name=formField.formFieldId,
                   accept=(formField.props && formField.props.accept) || "application/pdf, image/jpeg",
                   required=formField.required 

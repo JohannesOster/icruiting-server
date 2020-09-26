@@ -2,6 +2,7 @@ import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
 import {TForm} from 'components/forms';
+import {BaseError} from 'errorHandling';
 
 enum EFormCategory {
   application = 'application',
@@ -49,7 +50,6 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
     const cs = new helpers.ColumnSet(
       [
         'form_id',
-        'tenant_id',
         {name: 'job_requirement_id', def: null},
         'component',
         'row_index',
@@ -69,7 +69,6 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
 
     const values = formFields.map((item) => ({
       ...item,
-      tenantId: form.tenantId,
       formId: insertedForm.formId,
     }));
 
@@ -79,7 +78,10 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
         cs,
       ) + ' RETURNING *';
 
-    return db.any(stmt).then((items) => ({...insertedForm, formFields: items}));
+    return db.any(stmt).then((formFields) => ({
+      ...insertedForm,
+      formFields,
+    }));
   };
 
   const update = async (params: {
@@ -101,7 +103,11 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
       jobRequirementId?: string;
     }[];
   }) => {
-    const orgignialForm: TForm = await find(params.tenantId, params.formId);
+    const orgignialForm: TForm | undefined = await find(
+      params.tenantId,
+      params.formId,
+    );
+    if (!orgignialForm) throw new BaseError(404, 'Not Found');
     const {update, insert, ColumnSet} = pgp.helpers;
 
     await db.tx(async (t) => {
@@ -159,7 +165,6 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
         const cs = new ColumnSet(
           [
             {name: 'form_id', cast: 'uuid'},
-            {name: 'tenant_id', cast: 'uuid'},
             {name: 'job_requirement_id', def: null, cast: 'uuid'},
             {name: 'component', cast: 'form_field_component'},
             'row_index',
@@ -179,7 +184,6 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
 
         const fields = fieldsMap.shouldInsert.map((item) => ({
           ...item,
-          tenantId: params.tenantId,
           formId: params.formId,
         }));
 
