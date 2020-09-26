@@ -64,10 +64,6 @@ body {
   outline: none !important;
   border-color: var(--input-border-active);
 }
-.ic-select-container {
-  position: relative;
-  width: 100%;
-}
 .ic-select {
   -moz-appearance: none;
   -webkit-appearance: none;
@@ -79,18 +75,18 @@ body {
   outline: none;
   width: 100%;
   padding: 10px;
+
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  background: url("data:image/svg+xml;utf8,<svg height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z' fill='%23545454' /></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
 }
 .ic-select:focus {
   outline: none !important;
   border-color: var(--input-border-active);
-}
-.ic-select-icon {
-  position: absolute;
-  height: 1em;
-  width: auto;
-  top: 50%;
-  right: 10px;
-  transform: translate(0, -50%);
 }
 
 .ic-submit-button {

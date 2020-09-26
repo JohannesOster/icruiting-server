@@ -51,16 +51,14 @@ html
                   required=formField.required 
                 )
               when "select"
-                div(class="ic-select-container ic-font-200")
-                  select(
-                    class="ic-select",
-                    id=formField.formFieldId,
-                    name=formField.formFieldId,
-                    required=formField.required 
-                  )
-                    each option in formField.options
-                      option(value=option.value) #{option.label}
-                  include select-icon.svg
+                select(
+                  class="ic-select",
+                  id=formField.formFieldId,
+                  name=formField.formFieldId,
+                  required=formField.required 
+                )
+                  each option in formField.options
+                    option(value=option.value) #{option.label}
               when "radio"
                 each option in formField.options
                   div(style="display: flex")

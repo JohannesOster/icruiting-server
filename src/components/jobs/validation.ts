@@ -11,7 +11,7 @@ export const putJobRules = [
   body('jobRequirements').exists(),
 ];
 
-export const validateCreateApplicantReport = [
+export const postApplicantReportRules = [
   body('image').optional().isUUID(),
   body('attributes').exists().isArray(),
   body('attributes[*]').isUUID(),
