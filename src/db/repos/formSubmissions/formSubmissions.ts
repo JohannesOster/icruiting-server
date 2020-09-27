@@ -100,8 +100,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
 
     return db
       .any(stmt)
-      .then((data) => ({...sub, submission: reduceSubmission(data)}))
-      .catch((error) => console.log(error));
+      .then((data) => ({...sub, submission: reduceSubmission(data)}));
   };
 
   return {insert, find, update};
