@@ -258,7 +258,6 @@ export const getPdfReport = catchAsync(async (req, res) => {
   const {formCategory = 'screening'} = req.query as {
     formCategory?: 'screening' | 'assessment';
   };
-
   const applicant: TApplicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Applicant not Found');
 
@@ -294,6 +293,12 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
     htmlParams.attributes = attributes;
   }
+
+  const formCategoryMap = {
+    screening: 'Screening',
+    assessment: 'Assessment Center',
+  };
+  htmlParams.formCategory = formCategoryMap[formCategory];
 
   const report = await dbSelectReport({tenantId, applicantId, formCategory});
   htmlParams.rank = report.rank;

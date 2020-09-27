@@ -19,7 +19,6 @@ export const getApplicantFileURLs = async (
 };
 
 const getAttribute = (applicant: TApplicant, attribute: string) => {
-  console.log(applicant);
   return applicant.attributes.find(({key}) => key === attribute);
 };
 export const sortApplicants = (applicants: TApplicant[], attribute: string) => {

@@ -11,6 +11,13 @@
 
   --font-family-primary: system-ui, 'Helvetica Neue', Helvetica, Arial,
     sans-serif;
+
+  --spacing-scale100: 8px;
+  --spacing-scale200: 12px;
+  --spacing-scale300: 16px;
+  --spacing-scale400: 24px;
+  --spacing-scale500: 32px;
+  --spacing-scale600: 48px;
 }
 
 * {
@@ -33,13 +40,24 @@ body {
   -webkit-print-color-adjust: exact;
 }
 
-.page-container {
+.a4-container {
   background: white;
-  /* Size = A4 */
   width: 21cm;
   height: 29.7cm;
-  padding: 24px;
   position: relative;
+}
+
+.banner {
+  background: var(--color-primary);
+  color: white;
+  text-align: center;
+  padding: var(--spacing-scale600);
+}
+
+main.container {
+  padding: var(--spacing-scale400);
+  display: grid;
+  row-gap: var(--spacing-scale400);
 }
 
 table {
@@ -55,7 +73,7 @@ tr {
 
 td,
 th {
-  padding: 12px 8px;
+  padding: var(--spacing-scale200) var(--spacing-scale100);
 }
 
 table tbody tr:nth-child(even) {
@@ -63,10 +81,8 @@ table tbody tr:nth-child(even) {
 }
 
 .header-container {
-  margin-top: 24px;
   display: flex;
   align-items: flex-start;
   justify-content: start;
   width: 100%;
-  margin-bottom: 16px;
 }

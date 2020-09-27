@@ -94,17 +94,11 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
         }
 
         if (['input', 'textarea', 'select', 'radio'].includes(item.component)) {
-          console.log(`Got ${item.component}, no mapping required.`);
-
           acc.attributes.push({
             formFieldId: item.formFieldId,
             attributeValue: fields[item.formFieldId],
           });
         } else if (item.component === 'checkbox') {
-          console.log(
-            `Got ${item.component} join selected values by comma (,).`,
-          );
-
           const value = Array.isArray(fields[item.formFieldId])
             ? fields[item.formFieldId].join(', ')
             : fields[item.formFieldId];
@@ -114,10 +108,6 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
             attributeValue: value,
           });
         } else if (item.component === 'file_upload') {
-          console.log(
-            `Got ${item.component}. Upload file to S3 bucket and map value to {label, fileURL}`,
-          );
-
           const file = files[item.formFieldId];
           const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
           const fileId = (Math.random() * 1e32).toString(36);
@@ -132,7 +122,6 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
           fs.unlink(file.path, function (err) {
             if (err) console.error(err);
-            console.log('Temp File Delete');
           });
 
           promises.push(s3.upload(params).promise());
