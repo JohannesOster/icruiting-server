@@ -15,8 +15,8 @@ export const getApplicants = catchAsync(async (req, res) => {
   const applicants = await db.applicants.findAll(tenantId, jobId, userId);
 
   // replace S3 filekeys with aws presigned URL
-  const promises = applicants.map((appl: any) =>
-    getApplicantFileURLs(appl.files).then((files) => ({...appl, files})),
+  const promises = applicants.map(({files, ...appl}) =>
+    getApplicantFileURLs(files).then((files) => ({...appl, files})),
   );
 
   const resp = await Promise.all(promises);
