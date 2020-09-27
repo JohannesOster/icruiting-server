@@ -33,6 +33,8 @@ describe('applicants', () => {
         jobId: random.uuid(),
         tenantId: random.uuid(),
         applicantId: random.uuid(),
+        files: [],
+        createdAt: Date.now().toString(),
       };
       const applicants = [
         {
