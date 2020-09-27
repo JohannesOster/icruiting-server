@@ -34,7 +34,7 @@ type TRankingResultVal = {
 };
 
 export const buildReport = (row: TRankingRowDb) => {
-  const reqProfile = {} as KeyVal<number>;
+  const reqProfile = {} as KeyVal<{counter: number; sum: number}>;
   const initialValues = (key: EFormItemIntent) =>
     ({
       [EFormItemIntent.sumUp]: 0,
@@ -54,8 +54,11 @@ export const buildReport = (row: TRankingRowDb) => {
           case EFormItemIntent.sumUp:
             (acc[formFieldId].value as number) += +value;
             if (jobRequirementLabel) {
-              const newVal = (reqProfile[jobRequirementLabel] || 0) + +value;
-              reqProfile[jobRequirementLabel] = newVal;
+              if (!reqProfile[jobRequirementLabel]?.sum) {
+                reqProfile[jobRequirementLabel] = {counter: 1, sum: +value};
+              }
+              reqProfile[jobRequirementLabel].sum += +value;
+              reqProfile[jobRequirementLabel].counter += 1;
             }
             break;
           case EFormItemIntent.aggregate:
@@ -80,5 +83,12 @@ export const buildReport = (row: TRankingRowDb) => {
     result[key] = {...val, value: average};
   });
 
-  return {...row, result, jobRequirementsResult: reqProfile};
+  // Convert reqProfile values to means
+  const entries = Object.entries(reqProfile);
+  const jobRequirementsResult = entries.reduce((acc, [key, {counter, sum}]) => {
+    acc[key] = round(sum / counter);
+    return acc;
+  }, {} as KeyVal<number>);
+
+  return {...row, result, jobRequirementsResult};
 };
