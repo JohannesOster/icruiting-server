@@ -84,23 +84,24 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
       ['?form_submission_id', '?form_field_id', 'submission_value'],
       {table: 'form_submission_field'},
     );
-    const vals = Object.entries(params.submission).map(
-      ([formFieldId, submission_value]) => ({
+    const submissionFields = Object.entries(params.submission).map(
+      ([formFieldId, submissionValue]) => ({
         formSubmissionId: params.formSubmissionId,
         formFieldId,
-        submission_value,
+        submissionValue: submissionValue.toString(), // if values do not have same typ pg-promise update fails
       }),
     );
+
+    const vals = submissionFields.map((val) => decamelizeKeys(val));
     const stmt =
-      update(
-        vals.map((val) => decamelizeKeys(val)),
-        cs,
-      ) +
+      update(vals, cs) +
       ' WHERE v.form_submission_id::uuid = t.form_submission_id AND v.form_field_id::uuid = t.form_field_id' +
       ' RETURNING *';
+
     return db
       .any(stmt)
-      .then((data) => ({...sub, submission: reduceSubmission(data)}));
+      .then((data) => ({...sub, submission: reduceSubmission(data)}))
+      .catch((error) => console.log(error));
   };
 
   return {insert, find, update};

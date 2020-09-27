@@ -2,7 +2,6 @@ import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
 import {TForm} from 'components/forms';
-import {BaseError} from 'errorHandling';
 
 enum EFormCategory {
   application = 'application',
@@ -103,11 +102,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
       jobRequirementId?: string;
     }[];
   }) => {
-    const orgignialForm: TForm | undefined = await find(
-      params.tenantId,
-      params.formId,
-    );
-    if (!orgignialForm) throw new BaseError(404, 'Not Found');
+    const orgignialForm: TForm = await find(params.tenantId, params.formId);
     const {update, insert, ColumnSet} = pgp.helpers;
 
     await db.tx(async (t) => {
