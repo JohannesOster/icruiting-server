@@ -3,9 +3,8 @@ import request from 'supertest';
 import app from 'app';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {TJob} from '../types';
 import dataGenerator from 'tests/dataGenerator';
-import db from 'db';
+import {Job} from 'db/repos/jobs';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -26,7 +25,7 @@ afterAll(async () => {
 });
 
 describe('jobs', () => {
-  let job: TJob;
+  let job: Job;
   beforeAll(async () => {
     job = await dataGenerator.insertJob(mockUser.tenantId);
   });

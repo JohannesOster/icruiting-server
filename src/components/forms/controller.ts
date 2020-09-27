@@ -2,7 +2,6 @@ import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import {catchAsync, BaseError} from 'errorHandling';
-import {TForm} from './types';
 import db from 'db';
 import config from 'config';
 
@@ -44,7 +43,7 @@ export const deleteForm = catchAsync(async (req, res) => {
 
 export const renderHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const form: TForm | undefined = await db.forms.find(null, formId);
+  const form = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
   const params = {
@@ -59,7 +58,7 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
 
 export const submitHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const form: TForm | undefined = await db.forms.find(null, formId);
+  const form = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
   if (form.formCategory !== 'application') {

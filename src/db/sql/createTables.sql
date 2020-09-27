@@ -18,12 +18,10 @@ CREATE TABLE IF NOT EXISTS job (
 
 CREATE TABLE IF NOT EXISTS job_requirement (
   job_requirement_id UUID DEFAULT uuid_generate_v4(),
-  tenant_id UUID NOT NULL,
   job_id UUID NOT NULL,
   requirement_label TEXT NOT NULL,
   CONSTRAINT job_requirement_id_pk PRIMARY KEY (job_requirement_id),
-  CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
-  CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE
+  CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
 CREATE TYPE form_category AS ENUM ('application', 'screening', 'assessment');

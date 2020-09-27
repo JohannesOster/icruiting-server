@@ -2,11 +2,11 @@ import request from 'supertest';
 import {random} from 'faker';
 import app from 'app';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {TApplicant} from '../../types';
-import {TForm, EFormCategory} from 'components/forms';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
 import db from 'db';
+import {Applicant} from 'db/repos/applicants';
+import {Form} from 'db/repos/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -35,16 +35,12 @@ afterAll(async () => {
 
 describe('applicants', () => {
   describe('PUT /applicants/:applicantId', () => {
-    let applicant: TApplicant;
-    let form: TForm;
+    let applicant: Applicant;
+    let form: Form;
     beforeAll(async () => {
       const {tenantId} = mockUser;
       const {jobId} = await dataGenerator.insertJob(tenantId);
-      form = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        EFormCategory.application,
-      );
+      form = await dataGenerator.insertForm(tenantId, jobId, 'application');
 
       const _applicant = {
         tenantId: mockUser.tenantId,

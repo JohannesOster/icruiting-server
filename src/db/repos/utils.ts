@@ -1,3 +1,5 @@
+import {round} from '../utils';
+
 enum EFormItemIntent {
   sumUp = 'sum_up',
   aggregate = 'aggregate',
@@ -73,8 +75,7 @@ export const buildReport = (row: TRankingRowDb) => {
   // Convert sum up values to mean
   Object.entries(result).forEach(([key, val]) => {
     if (val.intent !== EFormItemIntent.sumUp) return;
-    const average =
-      Math.round(100 * (+val.value / +row.submissionsCount)) / 100;
+    const average = round(+val.value / +row.submissionsCount);
     result[key] = {...val, value: average};
   });
 

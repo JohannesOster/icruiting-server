@@ -2,10 +2,9 @@ import request from 'supertest';
 import {random} from 'faker';
 import app from 'app';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {TApplicant} from '../../types';
-import {TForm, EFormCategory} from 'components/forms';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
+import {Applicant} from 'db/repos/applicants';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -34,14 +33,14 @@ afterAll(async () => {
 
 describe('applicants', () => {
   describe('GET /applicants/:applicantId', () => {
-    let applicant: TApplicant;
+    let applicant: Applicant;
     beforeAll(async () => {
       const {tenantId} = mockUser;
       const {jobId} = await dataGenerator.insertJob(tenantId);
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       applicant = await dataGenerator.insertApplicant(
         tenantId,
@@ -77,10 +76,10 @@ describe('applicants', () => {
     it('isloates tenant', async () => {
       const {tenantId} = await dataGenerator.insertTenant(random.uuid());
       const {jobId} = await dataGenerator.insertJob(tenantId);
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       const fieldIds = form.formFields.map(({formFieldId}) => formFieldId);
       const {applicantId} = await dataGenerator.insertApplicant(

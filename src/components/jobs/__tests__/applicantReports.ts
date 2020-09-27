@@ -4,7 +4,6 @@ import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
 import {dbInsertApplicantReport} from '../database';
-import {EFormCategory, TForm} from 'components/forms';
 import dataGenerator from 'tests/dataGenerator';
 
 const mockUser = fake.user();
@@ -33,10 +32,10 @@ describe('jobs', () => {
       const fakeJob = fake.job(mockUser.tenantId);
       jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
 
       report = form.formFields.reduce(
@@ -114,10 +113,10 @@ describe('jobs', () => {
       const fakeJob = fake.job(mockUser.tenantId);
       jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
 
       const _report = form.formFields.reduce(

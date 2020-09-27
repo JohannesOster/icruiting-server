@@ -1,5 +1,4 @@
 import faker from 'faker';
-import {EFormCategory} from 'components/forms';
 
 const fake = {
   user: (userRole: 'admin' | 'user' = 'admin') => ({
@@ -35,7 +34,7 @@ const fake = {
   applicationForm: (tenantId: string, jobId: string) => ({
     tenantId,
     jobId: jobId,
-    formCategory: EFormCategory.application,
+    formCategory: 'application',
     formFields: [
       {
         component: 'input',
@@ -71,7 +70,7 @@ const fake = {
   screeningForm: (tenantId: string, jobId: string) => ({
     tenantId,
     jobId: jobId,
-    formCategory: EFormCategory.screening,
+    formCategory: 'screening',
     formFields: [
       {
         component: 'rating_group',
@@ -114,7 +113,7 @@ const fake = {
   assessmentForm: (tenantId: string, jobId: string) => ({
     tenantId,
     jobId: jobId,
-    formCategory: EFormCategory.assessment,
+    formCategory: 'assessment',
     formTitle: faker.random.words(),
     formFields: [
       {

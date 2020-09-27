@@ -2,9 +2,8 @@ import request from 'supertest';
 import app from 'app';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {TForm, EFormCategory} from 'components/forms';
-import {TFormSubmission} from '../types';
 import dataGenerator from 'tests/dataGenerator';
+import {FormSubmission} from 'db/repos/formSubmissions';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -28,18 +27,18 @@ afterAll(async () => {
 
 describe('form-submissions', () => {
   describe('PUT /form-submissions/:formId/:applicantId', () => {
-    let formSubmission: TFormSubmission;
+    let formSubmission: FormSubmission;
     beforeAll(async () => {
       const {tenantId, userId} = mockUser;
-      const screeningForm: TForm = await dataGenerator.insertForm(
+      const screeningForm = await dataGenerator.insertForm(
         tenantId,
         jobId,
-        EFormCategory.screening,
+        'screening',
       );
-      const applForm: TForm = await dataGenerator.insertForm(
+      const applForm = await dataGenerator.insertForm(
         tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       const formFieldIds = applForm.formFields.map(
         ({formFieldId}) => formFieldId!,

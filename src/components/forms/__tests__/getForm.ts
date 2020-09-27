@@ -1,10 +1,10 @@
 import request from 'supertest';
 import app from 'app';
-import {EFormCategory, TForm} from '../types';
 import {endConnection, truncateAllTables} from 'db/setup';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
 import {random} from 'faker';
+import {Form} from 'db/repos/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -28,14 +28,10 @@ afterAll(async () => {
 
 describe('forms', () => {
   describe('GET /forms', () => {
-    let form: TForm;
+    let form: Form;
     beforeAll(async () => {
       const {tenantId} = mockUser;
-      form = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        EFormCategory.application,
-      );
+      form = await dataGenerator.insertForm(tenantId, jobId, 'application');
     });
     it('returns 200 json response', (done) => {
       request(app)
@@ -66,7 +62,7 @@ describe('forms', () => {
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
 
       await request(app)

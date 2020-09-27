@@ -4,9 +4,9 @@ import app from 'app';
 import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {EFormCategory, TForm} from 'components/forms';
-import {TApplicant} from 'components/applicants';
 import dataGenerator from 'tests/dataGenerator';
+import {Form} from 'db/repos/forms';
+import {Applicant} from 'db/repos/applicants';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -37,17 +37,13 @@ describe('rankings', () => {
       const promises = [];
 
       promises.push(
-        dataGenerator.insertForm(
-          mockUser.tenantId,
-          jobId,
-          EFormCategory.screening,
-        ),
+        dataGenerator.insertForm(mockUser.tenantId, jobId, 'screening'),
       );
 
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
 
@@ -65,9 +61,9 @@ describe('rankings', () => {
 
       await Promise.all(promises).then(async (data) => {
         const promises: Array<Promise<any>> = [];
-        const [form, ...applicants] = data as [TForm, ...Array<TApplicant>];
+        const [form, ...applicants] = data as [Form, ...Array<Applicant>];
 
-        applicants.forEach((appl: TApplicant) => {
+        applicants.forEach((appl) => {
           const screening = {
             applicantId: appl.applicantId!,
             submitterId: mockUser.userId,
@@ -129,17 +125,13 @@ describe('rankings', () => {
       const promises: Promise<any>[] = [];
 
       promises.push(
-        dataGenerator.insertForm(
-          mockUser.tenantId,
-          jobId,
-          EFormCategory.assessment,
-        ),
+        dataGenerator.insertForm(mockUser.tenantId, jobId, 'assessment'),
       );
 
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
 
       const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
@@ -158,9 +150,9 @@ describe('rankings', () => {
 
       await Promise.all(promises).then(async (data) => {
         const promises: Array<Promise<any>> = [];
-        const [form, ...applicants] = data as [TForm, ...Array<TApplicant>];
+        const [form, ...applicants] = data as [Form, ...Array<Applicant>];
 
-        applicants.forEach((appl: TApplicant) => {
+        applicants.forEach((appl) => {
           const assessment = {
             applicantId: appl.applicantId!,
             submitterId: mockUser.userId,

@@ -1,5 +1,5 @@
 import {S3} from 'aws-sdk';
-import {TApplicant} from './types';
+import {Applicant} from 'db/repos/applicants';
 
 export const getApplicantFileURLs = async (
   files?: Array<{key: string; value: string}>,
@@ -18,10 +18,11 @@ export const getApplicantFileURLs = async (
   return Promise.all(promises || []);
 };
 
-const getAttribute = (applicant: TApplicant, attribute: string) => {
+const getAttribute = (applicant: Applicant, attribute: string) => {
   return applicant.attributes.find(({key}) => key === attribute);
 };
-export const sortApplicants = (applicants: TApplicant[], attribute: string) => {
+
+export const sortApplicants = (applicants: Applicant[], attribute: string) => {
   const sorted = applicants.sort((first, second) => {
     const attrFirst = getAttribute(first, attribute)?.value;
     const attrSecond = getAttribute(second, attribute)?.value;
@@ -31,9 +32,4 @@ export const sortApplicants = (applicants: TApplicant[], attribute: string) => {
   });
 
   return sorted;
-};
-
-export const round = (number: number, digits: number = 2) => {
-  const factor = Math.pow(10, digits);
-  return Math.round(factor * number) / factor;
 };

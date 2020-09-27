@@ -1,9 +1,9 @@
 import {random} from 'faker';
 import request from 'supertest';
 import app from 'app';
-import {EFormCategory, TForm} from '../types';
 import {endConnection, truncateAllTables} from 'db/setup';
 import dataGenerator from 'tests/dataGenerator';
+import {Form} from 'db/repos/forms';
 
 let tenantId: string;
 let jobId: string;
@@ -19,13 +19,9 @@ afterAll(async () => {
 
 describe('forms', () => {
   describe('GET /forms/:formId/html', () => {
-    let form: TForm;
+    let form: Form;
     beforeAll(async () => {
-      form = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        EFormCategory.application,
-      );
+      form = await dataGenerator.insertForm(tenantId, jobId, 'application');
     });
 
     it('renders html without crashing', (done) => {

@@ -3,8 +3,8 @@ import request from 'supertest';
 import app from 'app';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {TJob} from '../types';
 import dataGenerator from 'tests/dataGenerator';
+import {Job} from 'db/repos/jobs';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -76,7 +76,7 @@ describe('jobs', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      resp.body.forEach((job: TJob) =>
+      resp.body.forEach((job: Job) =>
         expect(job.tenantId).toBe(mockUser.tenantId),
       );
     });

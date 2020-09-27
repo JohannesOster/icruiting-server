@@ -2,6 +2,15 @@ import {IDatabase, IMain} from 'pg-promise';
 import {decamelizeKeys} from 'humps';
 import sql from './sql';
 
+export type FormSubmission = {
+  formSubmissionId: string;
+  tenantId: string;
+  applicantId: string;
+  submitterId: string;
+  formId: string;
+  submission: {[formFieldId: string]: string};
+};
+
 export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const reduceSubmission = (
     submission: {formFieldId: string; submissionValue: string}[],
@@ -18,7 +27,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     submitterId: string;
     formId: string;
     submission: {[formFieldId: string]: string};
-  }) => {
+  }): Promise<FormSubmission> => {
     const {insert, ColumnSet} = db.$config.pgp.helpers;
 
     const subCS = new ColumnSet(
@@ -57,7 +66,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     submitterId: string;
     applicantId: string;
     tenantId: string;
-  }) => {
+  }): Promise<FormSubmission | null> => {
     return db.oneOrNone(sql.find, decamelizeKeys(params)).then((data) => {
       if (!data) return data;
       return {...data, submission: reduceSubmission(data.submission)};
@@ -68,7 +77,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     tenantId: string;
     formSubmissionId: string;
     submission: {[key: string]: string | number};
-  }) => {
+  }): Promise<FormSubmission> => {
     const selCond =
       ' WHERE form_submission_id=${form_submission_id} AND tenant_id=${tenant_id}';
     const sub = await db.one(
@@ -100,8 +109,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
 
     return db
       .any(stmt)
-      .then((data) => ({...sub, submission: reduceSubmission(data)}))
-      .catch((error) => console.log(error));
+      .then((data) => ({...sub, submission: reduceSubmission(data)}));
   };
 
   return {insert, find, update};

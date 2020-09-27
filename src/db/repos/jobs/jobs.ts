@@ -3,6 +3,18 @@ import sql from './sql';
 import {rawText} from '../../utils';
 import {decamelizeKeys} from 'humps';
 
+export type Job = {
+  tenantId: string;
+  jobId: string;
+  jobTitle: string;
+  createdAt: string;
+  jobRequirements: {
+    jobRequirementId: string;
+    jobId: string;
+    requirementLabel: string;
+  }[];
+};
+
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const {ColumnSet} = pgp.helpers;
 
@@ -13,17 +25,16 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
         def: () => rawText('uuid_generate_v4()'),
       },
       'job_id',
-      'tenant_id',
       'requirement_label',
     ],
     {table: 'job_requirement'},
   );
 
-  const all = (tenantId: string) => {
+  const all = (tenantId: string): Promise<Job[]> => {
     return db.any(sql.all, {tenant_id: tenantId});
   };
 
-  const find = (tenantId: string, jobId: string) => {
+  const find = (tenantId: string, jobId: string): Promise<Job | null> => {
     return db.oneOrNone(sql.find, {tenant_id: tenantId, job_id: jobId});
   };
 
@@ -33,17 +44,15 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     jobRequirements: Array<{
       requirementLabel: string;
     }>;
-  }) => {
+  }): Promise<Job> => {
     const {jobRequirements, ...job} = values;
     const {insert} = pgp.helpers;
     const jobVals = decamelizeKeys(job);
-    const insertedJob = await db.one(
-      insert(jobVals, null, 'job') + 'RETURNING *',
-    );
+    const stmt = insert(jobVals, null, 'job') + 'RETURNING *';
+    const insertedJob = await db.one(stmt);
 
     const requirements = jobRequirements.map((req) => ({
       jobId: insertedJob.jobId,
-      tenantId: insertedJob.tenantId,
       ...req,
     }));
 
@@ -53,7 +62,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       .then((jobRequirements) => ({...insertedJob, jobRequirements}));
   };
 
-  const update = (
+  const update = async (
     tenantId: string,
     job: {
       jobId: string;
@@ -62,31 +71,34 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
         requirementLabel: string;
       }[];
     },
-  ) => {
-    return db
-      .tx(async (t) => {
-        const {insert, update} = db.$config.pgp.helpers;
-        const vals = {job_title: job.jobTitle};
-        const stmt = update(vals, null, 'job') + ' WHERE job_id=$1';
-        await t.none(stmt, job.jobId);
+  ): Promise<Job> => {
+    await db.tx(async (t) => {
+      const {insert, update} = db.$config.pgp.helpers;
+      const vals = {job_title: job.jobTitle};
+      const stmt = update(vals, null, 'job') + ' WHERE job_id=$1';
+      await t.none(stmt, job.jobId);
 
-        await t.any('SET CONSTRAINTS job_requirement_id_fk DEFERRED');
-        await t.none('DELETE FROM job_requirement WHERE job_id=$1', job.jobId);
+      await t.any('SET CONSTRAINTS job_requirement_id_fk DEFERRED');
+      await t.none('DELETE FROM job_requirement WHERE job_id=$1', job.jobId);
 
-        const requirements = job.jobRequirements.map((req: any) => {
-          const tmp: any = {jobId: job.jobId, tenantId, ...req};
-          if (!tmp.jobRequirementId) delete tmp.jobRequirementId; // filter out empty strings
-          return tmp;
-        });
+      const requirements = job.jobRequirements.map((req: any) => {
+        const tmp: any = {jobId: job.jobId, ...req};
+        if (!tmp.jobRequirementId) delete tmp.jobRequirementId; // filter out empty strings
+        return tmp;
+      });
 
-        const reqVals = requirements.map((req) => decamelizeKeys(req));
-        const reqStmt = insert(reqVals, jrColumnSet);
-        await t.none(reqStmt);
-      })
-      .then(async () => await find(tenantId, job.jobId));
+      const reqVals = requirements.map((req) => decamelizeKeys(req));
+      const reqStmt = insert(reqVals, jrColumnSet);
+      await t.none(reqStmt);
+    });
+
+    return find(tenantId, job.jobId).then((job) => {
+      if (!job) throw new Error('Did not find job after update');
+      return job;
+    });
   };
 
-  const remove = (tenantId: string, jobId: string) => {
+  const remove = (tenantId: string, jobId: string): Promise<null> => {
     return db.none(
       'DELETE FROM job WHERE tenant_id=${tenant_id} AND job_id=${job_id}',
       {tenant_id: tenantId, job_id: jobId},
