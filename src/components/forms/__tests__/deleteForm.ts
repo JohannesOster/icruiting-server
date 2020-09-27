@@ -5,7 +5,7 @@ import {endConnection, truncateAllTables} from 'db/setup';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
 import {random} from 'faker';
-import {EFormCategory, Form} from 'db/repos/forms';
+import {Form} from 'db/repos/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -34,7 +34,7 @@ describe('forms', () => {
       form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
     });
 
@@ -72,7 +72,7 @@ describe('forms', () => {
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
 
       await request(app)

@@ -5,7 +5,7 @@ import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
 import dataGenerator from 'tests/dataGenerator';
-import {EFormCategory, Form} from 'db/repos/forms';
+import {Form} from 'db/repos/forms';
 import {Applicant} from 'db/repos/applicants';
 
 const mockUser = fake.user();
@@ -37,17 +37,13 @@ describe('rankings', () => {
       const promises = [];
 
       promises.push(
-        dataGenerator.insertForm(
-          mockUser.tenantId,
-          jobId,
-          EFormCategory.screening,
-        ),
+        dataGenerator.insertForm(mockUser.tenantId, jobId, 'screening'),
       );
 
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
 
@@ -129,17 +125,13 @@ describe('rankings', () => {
       const promises: Promise<any>[] = [];
 
       promises.push(
-        dataGenerator.insertForm(
-          mockUser.tenantId,
-          jobId,
-          EFormCategory.assessment,
-        ),
+        dataGenerator.insertForm(mockUser.tenantId, jobId, 'assessment'),
       );
 
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
 
       const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);

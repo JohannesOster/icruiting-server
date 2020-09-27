@@ -18,9 +18,9 @@ const dataGenerator = {
     formCategory: EFormCategory,
   ) => {
     let form: any;
-    if (formCategory === EFormCategory.application) {
+    if (formCategory === 'application') {
       form = fake.applicationForm(tenantId, jobId);
-    } else if (formCategory === EFormCategory.screening) {
+    } else if (formCategory === 'screening') {
       form = fake.screeningForm(tenantId, jobId);
     } else {
       form = fake.assessmentForm(tenantId, jobId);

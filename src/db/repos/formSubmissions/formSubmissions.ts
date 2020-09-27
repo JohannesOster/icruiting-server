@@ -2,7 +2,7 @@ import {IDatabase, IMain} from 'pg-promise';
 import {decamelizeKeys} from 'humps';
 import sql from './sql';
 
-type FormSubmission = {
+export type FormSubmission = {
   formSubmissionId: string;
   tenantId: string;
   applicantId: string;

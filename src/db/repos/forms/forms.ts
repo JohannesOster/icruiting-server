@@ -2,11 +2,7 @@ import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
 
-export enum EFormCategory {
-  application = 'application',
-  screening = 'screening',
-  assessment = 'assessment',
-}
+export type EFormCategory = 'application' | 'screening' | 'assessment';
 
 export type Form = {
   tenantId: string;

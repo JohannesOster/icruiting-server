@@ -4,7 +4,7 @@ import app from 'app';
 import {endConnection, truncateAllTables} from 'db/setup';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
-import {EFormCategory, Form} from 'db/repos/forms';
+import {Form} from 'db/repos/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -32,7 +32,7 @@ describe('forms', () => {
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       await request(app)
         .put(`/forms/${form.formId}`)
@@ -46,7 +46,7 @@ describe('forms', () => {
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       const updateVals = {...form};
       const placeholder = random.words();
@@ -68,7 +68,7 @@ describe('forms', () => {
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       const updateVals = {...form, formTitle: random.words()};
       const resp = await request(app)

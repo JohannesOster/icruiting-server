@@ -5,7 +5,6 @@ import {endConnection, truncateAllTables} from 'db/setup';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
 import {Applicant} from 'db/repos/applicants';
-import {EFormCategory} from 'db/repos/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -41,7 +40,7 @@ describe('applicants', () => {
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       const applicant = await dataGenerator.insertApplicant(
         tenantId,
@@ -76,7 +75,7 @@ describe('applicants', () => {
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       const fieldIds = form.formFields.map(({formFieldId}) => formFieldId);
       await dataGenerator.insertApplicant(tenantId, jobId, fieldIds);
@@ -96,7 +95,7 @@ describe('applicants', () => {
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
 
       const fieldIds = form.formFields.map(({formFieldId}) => formFieldId);
@@ -122,7 +121,7 @@ describe('applicants', () => {
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
-        EFormCategory.application,
+        'application',
       );
       const fieldIds = form.formFields.map(({formFieldId}) => formFieldId);
       await dataGenerator.insertApplicant(tenantId, jobId, fieldIds);
@@ -140,7 +139,7 @@ describe('applicants', () => {
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        EFormCategory.screening,
+        'screening',
       );
 
       await dataGenerator.insertFormSubmission(
