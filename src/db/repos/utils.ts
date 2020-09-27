@@ -35,18 +35,19 @@ type TRankingResultVal = {
 
 export const buildReport = (row: TRankingRowDb) => {
   const reqProfile = {} as KeyVal<number>;
-  const initialValues = {
-    [EFormItemIntent.sumUp]: 0,
-    [EFormItemIntent.aggregate]: [],
-    [EFormItemIntent.countDistinct]: {},
-  };
+  const initialValues = (key: EFormItemIntent) =>
+    ({
+      [EFormItemIntent.sumUp]: 0,
+      [EFormItemIntent.aggregate]: [],
+      [EFormItemIntent.countDistinct]: {},
+    }[key]);
 
   const result = row.submissions.reduce((acc, submission) => {
     submission.forEach(
       ({formFieldId, intent, value, label, jobRequirementLabel}) => {
         if (!value) return acc;
         if (!acc[formFieldId]) {
-          acc[formFieldId] = {label, intent, value: initialValues[intent]};
+          acc[formFieldId] = {label, intent, value: initialValues(intent)};
         }
 
         switch (intent) {
