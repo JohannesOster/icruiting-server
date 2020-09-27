@@ -1,5 +1,5 @@
+import {EFormCategory} from 'db/repos/forms';
 import faker from 'faker';
-import {EFormCategory} from 'components/forms';
 
 const fake = {
   user: (userRole: 'admin' | 'user' = 'admin') => ({

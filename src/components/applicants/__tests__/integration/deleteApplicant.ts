@@ -2,10 +2,10 @@ import request from 'supertest';
 import app from 'app';
 import db from 'db';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {TApplicant} from '../../types';
-import {TForm, EFormCategory} from 'components/forms';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
+import {Applicant} from 'db/repos/applicants';
+import {EFormCategory} from 'db/repos/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -36,9 +36,9 @@ afterAll(async () => {
 
 describe('applicants', () => {
   describe('DELETE /applicants/:applicantId', () => {
-    let applicant: TApplicant;
+    let applicant: Applicant;
     beforeEach(async () => {
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
         EFormCategory.application,

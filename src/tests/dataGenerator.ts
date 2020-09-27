@@ -1,7 +1,7 @@
 import db from 'db';
 import fake from './fake';
 import {random} from 'faker';
-import {EFormCategory, TFormRequest} from 'components/forms';
+import {EFormCategory} from 'db/repos/forms';
 
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {
@@ -17,7 +17,7 @@ const dataGenerator = {
     jobId: string,
     formCategory: EFormCategory,
   ) => {
-    let form: TFormRequest;
+    let form: any;
     if (formCategory === EFormCategory.application) {
       form = fake.applicationForm(tenantId, jobId);
     } else if (formCategory === EFormCategory.screening) {

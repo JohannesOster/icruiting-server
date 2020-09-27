@@ -1,10 +1,10 @@
 import request from 'supertest';
 import app from 'app';
 import db from 'db';
-import {EFormCategory} from '../types';
 import {endConnection, truncateAllTables} from 'db/setup';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
+import {EFormCategory} from 'db/repos/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({

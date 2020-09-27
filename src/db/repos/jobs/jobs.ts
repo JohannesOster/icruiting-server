@@ -3,11 +3,16 @@ import sql from './sql';
 import {rawText} from '../../utils';
 import {decamelizeKeys} from 'humps';
 
-type Job = {
+export type Job = {
   tenantId: string;
   jobId: string;
   jobTitle: string;
   createdAt: string;
+  jobRequirements: {
+    jobRequirementId: string;
+    jobId: string;
+    requirementLabel: string;
+  }[];
 };
 
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {

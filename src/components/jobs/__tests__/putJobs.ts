@@ -3,8 +3,8 @@ import request from 'supertest';
 import app from 'app';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {TJob} from '../types';
 import dataGenerator from 'tests/dataGenerator';
+import {Job} from 'db/repos/jobs';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -26,7 +26,7 @@ afterAll(async () => {
 
 describe('jobs', () => {
   describe('PUT /jobs/:jobId', () => {
-    let job: TJob;
+    let job: Job;
     beforeEach(async () => {
       job = await dataGenerator.insertJob(mockUser.tenantId);
     });
@@ -41,7 +41,7 @@ describe('jobs', () => {
     });
 
     it('returns updated entity', async () => {
-      const updateValues: TJob = job;
+      const updateValues = job;
       updateValues.jobTitle = random.alphaNumeric();
       updateValues.jobRequirements = updateValues.jobRequirements.map(
         (req) => ({...req, requirementLabel: random.alphaNumeric()}),
@@ -66,7 +66,7 @@ describe('jobs', () => {
         (req) => ({...req, requirementLabel: random.alphaNumeric()}),
       );
 
-      updateValues.jobRequirements.push({
+      (updateValues.jobRequirements as any[]).push({
         requirementLabel: random.alphaNumeric(),
       });
 

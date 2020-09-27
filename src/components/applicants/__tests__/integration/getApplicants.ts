@@ -2,10 +2,10 @@ import request from 'supertest';
 import {random} from 'faker';
 import app from 'app';
 import {endConnection, truncateAllTables} from 'db/setup';
-import {TApplicant} from '../../types';
-import {TForm, EFormCategory} from 'components/forms';
 import fake from 'tests/fake';
 import dataGenerator from 'tests/dataGenerator';
+import {Applicant} from 'db/repos/applicants';
+import {EFormCategory} from 'db/repos/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -34,11 +34,11 @@ afterAll(async () => {
 
 describe('applicants', () => {
   describe('GET /applicants', () => {
-    let applicants: TApplicant[];
+    let applicants: Applicant[];
     beforeAll(async () => {
       const {tenantId} = mockUser;
       const {jobId} = await dataGenerator.insertJob(tenantId);
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
         EFormCategory.application,
@@ -73,7 +73,7 @@ describe('applicants', () => {
     it('isloates applicants of tenant', async () => {
       const {tenantId} = await dataGenerator.insertTenant(random.uuid());
       const {jobId} = await dataGenerator.insertJob(tenantId);
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
         EFormCategory.application,
@@ -93,7 +93,7 @@ describe('applicants', () => {
 
     it('filters by jobId using query', async () => {
       const {jobId} = await dataGenerator.insertJob(mockUser.tenantId);
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
         EFormCategory.application,
@@ -119,7 +119,7 @@ describe('applicants', () => {
     it('isloates tenant applicants even if foreign jobId is queried', async () => {
       const {tenantId} = await dataGenerator.insertTenant(random.uuid());
       const {jobId} = await dataGenerator.insertJob(tenantId);
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
         EFormCategory.application,
@@ -137,7 +137,7 @@ describe('applicants', () => {
 
     it('includes boolean weather screening exists or not', async () => {
       const {jobId, applicantId} = applicants[0];
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
         EFormCategory.screening,

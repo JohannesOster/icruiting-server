@@ -4,8 +4,8 @@ import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
 import {dbInsertApplicantReport} from '../database';
-import {EFormCategory, TForm} from 'components/forms';
 import dataGenerator from 'tests/dataGenerator';
+import {EFormCategory} from 'db/repos/forms';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -33,7 +33,7 @@ describe('jobs', () => {
       const fakeJob = fake.job(mockUser.tenantId);
       jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
         EFormCategory.application,
@@ -114,7 +114,7 @@ describe('jobs', () => {
       const fakeJob = fake.job(mockUser.tenantId);
       jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
 
-      const form: TForm = await dataGenerator.insertForm(
+      const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
         EFormCategory.application,
