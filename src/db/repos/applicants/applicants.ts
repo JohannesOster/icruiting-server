@@ -1,15 +1,30 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
-import {String} from 'aws-sdk/clients/cloudhsm';
+
+export type Applicant = {
+  tenantId: string;
+  applicantId: string;
+  jobId: string;
+  createdAt: string;
+  attributes: {key: string; value: string}[];
+  files: {key: string; value: string}[];
+};
 
 export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
-  const findAll = (tenantId: string, jobId: string, userId: string) => {
+  const findAll = (
+    tenantId: string,
+    jobId: string,
+    userId: string,
+  ): Promise<Applicant[]> => {
     const params = decamelizeKeys({tenantId, jobId, userId});
     return db.any(sql.all, params);
   };
 
-  const find = (tenantId: string, applicantId: string) => {
+  const find = (
+    tenantId: string,
+    applicantId: string,
+  ): Promise<Applicant | null> => {
     const params = decamelizeKeys({tenantId, applicantId});
     return db.oneOrNone(sql.find, params);
   };
@@ -18,7 +33,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     tenantId: string;
     jobId: string;
     attributes: {formFieldId: string; attributeValue: string}[];
-  }) => {
+  }): Promise<Applicant> => {
     const {insert, ColumnSet} = pgp.helpers;
     try {
       const applVals = {tenant_id: params.tenantId, job_id: params.jobId};
@@ -36,13 +51,16 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
       const attrStmt = insert(attrVals, cs);
       await db.any(attrStmt);
 
-      return find(params.tenantId, applicantId);
+      return find(params.tenantId, applicantId).then((applicant) => {
+        if (!applicant) throw new Error('Did not find applicant after insert');
+        return applicant;
+      });
     } catch (error) {
       return Promise.reject(error);
     }
   };
 
-  const remove = (tenantId: string, applicantId: string) => {
+  const remove = (tenantId: string, applicantId: string): Promise<null> => {
     const stmt =
       'DELETE FROM applicant' +
       ' WHERE tenant_id=${tenant_id} AND applicant_id=${applicant_id} ';
@@ -50,10 +68,11 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
   };
 
   const update = async (params: {
-    applicantId: String;
+    applicantId: string;
+    tenantId: string;
     jobId: string;
     attributes: {formFieldId: string; attributeValue: string}[];
-  }) => {
+  }): Promise<Applicant> => {
     const helpers = db.$config.pgp.helpers;
 
     const delCond = ' WHERE applicant_id=${applicant_id}';
@@ -72,7 +91,12 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
       attributes.map((attr) => decamelizeKeys(attr)),
       cs,
     );
-    return db.any(stmt);
+    await db.any(stmt);
+
+    return find(params.tenantId, params.applicantId).then((applicant) => {
+      if (!applicant) throw new Error('Did not find applicant after update');
+      return applicant;
+    });
   };
 
   return {findAll, find, insert, remove, update};

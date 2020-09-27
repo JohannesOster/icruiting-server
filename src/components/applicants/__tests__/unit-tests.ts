@@ -1,5 +1,5 @@
 import {random, image} from 'faker';
-import {getApplicantFileURLs, sortApplicants, round} from '../utils';
+import {getApplicantFileURLs, sortApplicants} from '../utils';
 
 const mockURL = image.imageUrl();
 jest.mock('aws-sdk', () => ({
@@ -66,18 +66,6 @@ describe('applicants', () => {
       );
       const resp = sortApplicants(applicants, sortKey);
       expect(resp).toStrictEqual(expectedResult);
-    });
-  });
-  describe('round', () => {
-    it('rounds default to 2 digits', () => {
-      const numb = 1.234;
-      const result = round(numb);
-      expect(result).toBe(1.23);
-    });
-    it('rounds default to provided digits', () => {
-      const numb = 1.2345678;
-      const result = round(numb, 3);
-      expect(result).toBe(1.235);
     });
   });
 });

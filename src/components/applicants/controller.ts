@@ -6,9 +6,8 @@ import puppeteer from 'puppeteer';
 import {IncomingForm} from 'formidable';
 import {BaseError, catchAsync} from 'errorHandling';
 import {dbSelectReport, dbSelectApplicantReport} from './database';
-import {getApplicantFileURLs, sortApplicants, round} from './utils';
+import {getApplicantFileURLs, sortApplicants} from './utils';
 import {TForm} from '../forms';
-import {TApplicant, TReport} from './types';
 import db from 'db';
 
 export const getApplicants = catchAsync(async (req, res) => {
@@ -21,7 +20,7 @@ export const getApplicants = catchAsync(async (req, res) => {
     getApplicantFileURLs(appl.files).then((files) => ({...appl, files})),
   );
 
-  const resp: TApplicant[] = (await Promise.all(promises)) as any;
+  const resp = await Promise.all(promises);
   const sortKey = 'Vollständiger Name';
   const sortedResp = sortApplicants(resp, sortKey);
 
@@ -60,7 +59,7 @@ export const deleteApplicant = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
   const {tenantId} = res.locals.user;
 
-  const applicant: TApplicant = await db.applicants.find(tenantId, applicantId);
+  const applicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Not Found');
 
   if (applicant.files?.length) {
@@ -172,6 +171,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 
       const params = {
         applicantId,
+        tenantId,
         jobId: applicant.jobId,
         attributes: map.attributes,
       };
@@ -190,10 +190,10 @@ export const getPdfReport = catchAsync(async (req, res) => {
   const {formCategory = 'screening'} = req.query as {
     formCategory?: 'screening' | 'assessment';
   };
-  const applicant: TApplicant = await db.applicants.find(tenantId, applicantId);
+  const applicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Applicant not Found');
 
-  const applicantReport: TReport | undefined = await dbSelectApplicantReport(
+  const applicantReport = await dbSelectApplicantReport(
     tenantId,
     applicant.jobId,
   );

@@ -17,8 +17,17 @@ export const dbSelectReport = (params: {
   });
 };
 
-export const dbSelectApplicantReport = (tenantId: string, jobId: string) => {
-  return db
-    .any(selectApplicantReportSQL, decamelizeKeys({tenantId, jobId}))
-    .then((resp) => resp[0]);
+export const dbSelectApplicantReport = (
+  tenantId: string,
+  jobId: string,
+): Promise<{
+  tenantId: string;
+  jobId: string;
+  attributes: {label: string; formItemId: string}[];
+  image?: {label: string; formItemId: string};
+} | null> => {
+  return db.oneOrNone(
+    selectApplicantReportSQL,
+    decamelizeKeys({tenantId, jobId}),
+  );
 };
