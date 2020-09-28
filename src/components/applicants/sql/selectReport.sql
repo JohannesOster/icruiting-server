@@ -2,6 +2,7 @@ SELECT *
 FROM
 	(SELECT
 		applicant_id,
+		COUNT(DISTINCT submitter_id) AS submissions_count,
 		ROUND(STDDEV_POP(single_submission.score), 2) AS standard_deviation,
 		ROUND(AVG(single_submission.score), 2) AS score,
 		ROW_NUMBER() OVER (ORDER BY AVG(single_submission.score) DESC) AS rank,
