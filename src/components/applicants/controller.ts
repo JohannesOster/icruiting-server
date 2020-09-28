@@ -211,8 +211,8 @@ export const getPdfReport = catchAsync(async (req, res) => {
         Key: file.value,
         Expires: 100,
       };
-      const imageURL = await new S3().getSignedUrlPromise('getObject', params);
-      htmlParams.imageURL = imageURL;
+      //const imageURL = await new S3().getSignedUrlPromise('getObject', params);
+      //htmlParams.imageURL = imageURL;
     }
 
     const attributes = applicantReport.attributes.map(({label}) => {
@@ -232,9 +232,19 @@ export const getPdfReport = catchAsync(async (req, res) => {
   htmlParams.formCategory = formCategoryMap[formCategory];
 
   const report = await dbSelectReport({tenantId, applicantId, formCategory});
+  if (!report) throw new BaseError(404, 'Not Found');
   htmlParams.rank = report.rank;
   htmlParams.score = report.score;
   htmlParams.standardDeviation = report.standardDeviation;
+
+  /** RADAR CHART */
+  const requirements = Object.keys(report.jobRequirementsResult);
+  const dataPoints = requirements.map(
+    (req) => report?.jobRequirementsResult[req],
+  );
+
+  htmlParams.chartLabels = requirements;
+  htmlParams.chartData = dataPoints;
 
   const html = pug.renderFile(
     path.resolve(__dirname, 'report/report.pug'),

@@ -34,4 +34,49 @@ html
               tr
                 td Standardabweichung
                 td #{standardDeviation}
+        div(id="radar-chart-container" style="display:flex;align-items:center;justify-content:center;")
+          img(id="radar-chart-image" style="width:70vw;height:70vw;")
+          canvas(id="radar-chart" height="2000" width="2000")
 
+    script(type='text/javascript', src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js")
+    script(type='text/javascript').
+      function plotRadar() {
+        const canvas = document.getElementById('radar-chart');
+        const ctx = canvas.getContext('2d');
+
+        const data = {
+          labels: !{JSON.stringify(chartLabels)},
+          datasets: [
+            {
+              pointRadius: 4,
+              pointBackgroundColor: 'gray',
+              data: !{JSON.stringify(chartData)}
+            }
+          ]
+        };
+        const options = {
+          legend: {display: false},
+          animation: {duration: 0},
+          responsiveAnimationDuration: 0,
+          responsive: false,
+          scale: {
+            pointLabels: {fontSize: 40},
+            ticks: {beginAtZero: true, fontSize: 40},
+            gridLines: {lineWidth: 3},
+            angleLines: {lineWidth: 3}
+          },
+        } 
+        const radarChart = new Chart(ctx, {type: 'radar', data, options});
+
+        const radarImage = document.getElementById('radar-chart-image').setAttribute('src', canvas.toDataURL('image/png'));
+        radarChart.destroy();
+        canvas.parentElement.removeChild(canvas);
+      }
+
+      const labels = !{JSON.stringify(chartData)};
+      if(labels.length) {
+        plotRadar();
+      } else {
+        const chartContainer = document.getElementById('radar-chart-container');
+        chartContainer.parentElement.removeChild(chartContainer);
+      }
