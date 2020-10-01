@@ -21,6 +21,11 @@ export type TRankingRowDb = {
       label: string;
     }>
   >;
+  normalization: {
+    jobRequirementLabel: string;
+    mean: string;
+    values: string[];
+  }[];
 };
 
 export type TRankingResultVal = {
@@ -84,6 +89,15 @@ export const buildReport = (row: TRankingRowDb) => {
   const entries = Object.entries(reqProfile);
   const jobRequirementsResult = entries.reduce((acc, [key, {counter, sum}]) => {
     acc[key] = round(sum / counter);
+    if (!row.normalization) return acc;
+
+    const normalizer = row.normalization.find(
+      ({jobRequirementLabel}) => jobRequirementLabel === key,
+    );
+    if (!normalizer) throw new Error('Missing normalization for ' + key);
+
+    acc[key] = acc[key] / +normalizer.mean;
+
     return acc;
   }, {} as KeyVal<number>);
 

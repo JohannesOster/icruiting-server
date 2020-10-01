@@ -211,8 +211,8 @@ export const getPdfReport = catchAsync(async (req, res) => {
         Key: file.value,
         Expires: 100,
       };
-      //const imageURL = await new S3().getSignedUrlPromise('getObject', params);
-      //htmlParams.imageURL = imageURL;
+      const imageURL = await new S3().getSignedUrlPromise('getObject', params);
+      htmlParams.imageURL = imageURL;
     }
 
     const attributes = applicantReport.attributes.map(({label}) => {
