@@ -10,20 +10,26 @@ import {getApplicantFileURLs, sortApplicants} from './utils';
 import db from 'db';
 
 export const getApplicants = catchAsync(async (req, res) => {
-  const jobId = req.query.jobId as string;
+  const {jobId, offset, limit} = req.query as any;
   const {tenantId, userId} = res.locals.user;
-  const applicants = await db.applicants.findAll(tenantId, jobId, userId);
+  const data = await db.applicants.findAll(
+    tenantId,
+    jobId,
+    userId,
+    offset,
+    limit,
+  );
 
   // replace S3 filekeys with aws presigned URL
-  const promises = applicants.map(({files, ...appl}) =>
+  const promises = data.applicants.map(({files, ...appl}) =>
     getApplicantFileURLs(files).then((files) => ({...appl, files})),
   );
 
-  const resp = await Promise.all(promises);
+  const applicants = await Promise.all(promises);
   const sortKey = 'Vollständiger Name';
-  const sortedResp = sortApplicants(resp, sortKey);
+  const sortedResp = sortApplicants(applicants, sortKey);
 
-  res.status(200).json(sortedResp);
+  res.status(200).json({applicants: sortedResp, totalCount: data.totalCount});
 });
 
 export const getApplicant = catchAsync(async (req, res) => {

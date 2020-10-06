@@ -1,4 +1,5 @@
 SELECT applicant.*,
+       COUNT(*) OVER () total_count,
        array_agg(json_build_object(
          'key', form_field.label,
          'value', applicant_attribute.attribute_value
@@ -26,3 +27,4 @@ ON screening.applicant_id = applicant.applicant_id
 WHERE applicant.tenant_id = ${tenant_id}
   AND (applicant.job_id = ${job_id} OR ${job_id} IS NULL)
 GROUP BY applicant.applicant_id
+LIMIT ${limit} OFFSET ${offset};

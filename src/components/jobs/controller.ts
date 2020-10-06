@@ -37,7 +37,7 @@ export const deleteJob = catchAsync(async (req, res) => {
   const {jobId} = req.params;
   const {tenantId, userId} = res.locals.user;
 
-  const applicants = await db.applicants.findAll(tenantId, jobId, userId);
+  const {applicants} = await db.applicants.findAll(tenantId, jobId, userId);
 
   const fileKeys = applicants.reduce((acc, {files}) => {
     if (!files) return acc;
