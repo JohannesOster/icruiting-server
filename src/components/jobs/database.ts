@@ -56,7 +56,6 @@ export const dbUpdateApplicantReport = async ({
   attributes,
   image,
 }: DbUpdateApplicantReportParams) => {
-  console.log(image, attributes);
   const {insert, ColumnSet} = db.$config.pgp.helpers;
 
   const stmt =
@@ -69,8 +68,6 @@ export const dbUpdateApplicantReport = async ({
       tenantId,
     }),
   );
-
-  console.log(updatedReport);
 
   const delStmt =
     'DELETE FROM applicant_report_field WHERE applicant_report_id=${applicant_report_id}';

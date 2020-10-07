@@ -12,27 +12,27 @@ export type Applicant = {
 };
 
 export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
-  const findAll = (
-    tenantId: string,
-    jobId: string,
-    userId: string,
-    offset: number = 0,
-    limit?: number,
-  ): Promise<{applicants: Applicant[]; totalCount: string}> => {
+  const findAll = (params: {
+    tenantId: string;
+    jobId: string;
+    userId: string;
+    orderBy?: string;
+    offset?: number;
+    limit?: number;
+  }): Promise<{applicants: Applicant[]; totalCount: string}> => {
     const limitQuery = (val?: number) => ({
       rawType: true,
       toPostgres: () => val ?? 'ALL',
     });
-
-    const params = decamelizeKeys({
-      tenantId,
-      jobId,
-      userId,
-      offset,
-    });
+    const vals = decamelizeKeys(params) as any;
 
     return db
-      .any(sql.all, {...params, limit: limitQuery(limit)})
+      .any(sql.all, {
+        ...vals,
+        limit: limitQuery(params.limit),
+        offset: params.offset || 0,
+        order_by: vals.order_by || null,
+      })
       .then((applicants) => {
         if (!applicants?.length) return {applicants: [], totalCount: 0};
 

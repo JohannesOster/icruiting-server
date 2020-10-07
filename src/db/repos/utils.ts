@@ -21,7 +21,7 @@ export type TRankingRowDb = {
       label: string;
     }>
   >;
-  normalization: {
+  normalization?: {
     jobRequirementLabel: string;
     mean: string;
     values: string[];

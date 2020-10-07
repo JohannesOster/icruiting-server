@@ -10,15 +10,16 @@ import {getApplicantFileURLs, sortApplicants} from './utils';
 import db from 'db';
 
 export const getApplicants = catchAsync(async (req, res) => {
-  const {jobId, offset, limit} = req.query as any;
+  const {jobId, offset, limit, orderBy} = req.query as any;
   const {tenantId, userId} = res.locals.user;
-  const data = await db.applicants.findAll(
+  const data = await db.applicants.findAll({
     tenantId,
     jobId,
     userId,
     offset,
     limit,
-  );
+    orderBy,
+  });
 
   // replace S3 filekeys with aws presigned URL
   const promises = data.applicants.map(({files, ...appl}) =>
