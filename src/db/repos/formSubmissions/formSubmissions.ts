@@ -21,6 +21,11 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     }, {} as any);
   };
 
+  const formFieldCs = new pgp.helpers.ColumnSet(
+    ['form_submission_id', 'form_field_id', 'submission_value'],
+    {table: 'form_submission_field'},
+  );
+
   const insert = async (params: {
     tenantId: string;
     applicantId: string;
@@ -40,11 +45,6 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     const subStmt = insert(decamelizeKeys(subParams), subCS) + ' RETURNING *';
     const sub = await db.one(subStmt);
 
-    const fieldCS = new ColumnSet(
-      ['form_submission_id', 'form_field_id', 'submission_value'],
-      {table: 'form_submission_field'},
-    );
-
     const submissionFields = Object.entries(params.submission).map(
       ([formFieldId, submission_value]) => ({
         formSubmissionId: sub.formSubmissionId,
@@ -54,7 +54,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     );
 
     const values = submissionFields.map((field) => decamelizeKeys(field));
-    const fieldStmt = insert(values, fieldCS) + ' RETURNING *';
+    const fieldStmt = insert(values, formFieldCs) + ' RETURNING *';
 
     return db
       .any(fieldStmt)
@@ -88,27 +88,26 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
       }),
     );
 
-    const {update, ColumnSet} = db.$config.pgp.helpers;
-    const cs = new ColumnSet(
-      ['?form_submission_id', '?form_field_id', 'submission_value'],
-      {table: 'form_submission_field'},
+    await db.none(
+      'DELETE FROM form_submission_field WHERE form_submission_id = $1',
+      params.formSubmissionId,
     );
+
+    const {insert} = db.$config.pgp.helpers;
+
     const submissionFields = Object.entries(params.submission).map(
-      ([formFieldId, submissionValue]) => ({
+      ([formFieldId, submission_value]) => ({
         formSubmissionId: params.formSubmissionId,
         formFieldId,
-        submissionValue: submissionValue.toString(), // if values do not have same typ pg-promise update fails
+        submission_value,
       }),
     );
 
-    const vals = submissionFields.map((val) => decamelizeKeys(val));
-    const stmt =
-      update(vals, cs) +
-      ' WHERE v.form_submission_id::uuid = t.form_submission_id AND v.form_field_id::uuid = t.form_field_id' +
-      ' RETURNING *';
+    const values = submissionFields.map((field) => decamelizeKeys(field));
+    const fieldStmt = insert(values, formFieldCs) + ' RETURNING *';
 
     return db
-      .any(stmt)
+      .any(fieldStmt)
       .then((data) => ({...sub, submission: reduceSubmission(data)}));
   };
 
