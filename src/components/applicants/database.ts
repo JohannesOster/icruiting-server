@@ -10,7 +10,7 @@ export const dbSelectReport = (params: {
   tenantId: string;
   applicantId: string;
   formCategory: 'screening' | 'assessment';
-}) => {
+}): Promise<ReturnType<typeof buildReport> | null> => {
   return db.oneOrNone(selectReport, decamelizeKeys(params)).then((report) => {
     if (!report) return report;
     return buildReport(report);

@@ -45,13 +45,8 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
   const form = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
-
-  const params = {
-    formId: formId,
-    formFields: form.formFields,
-    submitAction: config.baseURL + req.originalUrl,
-  };
-
+  const submitAction = config.baseURL + req.originalUrl;
+  const params = {formId, submitAction, formFields: form.formFields};
   res.header('Content-Type', 'text/html');
   res.render('form', params);
 });
@@ -62,16 +57,12 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
   if (!form) throw new BaseError(404, 'Not Found');
 
   if (form.formCategory !== 'application') {
-    throw new BaseError(
-      402,
-      'Only application form are allowed to be submitted via html',
-    );
+    const errorMsg =
+      'Only application form are allowed to be submitted via html';
+    throw new BaseError(402, errorMsg);
   }
 
-  const applicant: any = {
-    tenantId: form.tenantId,
-    jobId: form.jobId,
-  };
+  const applicant: any = {tenantId: form.tenantId, jobId: form.jobId};
 
   const formidable = new IncomingForm();
   formidable.parse(req, (err: Error, fields: any, files: any) => {
@@ -119,7 +110,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
             Body: fileStream,
           };
 
-          fs.unlink(file.path, function (err) {
+          fs.unlink(file.path, (err) => {
             if (err) console.error(err);
           });
 
@@ -132,22 +123,19 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
         return acc;
       },
-      {attributes: []} as any,
+      {attributes: []} as {
+        attributes: {formFieldId: string; attributeValue: string}[];
+      },
     );
 
-    applicant.files = !!map.files && map.files;
-    applicant.attributes = !!map.attributes && map.attributes;
-
+    applicant.attributes = map.attributes;
     promises.push(db.applicants.insert(applicant));
 
+    res.header('Content-Type', 'text/html');
     Promise.all(promises)
-      .then(() => {
-        res.header('Content-Type', 'text/html');
-        res.render('form-submission', {});
-      })
-      .catch((err) => {
-        res.header('Content-Type', 'text/html');
-        res.render('form-submission', {error: err});
+      .then(() => res.render('form-submission'))
+      .catch((error) => {
+        res.render('form-submission', {error});
       });
   });
 });

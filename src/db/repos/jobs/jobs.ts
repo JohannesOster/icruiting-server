@@ -31,7 +31,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   );
 
   const all = (tenantId: string): Promise<Job[]> => {
-    return db.any(sql.all, {tenant_id: tenantId});
+    return db.any(sql.find, {tenant_id: tenantId, job_id: null});
   };
 
   const find = (tenantId: string, jobId: string): Promise<Job | null> => {

@@ -1,16 +1,12 @@
-import {round} from '../utils';
+import {round} from '../../math';
 
-enum EFormItemIntent {
-  sumUp = 'sum_up',
-  aggregate = 'aggregate',
-  countDistinct = 'count_distinct',
-}
+export type FormFieldIntent = 'sum_up' | 'aggregate' | 'count_distinct';
 
-type KeyVal<T> = {
+export type KeyVal<T> = {
   [key: string]: T;
 };
 
-type TRankingRowDb = {
+export type TRankingRowDb = {
   applicantId: string;
   rank: string;
   score: string;
@@ -19,27 +15,32 @@ type TRankingRowDb = {
   submissions: Array<
     Array<{
       formFieldId: string;
-      jobRequirementLabel?: string;
+      jobRequirementLabel: string | null;
       value: string;
-      intent: EFormItemIntent;
+      intent: FormFieldIntent;
       label: string;
     }>
   >;
+  normalization?: {
+    jobRequirementLabel: string;
+    mean: string;
+    values: string[];
+  }[];
 };
 
-type TRankingResultVal = {
+export type TRankingResultVal = {
   label: string;
-  intent: EFormItemIntent;
+  intent: FormFieldIntent;
   value: number | Array<string> | {[key: string]: number}; // sumUp, aggregate, countDistinc
 };
 
 export const buildReport = (row: TRankingRowDb) => {
-  const reqProfile = {} as KeyVal<number>;
-  const initialValues = (key: EFormItemIntent) =>
+  const reqProfile = {} as KeyVal<{counter: number; sum: number}>;
+  const initialValues = (key: FormFieldIntent) =>
     ({
-      [EFormItemIntent.sumUp]: 0,
-      [EFormItemIntent.aggregate]: [],
-      [EFormItemIntent.countDistinct]: {},
+      sum_up: 0,
+      aggregate: [],
+      count_distinct: {},
     }[key]);
 
   const result = row.submissions.reduce((acc, submission) => {
@@ -51,17 +52,21 @@ export const buildReport = (row: TRankingRowDb) => {
         }
 
         switch (intent) {
-          case EFormItemIntent.sumUp:
+          case 'sum_up':
             (acc[formFieldId].value as number) += +value;
             if (jobRequirementLabel) {
-              const newVal = (reqProfile[jobRequirementLabel] || 0) + +value;
-              reqProfile[jobRequirementLabel] = newVal;
+              if (reqProfile[jobRequirementLabel]?.sum === undefined) {
+                reqProfile[jobRequirementLabel] = {counter: 1, sum: +value};
+                break;
+              }
+              reqProfile[jobRequirementLabel].sum += +value;
+              reqProfile[jobRequirementLabel].counter += 1;
             }
             break;
-          case EFormItemIntent.aggregate:
+          case 'aggregate':
             (acc[formFieldId].value as string[]).push(value);
             break;
-          case EFormItemIntent.countDistinct:
+          case 'count_distinct':
             const currVal = (acc[formFieldId].value as KeyVal<number>)[value];
             (acc[formFieldId].value as KeyVal<number>)[value] =
               (currVal || 0) + 1;
@@ -75,10 +80,26 @@ export const buildReport = (row: TRankingRowDb) => {
 
   // Convert sum up values to mean
   Object.entries(result).forEach(([key, val]) => {
-    if (val.intent !== EFormItemIntent.sumUp) return;
-    const average = round(+val.value / +row.submissionsCount);
-    result[key] = {...val, value: average};
+    if (val.intent !== 'sum_up') return;
+    const mean = round(+val.value / +row.submissionsCount);
+    result[key] = {...val, value: mean};
   });
 
-  return {...row, result, jobRequirementsResult: reqProfile};
+  // Convert reqProfile values to means
+  const entries = Object.entries(reqProfile);
+  const jobRequirementsResult = entries.reduce((acc, [key, {counter, sum}]) => {
+    acc[key] = round(sum / counter);
+    if (!row.normalization) return acc;
+
+    const normalizer = row.normalization.find(
+      ({jobRequirementLabel}) => jobRequirementLabel === key,
+    );
+    if (!normalizer) throw new Error('Missing normalization for ' + key);
+
+    acc[key] = acc[key] / +normalizer.mean;
+
+    return acc;
+  }, {} as KeyVal<number>);
+
+  return {...row, result, jobRequirementsResult};
 };

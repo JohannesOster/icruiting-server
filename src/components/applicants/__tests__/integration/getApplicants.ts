@@ -64,9 +64,11 @@ describe('applicants', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(Array.isArray(res.body)).toBeTruthy();
-      expect(res.body.length).toBe(applicants.length);
-      expect(res.body[0].applicantId).toBe(applicants[0].applicantId);
+      expect(Array.isArray(res.body.applicants)).toBeTruthy();
+      expect(res.body.applicants.length).toBe(applicants.length);
+      expect(res.body.applicants[0].applicantId).toBe(
+        applicants[0].applicantId,
+      );
     });
 
     it('isloates applicants of tenant', async () => {
@@ -85,9 +87,7 @@ describe('applicants', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(Array.isArray(res.body)).toBeTruthy();
-      expect(res.body.length).toBe(applicants.length);
-      expect(res.body[0].applicantId).toBe(applicants[0].applicantId);
+      expect(res.body.applicants.length).toBe(applicants.length);
     });
 
     it('filters by jobId using query', async () => {
@@ -110,9 +110,8 @@ describe('applicants', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(Array.isArray(res.body)).toBeTruthy();
-      expect(res.body.length).toBe(1);
-      expect(res.body[0].applicantId).toBe(applicant.applicantId);
+      expect(res.body.applicants.length).toBe(1);
+      expect(res.body.applicants[0].applicantId).toBe(applicant.applicantId);
     });
 
     it('isloates tenant applicants even if foreign jobId is queried', async () => {
@@ -131,7 +130,7 @@ describe('applicants', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(res.body.length).toBe(0);
+      expect(res.body.applicants.length).toBe(0);
     });
 
     it('includes boolean weather screening exists or not', async () => {
@@ -155,9 +154,20 @@ describe('applicants', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      const filtered = res.body.filter((appl: any) => appl.screeningExists);
+      const filtered = res.body.applicants.filter(
+        (appl: any) => appl.screeningExists,
+      );
       expect(filtered.length).toBe(1);
       expect(filtered[0].applicantId).toBe(applicantId);
+    });
+
+    it('limits by limit query', async () => {
+      const res = await request(app)
+        .get(`/applicants?limit=${0}`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body.applicants.length).toBe(0);
     });
   });
 });
