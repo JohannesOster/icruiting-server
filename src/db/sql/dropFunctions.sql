@@ -1,1 +1,1 @@
-DROP FUNCTION screening_exists;
+DROP FUNCTION IF EXISTS screening_exists;
