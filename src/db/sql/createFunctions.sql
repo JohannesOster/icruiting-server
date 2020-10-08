@@ -15,3 +15,4 @@ BEGIN
   RETURN screening_exists;
 END
 $$ LANGUAGE plpgsql;
+

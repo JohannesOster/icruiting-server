@@ -15,3 +15,30 @@ CREATE OR REPLACE VIEW applicant_view AS
 	ON applicant_attribute.form_field_id = form_field.form_field_id
 	GROUP BY applicant.applicant_id;
 
+CREATE OR REPLACE VIEW form_submission_view AS 
+	SELECT
+		form.job_id,
+		form_category,
+		form.tenant_id,
+		submitter_id,
+		applicant_id,
+		SUM(submission_value::NUMERIC) FILTER (WHERE form_field.intent = 'sum_up') AS score,
+		JSON_AGG(JSON_BUILD_OBJECT(
+			'form_field_id', form_field.form_field_id,
+			'job_requirement_label', job_requirement.requirement_label,
+			'label', form_field.label,
+			'intent', form_field.intent,
+			'value', submission_value
+		)) AS submission
+	FROM form
+	JOIN form_field ON form_field.form_id = form.form_id
+	JOIN
+		(SELECT form_submission.*, form_field_id, submission_value
+			FROM form_submission
+			JOIN form_submission_field
+			ON form_submission.form_submission_id = form_submission_field.form_submission_id) AS submission_field
+	ON submission_field.form_field_id = form_field.form_field_id
+	LEFT JOIN job_requirement
+	ON job_requirement.job_requirement_id = form_field.job_requirement_id
+	GROUP BY submitter_id, applicant_id, form.job_id, form_category, form.tenant_id
+

@@ -5,12 +5,16 @@ import {
   truncateAll,
   createFunctions,
   dropFunctions,
+  createViews,
+  dropViews,
 } from './sql';
 
-export const createAll = () => {
-  return Promise.all([db.any(createTables), db.any(createFunctions)]);
+export const createAll = async () => {
+  await Promise.all([db.any(createTables), db.any(createFunctions)]);
+  return db.any(createViews);
 };
-export const dropAll = () => {
+export const dropAll = async () => {
+  await db.any(dropViews);
   return Promise.all([db.any(dropTables), db.any(dropFunctions)]);
 };
 export const endConnection = () => db.$pool.end();
