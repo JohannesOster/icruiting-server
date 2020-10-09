@@ -1,14 +1,17 @@
 import {body} from 'express-validator';
 
 export const postJobsRules = [
-  body('jobTitle').exists().isString(),
-  body('jobRequirements').exists(),
+  body('jobTitle').isString(),
+  body('jobRequirements').isArray(),
+  body('jobRequirements[*].requirementLabel').isString(),
+  body('jobRequirements[*].minValue').optional().isNumeric(),
 ];
 
 export const putJobRules = [
-  body('jobId').isUUID(),
   body('jobTitle').isString(),
-  body('jobRequirements').exists(),
+  body('jobRequirements').isArray(),
+  body('jobRequirements[*].requirementLabel').isString(),
+  body('jobRequirements[*].minValue').optional({nullable: true}).isNumeric(),
 ];
 
 export const postApplicantReportRules = [

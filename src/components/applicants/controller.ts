@@ -199,10 +199,10 @@ export const getPdfReport = catchAsync(async (req, res) => {
   const applicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Applicant not Found');
 
-  const applicantReport = await dbSelectApplicantReport(
-    tenantId,
-    applicant.jobId,
-  );
+  const jobPromise = db.jobs.find(tenantId, applicant.jobId);
+  const reportPromise = dbSelectApplicantReport(tenantId, applicant.jobId);
+
+  const [job, applicantReport] = await Promise.all([jobPromise, reportPromise]);
 
   let htmlParams = {attributes: []} as any;
   if (applicantReport) {
@@ -245,13 +245,37 @@ export const getPdfReport = catchAsync(async (req, res) => {
   htmlParams.standardDeviation = report.standardDeviation;
 
   /** RADAR CHART */
-  const requirements = Object.keys(report.jobRequirementsResult);
-  const dataPoints = requirements.map(
-    (req) => report?.jobRequirementsResult[req],
-  );
+  if (formCategory === 'assessment') {
+    const requirements =
+      job?.jobRequirements?.map(({requirementLabel}) => requirementLabel) || [];
+    const dataPoints =
+      job?.jobRequirements?.map(
+        (req) => report?.jobRequirementsResult[req.requirementLabel],
+      ) || [];
 
-  htmlParams.chartLabels = requirements;
-  htmlParams.chartData = dataPoints;
+    const means = job?.jobRequirements?.map(({requirementLabel}) => {
+      return report?.normalization?.find(
+        ({jobRequirementLabel}: any) =>
+          requirementLabel === jobRequirementLabel,
+      )?.mean;
+    });
+
+    const minValsRaw =
+      job?.jobRequirements?.map(({minValue}) => +(minValue || 0)) || [];
+    const minVals = means
+      ? minValsRaw.map((val, index) => val / +((means || [])[index] || 1))
+      : [];
+
+    htmlParams.chartData = {
+      labels: requirements,
+      datasets: [
+        {label: 'vals', data: dataPoints},
+        {label: 'minVals', data: minVals},
+      ],
+    };
+  }
+
+  htmlParams.shouldPlot = formCategory === 'assessment';
 
   const html = pug.renderFile(
     path.resolve(__dirname, 'report/report.pug'),
