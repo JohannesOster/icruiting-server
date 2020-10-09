@@ -34,9 +34,10 @@ html
               tr
                 td Standardabweichung
                 td #{standardDeviation}
-      div(id="radar-chart-container" style="display:flex;align-items:center;justify-content:center;margin-top:-100px")
-        img(id="radar-chart-image" style="width:80vw;height:80vw;")
-        canvas(id="radar-chart" height="2000" width="2000")
+      if shouldPlot
+        div(id="radar-chart-container" style="display:flex;align-items:center;justify-content:center;margin-top:-80px;")
+          img(id="radar-chart-image" style="width:80vw;height:80vw;")
+          canvas(id="radar-chart" height="2000" width="2000")
 
     script(type='text/javascript', src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js")
     script(type='text/javascript').
@@ -44,16 +45,7 @@ html
         const canvas = document.getElementById('radar-chart');
         const ctx = canvas.getContext('2d');
 
-        const data = {
-          labels: !{JSON.stringify(chartLabels)},
-          datasets: [
-            {
-              pointRadius: 4,
-              pointBackgroundColor: 'gray',
-              data: !{JSON.stringify(chartData)}
-            }
-          ]
-        };
+        const data = !{JSON.stringify(chartData)};
         const options = {
           legend: {display: false},
           animation: {duration: 0},
@@ -65,7 +57,7 @@ html
             gridLines: {lineWidth: 3},
             angleLines: {lineWidth: 3}
           },
-        } 
+        }
         const radarChart = new Chart(ctx, {type: 'radar', data, options});
 
         const radarImage = document.getElementById('radar-chart-image').setAttribute('src', canvas.toDataURL('image/png'));
@@ -73,10 +65,6 @@ html
         canvas.parentElement.removeChild(canvas);
       }
 
-      const labels = !{JSON.stringify(chartData)};
-      if(labels.length) {
-        plotRadar();
-      } else {
-        const chartContainer = document.getElementById('radar-chart-container');
-        chartContainer.parentElement.removeChild(chartContainer);
-      }
+      if(#{shouldPlot}) plotRadar();
+
+
