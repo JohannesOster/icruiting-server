@@ -12,6 +12,7 @@ export type Job = {
     jobRequirementId: string;
     jobId: string;
     requirementLabel: string;
+    minValue?: string;
   }[];
 };
 
@@ -26,6 +27,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       },
       'job_id',
       'requirement_label',
+      {name: 'min_value', def: null},
     ],
     {table: 'job_requirement'},
   );
@@ -43,6 +45,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     tenantId: string;
     jobRequirements: Array<{
       requirementLabel: string;
+      minValue?: number;
     }>;
   }): Promise<Job> => {
     const {jobRequirements, ...job} = values;
@@ -69,6 +72,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       jobTitle: string;
       jobRequirements: {
         requirementLabel: string;
+        minValue?: number;
       }[];
     },
   ): Promise<Job> => {

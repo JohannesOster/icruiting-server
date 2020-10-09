@@ -14,7 +14,7 @@ const fake = {
     tenantId,
     jobTitle: faker.company.companyName(),
     jobRequirements: [
-      {requirementLabel: faker.commerce.productName()},
+      {requirementLabel: faker.commerce.productName(), minValue: 3},
       {requirementLabel: faker.commerce.productName()},
       {requirementLabel: faker.commerce.productName()},
     ],
