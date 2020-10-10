@@ -1,4 +1,4 @@
-import {round} from '../../math';
+import {round} from '../math';
 
 export type FormFieldIntent = 'sum_up' | 'aggregate' | 'count_distinct';
 
