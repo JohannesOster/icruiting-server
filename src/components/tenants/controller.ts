@@ -16,7 +16,7 @@ export const deleteTenant = catchAsync(async (req, res) => {
 
   const cIdp = new CognitoIdentityServiceProvider();
   const params = {
-    userPoolID,
+    UserPoolId: userPoolID,
     AttributesToGet: ['email', 'custom:tenant_id'],
   };
 
@@ -32,7 +32,7 @@ export const deleteTenant = catchAsync(async (req, res) => {
     });
 
   const promises = users.map((user) => {
-    const params = {userPoolID, Username: user.email};
+    const params = {UserPoolId: userPoolID, Username: user.email};
     return cIdp.adminDeleteUser(params).promise();
   });
 

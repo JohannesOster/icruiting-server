@@ -11,7 +11,8 @@
     "db-setup": "env NODE_ENV=development npx ts-node ./src/db/setup.ts createAll",
     "db-drop": "env NODE_ENV=development npx ts-node ./src/db/setup.ts dropAll",
     "test": "npx jest --runInBand --detectOpenHandles",
-    "heroku-prebuild": "npm install --dev"
+    "heroku-prebuild": "npm install --dev",
+    "lint": "tslint --project ."
   },
   "keywords": [],
   "author": "",
@@ -53,6 +54,7 @@
     "ts-jest": "^26.4.0",
     "ts-loader": "^8.0.4",
     "tsconfig-paths-webpack-plugin": "^3.3.0",
+    "tslint": "^6.1.3",
     "typescript": "^3.9.7",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
