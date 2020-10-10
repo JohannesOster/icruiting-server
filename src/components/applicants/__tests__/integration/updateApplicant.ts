@@ -46,7 +46,7 @@ describe('applicants', () => {
         jobId,
         tenantId: mockUser.tenantId,
         attributes: [
-          {formFieldId: form.formFields[0].formFieldId, attributeValue: '1'},
+          {formFieldId: form.formFields[0].formFieldId, attributeValue: random.word()},
         ],
       };
 

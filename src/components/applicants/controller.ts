@@ -144,8 +144,8 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
               Body: fileStream,
             };
 
-            fs.unlink(file.path, function (err) {
-              if (err) throw new BaseError(500, err.message);
+            fs.unlink(file.path, (error) => {
+              if (error) throw new BaseError(500, error.message);
             });
 
             await s3.upload(params).promise();
