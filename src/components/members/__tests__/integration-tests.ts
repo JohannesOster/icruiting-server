@@ -133,7 +133,7 @@ describe('members', () => {
     });
 
     it('Validates userRole param', (done) => {
-       request(app)
+      request(app)
         .put(`/members/${internet.email()}`)
         .set('Accept', 'application/json')
         .send({user_role: 'invalid role'})

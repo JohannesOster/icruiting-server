@@ -1,7 +1,7 @@
 import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
 import {catchAsync} from 'errorHandling';
 import db from 'db';
-import { mapCognitoUser } from 'components/utils';
+import {mapCognitoUser} from 'components/utils';
 
 export const createTenant = catchAsync(async (req, res) => {
   const {tenantName} = req.body;
@@ -24,8 +24,8 @@ export const deleteTenant = catchAsync(async (req, res) => {
     .listUsers(params)
     .promise()
     .then(({Users}) => {
-      if(!Users) return [];
-      const users = Users.map(user => mapCognitoUser(user));
+      if (!Users) return [];
+      const users = Users.map((user) => mapCognitoUser(user));
 
       // filter out foreign tenants
       return users.filter((user) => user['custom:tenant_id'] === tenantId);
@@ -48,9 +48,9 @@ const deleteTenantFiles = async (tenantId: string) => {
   const listParams = {Bucket: bucket, Prefix: tenantId};
 
   const {Contents} = await s3.listObjects(listParams).promise();
-  if(!Contents?.length) return;
+  if (!Contents?.length) return;
 
   const keys = Contents.map(({Key}) => ({Key: Key || ''}));
   const delParams = {Bucket: bucket, Delete: {Objects: keys}};
   await s3.deleteObjects(delParams).promise();
-}
+};

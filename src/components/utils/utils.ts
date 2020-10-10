@@ -6,7 +6,7 @@ type KeyValuePair<T> = {
 
 export const mapCognitoUser = (
   user: CognitoIdentityServiceProvider.UserType,
-  keyModifier?: (key: string) => string
+  keyModifier?: (key: string) => string,
 ) => {
   if (!user.Attributes?.length) return {};
   const attributes = user.Attributes.reduce((acc, curr) => {

@@ -12,12 +12,12 @@ export type TRankingRowDb = {
   score: string;
   standardDeviation: string;
   submissionsCount: string;
-  submissions:{
-      formFieldId: string;
-      jobRequirementLabel: string | null;
-      value: string;
-      intent: FormFieldIntent;
-      label: string;
+  submissions: {
+    formFieldId: string;
+    jobRequirementLabel: string | null;
+    value: string;
+    intent: FormFieldIntent;
+    label: string;
   }[][];
   normalization?: {
     jobRequirementLabel: string;
@@ -65,7 +65,9 @@ export const buildReport = (row: TRankingRowDb) => {
             (acc[formFieldId].value as string[]).push(value);
             break;
           case 'count_distinct':
-            const currVal = (acc[formFieldId].value as KeyValuePair<number>)[value];
+            const currVal = (acc[formFieldId].value as KeyValuePair<number>)[
+              value
+            ];
             (acc[formFieldId].value as KeyValuePair<number>)[value] =
               (currVal || 0) + 1;
             break;

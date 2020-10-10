@@ -49,8 +49,8 @@ describe('jobs', () => {
       const respReqs = resp.body.jobRequirements;
       let count = 0; // count equalities
       job.jobRequirements.forEach((req) => {
-        for(const {requirementLabel} of respReqs){
-         if (requirementLabel === req.requirementLabel) ++count;
+        for (const {requirementLabel} of respReqs) {
+          if (requirementLabel === req.requirementLabel) ++count;
         }
       });
 

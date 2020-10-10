@@ -1,5 +1,5 @@
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
-import { mapCognitoUser } from 'components/utils';
+import {mapCognitoUser} from 'components/utils';
 import {catchAsync} from 'errorHandling';
 import {removePrefix} from './utils';
 
@@ -37,7 +37,7 @@ export const getMembers = catchAsync(async (req, res) => {
   };
 
   const {Users} = await cIdp.listUsers(params).promise();
-  if(!Users) return res.status(200).json([]);
+  if (!Users) return res.status(200).json([]);
 
   const keyModifier = (key: string) => removePrefix(key, 'custom:');
   const userMaps = Users.map((user) => mapCognitoUser(user, keyModifier));
