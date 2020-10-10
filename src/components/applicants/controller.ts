@@ -8,6 +8,8 @@ import {BaseError, catchAsync} from 'errorHandling';
 import {dbSelectReport, dbSelectApplicantReport} from './database';
 import {getApplicantFileURLs} from './utils';
 import db from 'db';
+import {JobRequirement} from 'db/repos/jobs';
+import {buildReport} from 'db/repos/utils';
 
 export const getApplicants = catchAsync(async (req, res) => {
   const {jobId, offset, limit, orderBy} = req.query as any;
@@ -217,8 +219,10 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
     const attributes = applicantReport.attributes.map(({label}) => {
       const attr = applicant.attributes.find((attr) => attr.key === label);
-      if (!attr)
+      if (!attr) {
         throw new BaseError(404, 'Report attribute is missing on applicant');
+      }
+
       return attr;
     });
 
@@ -238,33 +242,9 @@ export const getPdfReport = catchAsync(async (req, res) => {
   htmlParams.score = report.score;
   htmlParams.standardDeviation = report.standardDeviation;
 
-  /** RADAR CHART */
-  htmlParams.shouldPlot = formCategory === 'assessment';
   if (formCategory === 'assessment') {
-    const {jobRequirements} = job;
-    const labels = jobRequirements.map(
-      ({requirementLabel}) => requirementLabel,
-    );
-    const scores = jobRequirements.map(
-      ({requirementLabel}) => report.jobRequirementsResult[requirementLabel],
-    );
-
-    const means = jobRequirements.map(({requirementLabel}) => {
-      return report.normalization?.find(
-        ({jobRequirementLabel}) => requirementLabel === jobRequirementLabel,
-      )?.mean;
-    });
-
-    const minValsRaw = jobRequirements.map(({minValue}) => +(minValue || 0));
-    const minVals = minValsRaw.map((val, index) => val / +(means[index] || 1));
-
-    htmlParams.chartData = {
-      labels,
-      datasets: [
-        {label: 'scores', data: scores},
-        {label: 'minVals', data: minVals},
-      ],
-    };
+    htmlParams.shouldPlot = true;
+    htmlParams.chartData = buildRadarChart(job.jobRequirements, report);
   }
 
   const html = pug.renderFile(
@@ -283,3 +263,30 @@ export const getPdfReport = catchAsync(async (req, res) => {
   res.setHeader('Content-Type', 'application/pdf');
   res.send(pdf);
 });
+
+const buildRadarChart = (
+  jobRequirements: JobRequirement[],
+  report: ReturnType<typeof buildReport>,
+) => {
+  const labels = jobRequirements.map(({requirementLabel}) => requirementLabel);
+  const scores = jobRequirements.map(
+    ({requirementLabel}) => report.jobRequirementsResult[requirementLabel],
+  );
+
+  const means = jobRequirements.map(({requirementLabel}) => {
+    return report.normalization?.find(
+      ({jobRequirementLabel}) => requirementLabel === jobRequirementLabel,
+    )?.mean;
+  });
+
+  const minValsRaw = jobRequirements.map(({minValue}) => +(minValue || 0));
+  const minVals = minValsRaw.map((val, index) => val / +(means[index] || 1));
+
+  return {
+    labels,
+    datasets: [
+      {label: 'scores', data: scores},
+      {label: 'minVals', data: minVals},
+    ],
+  };
+};

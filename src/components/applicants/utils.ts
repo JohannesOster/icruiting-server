@@ -1,5 +1,4 @@
 import {S3} from 'aws-sdk';
-import {Applicant} from 'db/repos/applicants';
 
 export const getApplicantFileURLs = async (
   files?: {key: string; value: string}[],
@@ -16,8 +15,4 @@ export const getApplicantFileURLs = async (
   });
 
   return Promise.all(promises || []);
-};
-
-const getAttribute = (applicant: Applicant, attribute: string) => {
-  return applicant.attributes.find(({key}) => key === attribute);
 };
