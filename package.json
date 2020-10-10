@@ -36,7 +36,7 @@
     "express": "^4.17.1",
     "express-validator": "^6.6.1",
     "faker": "^4.1.0",
-    "formidable": "^2.0.0-dev.20200131.2",
+    "formidable": "2.0.0-canary.20200504.1",
     "humps": "^2.0.1",
     "jest": "^26.5.2",
     "nodemon": "^2.0.4",
