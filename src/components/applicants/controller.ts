@@ -222,7 +222,7 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
   const formCategoryMap = {
     screening: 'Screening',
-    assessment: 'Assessment Center',
+    assessment: 'Assessment',
   };
   htmlParams.formCategory = formCategoryMap[formCategory];
 
