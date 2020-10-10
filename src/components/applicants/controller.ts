@@ -9,7 +9,7 @@ import {dbSelectReport, dbSelectApplicantReport} from './database';
 import {getApplicantFileURLs} from './utils';
 import db from 'db';
 import {JobRequirement} from 'db/repos/jobs';
-import {buildReport} from 'db/repos/utils';
+import {buildReport, KeyValuePair} from 'db/repos/utils';
 
 export const getApplicants = catchAsync(async (req, res) => {
   const {jobId, offset, limit, orderBy} = req.query as any;
@@ -186,15 +186,14 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 export const getPdfReport = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
   const {tenantId} = res.locals.user;
-  const {formCategory = 'screening'} = req.query as {
-    formCategory?: 'screening' | 'assessment';
-  };
+  type Query = {formCategory?: 'screening' | 'assessment'};
+  const {formCategory = 'screening'} = req.query as Query;
+
   const applicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Applicant Not Found');
 
   const jobPromise = db.jobs.find(tenantId, applicant.jobId);
   const reportPromise = dbSelectApplicantReport(tenantId, applicant.jobId);
-
   const [job, applicantReport] = await Promise.all([jobPromise, reportPromise]);
   if (!job) throw new BaseError(404, 'Job Not Found');
   if (!applicantReport) throw new BaseError(404, 'Applicant Report Not Found');
@@ -202,19 +201,11 @@ export const getPdfReport = catchAsync(async (req, res) => {
   const htmlParams = {attributes: []} as any;
   if (applicantReport) {
     if (applicantReport.image) {
-      const file = applicant.files?.find(
-        ({key}) => key === applicantReport.image?.label,
+      const imageURL = await getFileURL(
+        applicantReport.image.label,
+        applicant.files,
       );
-      if (!file)
-        throw new BaseError(404, 'Report image is missing on applicant');
-
-      const params = {
-        Bucket: process.env.S3_BUCKET,
-        Key: file.value,
-        Expires: 100,
-      };
-      const imageURL = await new S3().getSignedUrlPromise('getObject', params);
-      htmlParams.imageURL = imageURL;
+      if (imageURL) htmlParams.imageURL = imageURL;
     }
 
     const attributes = applicantReport.attributes.map(({label}) => {
@@ -263,6 +254,21 @@ export const getPdfReport = catchAsync(async (req, res) => {
   res.setHeader('Content-Type', 'application/pdf');
   res.send(pdf);
 });
+
+const getFileURL = (
+  fileName: string,
+  applicantFiles: KeyValuePair<string>[],
+) => {
+  const imageKey = applicantFiles.find(({key}) => key === fileName)?.value;
+  if (!imageKey) return;
+
+  const params = {
+    Bucket: process.env.S3_BUCKET,
+    Key: imageKey,
+    Expires: 100,
+  };
+  return new S3().getSignedUrlPromise('getObject', params);
+};
 
 const buildRadarChart = (
   jobRequirements: JobRequirement[],
