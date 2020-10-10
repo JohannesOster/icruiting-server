@@ -188,12 +188,14 @@ export const getPdfReport = catchAsync(async (req, res) => {
     formCategory?: 'screening' | 'assessment';
   };
   const applicant = await db.applicants.find(tenantId, applicantId);
-  if (!applicant) throw new BaseError(404, 'Applicant not Found');
+  if (!applicant) throw new BaseError(404, 'Applicant Not Found');
 
   const jobPromise = db.jobs.find(tenantId, applicant.jobId);
   const reportPromise = dbSelectApplicantReport(tenantId, applicant.jobId);
 
   const [job, applicantReport] = await Promise.all([jobPromise, reportPromise]);
+  if (!job) throw new BaseError(404, 'Job Not Found');
+  if (!applicantReport) throw new BaseError(404, 'Applicant Report Not Found');
 
   const htmlParams = {attributes: []} as any;
   if (applicantReport) {
@@ -231,42 +233,39 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
   const report = await dbSelectReport({tenantId, applicantId, formCategory});
   if (!report) throw new BaseError(404, 'Not Found');
+
   htmlParams.rank = report.rank;
   htmlParams.score = report.score;
   htmlParams.standardDeviation = report.standardDeviation;
 
   /** RADAR CHART */
+  htmlParams.shouldPlot = formCategory === 'assessment';
   if (formCategory === 'assessment') {
-    const requirements =
-      job?.jobRequirements?.map(({requirementLabel}) => requirementLabel) || [];
-    const dataPoints =
-      job?.jobRequirements?.map(
-        (req) => report?.jobRequirementsResult[req.requirementLabel],
-      ) || [];
+    const {jobRequirements} = job;
+    const labels = jobRequirements.map(
+      ({requirementLabel}) => requirementLabel,
+    );
+    const scores = jobRequirements.map(
+      ({requirementLabel}) => report.jobRequirementsResult[requirementLabel],
+    );
 
-    const means = job?.jobRequirements?.map(({requirementLabel}) => {
-      return report?.normalization?.find(
-        ({jobRequirementLabel}: any) =>
-          requirementLabel === jobRequirementLabel,
+    const means = jobRequirements.map(({requirementLabel}) => {
+      return report.normalization?.find(
+        ({jobRequirementLabel}) => requirementLabel === jobRequirementLabel,
       )?.mean;
     });
 
-    const minValsRaw =
-      job?.jobRequirements?.map(({minValue}) => +(minValue || 0)) || [];
-    const minVals = means
-      ? minValsRaw.map((val, index) => val / +((means || [])[index] || 1))
-      : [];
+    const minValsRaw = jobRequirements.map(({minValue}) => +(minValue || 0));
+    const minVals = minValsRaw.map((val, index) => val / +(means[index] || 1));
 
     htmlParams.chartData = {
-      labels: requirements,
+      labels,
       datasets: [
-        {label: 'vals', data: dataPoints},
+        {label: 'scores', data: scores},
         {label: 'minVals', data: minVals},
       ],
     };
   }
-
-  htmlParams.shouldPlot = formCategory === 'assessment';
 
   const html = pug.renderFile(
     path.resolve(__dirname, 'report/report.pug'),
