@@ -2,7 +2,7 @@ import {S3} from 'aws-sdk';
 import {Applicant} from 'db/repos/applicants';
 
 export const getApplicantFileURLs = async (
-  files?: Array<{key: string; value: string}>,
+  files?: {key: string; value: string}[],
 ) => {
   const s3 = new S3();
   const bucket = process.env.S3_BUCKET;

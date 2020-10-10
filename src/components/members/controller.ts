@@ -10,7 +10,7 @@ export const createMember = catchAsync(async (req, res) => {
 
   const promises = emails.map((email: string) => {
     const params = {
-      UserPoolId: userPoolID,
+      userPoolID,
       Username: email,
       DesiredDeliveryMediums: ['EMAIL'],
       UserAttributes: [
@@ -31,7 +31,7 @@ export const getMembers = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {userPoolID, tenantId, email} = res.locals.user;
   const params = {
-    UserPoolId: userPoolID,
+    userPoolID,
     Filter: 'cognito:user_status="CONFIRMED"',
     AttributesToGet: ['email', 'name', 'custom:user_role', 'custom:tenant_id'],
   };
@@ -58,7 +58,7 @@ export const updateMember = catchAsync(async (req, res) => {
   const {username} = req.params;
 
   const params = {
-    UserPoolId: userPoolID,
+    userPoolID,
     Username: username,
     UserAttributes: [{Name: 'custom:user_role', Value: user_role}],
   };

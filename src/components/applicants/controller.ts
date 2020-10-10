@@ -195,7 +195,7 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
   const [job, applicantReport] = await Promise.all([jobPromise, reportPromise]);
 
-  let htmlParams = {attributes: []} as any;
+  const htmlParams = {attributes: []} as any;
   if (applicantReport) {
     if (applicantReport.image) {
       const file = applicant.files?.find(

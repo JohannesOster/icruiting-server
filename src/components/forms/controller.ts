@@ -110,9 +110,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
             Body: fileStream,
           };
 
-          fs.unlink(file.path, (err) => {
-            if (err) console.error(err);
-          });
+          fs.unlink(file.path, console.error);
 
           promises.push(s3.upload(params).promise());
           acc.attributes.push({

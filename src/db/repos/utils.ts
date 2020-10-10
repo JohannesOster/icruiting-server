@@ -12,15 +12,13 @@ export type TRankingRowDb = {
   score: string;
   standardDeviation: string;
   submissionsCount: string;
-  submissions: Array<
-    Array<{
+  submissions:{
       formFieldId: string;
       jobRequirementLabel: string | null;
       value: string;
       intent: FormFieldIntent;
       label: string;
-    }>
-  >;
+  }[][];
   normalization?: {
     jobRequirementLabel: string;
     mean: string;
@@ -31,7 +29,7 @@ export type TRankingRowDb = {
 export type TRankingResultVal = {
   label: string;
   intent: FormFieldIntent;
-  value: number | Array<string> | {[key: string]: number}; // sumUp, aggregate, countDistinc
+  value: number | string[] | {[key: string]: number}; // sumUp, aggregate, countDistinc
 };
 
 export const buildReport = (row: TRankingRowDb) => {

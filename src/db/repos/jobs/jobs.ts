@@ -43,10 +43,10 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const insert = async (values: {
     jobTitle: string;
     tenantId: string;
-    jobRequirements: Array<{
+    jobRequirements: {
       requirementLabel: string;
       minValue?: number;
-    }>;
+    }[];
   }): Promise<Job> => {
     const {jobRequirements, ...job} = values;
     const {insert} = pgp.helpers;

@@ -43,8 +43,8 @@ describe('applicants', () => {
       form = await dataGenerator.insertForm(tenantId, jobId, 'application');
 
       const _applicant = {
+        jobId,
         tenantId: mockUser.tenantId,
-        jobId: jobId,
         attributes: [
           {formFieldId: form.formFields[0].formFieldId, attributeValue: '1'},
         ],

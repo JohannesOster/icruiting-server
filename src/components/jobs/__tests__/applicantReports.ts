@@ -82,7 +82,7 @@ describe('jobs', () => {
         resp.body.applicantReportId,
       );
 
-      expect(parseInt(count)).toBe(1);
+      expect(parseInt(count, 10)).toBe(1);
 
       expect(resp.body.image).toBe(report.image);
     });
@@ -129,7 +129,7 @@ describe('jobs', () => {
       );
 
       report = await dbInsertApplicantReport({
-        jobId: jobId,
+        jobId,
         tenantId: mockUser.tenantId,
         attributes: _report.attributes,
         image: _report.image,

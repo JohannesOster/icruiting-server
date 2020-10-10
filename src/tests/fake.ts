@@ -33,7 +33,7 @@ const fake = {
   }),
   applicationForm: (tenantId: string, jobId: string) => ({
     tenantId,
-    jobId: jobId,
+    jobId,
     formCategory: 'application',
     formFields: [
       {
@@ -69,7 +69,7 @@ const fake = {
   }),
   screeningForm: (tenantId: string, jobId: string) => ({
     tenantId,
-    jobId: jobId,
+    jobId,
     formCategory: 'screening',
     formFields: [
       {
@@ -112,7 +112,7 @@ const fake = {
   }),
   assessmentForm: (tenantId: string, jobId: string) => ({
     tenantId,
-    jobId: jobId,
+    jobId,
     formCategory: 'assessment',
     formTitle: faker.random.words(),
     formFields: [

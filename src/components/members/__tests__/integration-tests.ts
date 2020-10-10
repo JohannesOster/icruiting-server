@@ -17,7 +17,7 @@ jest.mock('middlewares/auth', () => ({
 type adminCreateUserParams = {
   UserPoolId: string;
   Username: string;
-  UserAttributes: Array<{Name: string; Value: string}>;
+  UserAttributes: {Name: string; Value: string}[];
 };
 jest.mock('aws-sdk', () => ({
   CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({

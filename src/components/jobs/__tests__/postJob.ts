@@ -49,9 +49,7 @@ describe('jobs', () => {
       const respReqs = resp.body.jobRequirements;
       let count = 0; // count equalities
       job.jobRequirements.forEach((req) => {
-        for (let i = 0; i < respReqs.length; ++i) {
-          if (respReqs[i].requirementLabel === req.requirementLabel) ++count;
-        }
+        for(const label of respReqs) if (label === req.requirementLabel) ++count;
       });
 
       expect(count).toBe(job.jobRequirements.length);
@@ -68,7 +66,7 @@ describe('jobs', () => {
       const {jobId} = resp.body;
       const stmt = 'SELECT COUNT(*) FROM job WHERE job_id=$1';
       const {count} = await db.one(stmt, jobId);
-      expect(parseInt(count)).toBe(1);
+      expect(parseInt(count, 10)).toBe(1);
     });
 
     it('inserts job_requirement enitities', async () => {
@@ -82,7 +80,7 @@ describe('jobs', () => {
       const {jobId} = resp.body;
       const stmt = 'SELECT COUNT(*) FROM job_requirement WHERE job_id=$1';
       const {count} = await db.one(stmt, jobId);
-      expect(parseInt(count)).toBe(job.jobRequirements.length);
+      expect(parseInt(count, 10)).toBe(job.jobRequirements.length);
     });
   });
 });

@@ -16,7 +16,7 @@ export const deleteTenant = catchAsync(async (req, res) => {
 
   const cIdp = new CognitoIdentityServiceProvider();
   const params = {
-    UserPoolId: userPoolID,
+    userPoolID,
     AttributesToGet: ['email', 'custom:tenant_id'],
   };
 
@@ -26,13 +26,13 @@ export const deleteTenant = catchAsync(async (req, res) => {
     .then(({Users}) => {
       if(!Users) return [];
       const users = Users.map(user => mapCognitoUser(user));
-      
+
       // filter out foreign tenants
       return users.filter((user) => user['custom:tenant_id'] === tenantId);
     });
 
   const promises = users.map((user) => {
-    const params = {UserPoolId: userPoolID, Username: user.email};
+    const params = {userPoolID, Username: user.email};
     return cIdp.adminDeleteUser(params).promise();
   });
 
@@ -49,7 +49,7 @@ const deleteTenantFiles = async (tenantId: string) => {
 
   const {Contents} = await s3.listObjects(listParams).promise();
   if(!Contents?.length) return;
-  
+
   const keys = Contents.map(({Key}) => ({Key: Key || ''}));
   const delParams = {Bucket: bucket, Delete: {Objects: keys}};
   await s3.deleteObjects(delParams).promise();
