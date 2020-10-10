@@ -21,15 +21,3 @@ export const getApplicantFileURLs = async (
 const getAttribute = (applicant: Applicant, attribute: string) => {
   return applicant.attributes.find(({key}) => key === attribute);
 };
-
-export const sortApplicants = (applicants: Applicant[], attribute: string) => {
-  const sorted = applicants.sort((first, second) => {
-    const attrFirst = getAttribute(first, attribute)?.value;
-    const attrSecond = getAttribute(second, attribute)?.value;
-    if (!attrFirst || !attrSecond) return 0;
-
-    return attrFirst > attrSecond ? 1 : -1;
-  });
-
-  return sorted;
-};

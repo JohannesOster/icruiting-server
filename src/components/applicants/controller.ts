@@ -6,7 +6,7 @@ import puppeteer from 'puppeteer';
 import {IncomingForm} from 'formidable';
 import {BaseError, catchAsync} from 'errorHandling';
 import {dbSelectReport, dbSelectApplicantReport} from './database';
-import {getApplicantFileURLs, sortApplicants} from './utils';
+import {getApplicantFileURLs} from './utils';
 import db from 'db';
 
 export const getApplicants = catchAsync(async (req, res) => {
