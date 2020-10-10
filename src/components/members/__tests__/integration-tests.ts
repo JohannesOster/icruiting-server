@@ -132,12 +132,12 @@ describe('members', () => {
       expect(resp.body.Attributes).toStrictEqual(expectAttributes);
     });
 
-    it('Validates userRole param', async () => {
-      const resp = await request(app)
+    it('Validates userRole param', (done) => {
+       request(app)
         .put(`/members/${internet.email()}`)
         .set('Accept', 'application/json')
         .send({user_role: 'invalid role'})
-        .expect(422);
+        .expect(422, done);
     });
   });
 
