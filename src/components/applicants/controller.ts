@@ -12,14 +12,8 @@ import db from 'db';
 export const getApplicants = catchAsync(async (req, res) => {
   const {jobId, offset, limit, orderBy} = req.query as any;
   const {tenantId, userId} = res.locals.user;
-  const data = await db.applicants.findAll({
-    tenantId,
-    jobId,
-    userId,
-    offset,
-    limit,
-    orderBy,
-  });
+  const params = {tenantId, jobId, userId, offset, limit, orderBy};
+  const data = await db.applicants.findAll(params);
 
   // replace S3 filekeys with aws presigned URL
   const promises = data.applicants.map(({files, ...appl}) =>
@@ -27,10 +21,7 @@ export const getApplicants = catchAsync(async (req, res) => {
   );
 
   const applicants = await Promise.all(promises);
-  const sortKey = 'Vollständiger Name';
-  const sortedResp = sortApplicants(applicants, sortKey);
-
-  res.status(200).json({applicants: sortedResp, totalCount: data.totalCount});
+  res.status(200).json({applicants, totalCount: data.totalCount});
 });
 
 export const getApplicant = catchAsync(async (req, res) => {
