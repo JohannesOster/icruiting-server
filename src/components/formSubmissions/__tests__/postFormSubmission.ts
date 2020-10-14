@@ -1,10 +1,10 @@
 import request from 'supertest';
 import faker from 'faker';
 import app from 'app';
+import db from 'db';
 import fake from 'tests/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
 import dataGenerator from 'tests/dataGenerator';
-import {FormSubmission} from 'db/repos/formSubmissions';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -67,6 +67,8 @@ describe('form-submissions', () => {
         ),
       };
     });
+
+    afterEach(async () => await db.none('DELETE FROM form_submission'));
 
     it('returns 201 json response', (done) => {
       request(app)
