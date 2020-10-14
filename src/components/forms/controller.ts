@@ -65,11 +65,11 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
   const applicant: any = {tenantId: form.tenantId, jobId: form.jobId};
 
   const formidable = new IncomingForm();
+  formidable.maxFileSize = 500 * 1024 * 1024;
   formidable.parse(req, (err: Error, fields: any, files: any) => {
     if (err) {
-      const fileSizeError = 'Make shure your all your files combined are smaller than 150mb! If this doesn`t help, please contact the system admisitration.';
       console.error(err);
-      return res.render('form-submission', {error: fileSizeError});
+      return res.render('form-submission', {error: err});
     }
 
     const s3 = new S3();
