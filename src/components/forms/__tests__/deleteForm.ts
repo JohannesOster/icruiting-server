@@ -52,7 +52,7 @@ describe('forms', () => {
         form.formId,
       );
 
-      expect(parseInt(countBefore)).toBe(1);
+      expect(parseInt(countBefore, 10)).toBe(1);
 
       await request(app)
         .delete(`/forms/${form.formId}`)
@@ -64,7 +64,7 @@ describe('forms', () => {
         form.formId,
       );
 
-      expect(parseInt(count)).toBe(0);
+      expect(parseInt(count, 10)).toBe(0);
     });
 
     it('isolates tenant', async () => {
@@ -85,7 +85,7 @@ describe('forms', () => {
         form.formId,
       );
 
-      expect(parseInt(count)).toBe(1);
+      expect(parseInt(count, 10)).toBe(1);
     });
   });
 });

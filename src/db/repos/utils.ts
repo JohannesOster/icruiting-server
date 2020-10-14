@@ -1,8 +1,8 @@
-import {round} from '../../math';
+import {round} from '../math';
 
 export type FormFieldIntent = 'sum_up' | 'aggregate' | 'count_distinct';
 
-export type KeyVal<T> = {
+export type KeyValuePair<T> = {
   [key: string]: T;
 };
 
@@ -12,15 +12,13 @@ export type TRankingRowDb = {
   score: string;
   standardDeviation: string;
   submissionsCount: string;
-  submissions: Array<
-    Array<{
-      formFieldId: string;
-      jobRequirementLabel: string | null;
-      value: string;
-      intent: FormFieldIntent;
-      label: string;
-    }>
-  >;
+  submissions: {
+    formFieldId: string;
+    jobRequirementLabel: string | null;
+    value: string;
+    intent: FormFieldIntent;
+    label: string;
+  }[][];
   normalization?: {
     jobRequirementLabel: string;
     mean: string;
@@ -31,11 +29,11 @@ export type TRankingRowDb = {
 export type TRankingResultVal = {
   label: string;
   intent: FormFieldIntent;
-  value: number | Array<string> | {[key: string]: number}; // sumUp, aggregate, countDistinc
+  value: number | string[] | {[key: string]: number}; // sumUp, aggregate, countDistinc
 };
 
 export const buildReport = (row: TRankingRowDb) => {
-  const reqProfile = {} as KeyVal<{counter: number; sum: number}>;
+  const reqProfile = {} as KeyValuePair<{counter: number; sum: number}>;
   const initialValues = (key: FormFieldIntent) =>
     ({
       sum_up: 0,
@@ -67,8 +65,10 @@ export const buildReport = (row: TRankingRowDb) => {
             (acc[formFieldId].value as string[]).push(value);
             break;
           case 'count_distinct':
-            const currVal = (acc[formFieldId].value as KeyVal<number>)[value];
-            (acc[formFieldId].value as KeyVal<number>)[value] =
+            const currVal = (acc[formFieldId].value as KeyValuePair<number>)[
+              value
+            ];
+            (acc[formFieldId].value as KeyValuePair<number>)[value] =
               (currVal || 0) + 1;
             break;
         }
@@ -76,7 +76,7 @@ export const buildReport = (row: TRankingRowDb) => {
     );
 
     return acc;
-  }, {} as KeyVal<TRankingResultVal>);
+  }, {} as KeyValuePair<TRankingResultVal>);
 
   // Convert sum up values to mean
   Object.entries(result).forEach(([key, val]) => {
@@ -99,7 +99,7 @@ export const buildReport = (row: TRankingRowDb) => {
     acc[key] = acc[key] / +normalizer.mean;
 
     return acc;
-  }, {} as KeyVal<number>);
+  }, {} as KeyValuePair<number>);
 
   return {...row, result, jobRequirementsResult};
 };

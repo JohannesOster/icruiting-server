@@ -66,7 +66,7 @@ describe('applicants', () => {
       const stmt = 'SELECT COUNT(*) FROM applicant WHERE applicant_id = $1';
       const {count} = await db.one(stmt, applicant.applicantId);
 
-      expect(parseInt(count)).toBe(0);
+      expect(parseInt(count, 10)).toBe(0);
     });
   });
 });

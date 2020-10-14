@@ -82,7 +82,7 @@ export const dbUpdateApplicantReport = async ({
   const cs = new ColumnSet(columns, options);
 
   const attrs = attributes.map((formFieldId) => ({
-    applicantReportId: applicantReportId,
+    applicantReportId,
     formFieldId,
   }));
 

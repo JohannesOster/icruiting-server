@@ -54,7 +54,7 @@ describe('jobs', () => {
 
       const stmt = 'SELECT COUNT(*) FROM job WHERE job_id = $1';
       const {count} = await db.one(stmt, job.jobId);
-      expect(parseInt(count)).toBe(0);
+      expect(parseInt(count, 10)).toBe(0);
     });
   });
 });

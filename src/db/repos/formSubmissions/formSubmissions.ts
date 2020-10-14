@@ -46,10 +46,10 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     const sub = await db.one(subStmt);
 
     const submissionFields = Object.entries(params.submission).map(
-      ([formFieldId, submission_value]) => ({
+      ([formFieldId, submissionValue]) => ({
         formSubmissionId: sub.formSubmissionId,
         formFieldId,
-        submission_value,
+        submissionValue,
       }),
     );
 
@@ -96,10 +96,10 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     const {insert} = db.$config.pgp.helpers;
 
     const submissionFields = Object.entries(params.submission).map(
-      ([formFieldId, submission_value]) => ({
+      ([formFieldId, submissionValue]) => ({
         formSubmissionId: params.formSubmissionId,
         formFieldId,
-        submission_value,
+        submissionValue,
       }),
     );
 

@@ -6,20 +6,16 @@ import puppeteer from 'puppeteer';
 import {IncomingForm} from 'formidable';
 import {BaseError, catchAsync} from 'errorHandling';
 import {dbSelectReport, dbSelectApplicantReport} from './database';
-import {getApplicantFileURLs, sortApplicants} from './utils';
+import {getApplicantFileURLs} from './utils';
 import db from 'db';
+import {JobRequirement} from 'db/repos/jobs';
+import {buildReport, KeyValuePair} from 'db/repos/utils';
 
 export const getApplicants = catchAsync(async (req, res) => {
   const {jobId, offset, limit, orderBy} = req.query as any;
   const {tenantId, userId} = res.locals.user;
-  const data = await db.applicants.findAll({
-    tenantId,
-    jobId,
-    userId,
-    offset,
-    limit,
-    orderBy,
-  });
+  const params = {tenantId, jobId, userId, offset, limit, orderBy};
+  const data = await db.applicants.findAll(params);
 
   // replace S3 filekeys with aws presigned URL
   const promises = data.applicants.map(({files, ...appl}) =>
@@ -27,10 +23,7 @@ export const getApplicants = catchAsync(async (req, res) => {
   );
 
   const applicants = await Promise.all(promises);
-  const sortKey = 'Vollständiger Name';
-  const sortedResp = sortApplicants(applicants, sortKey);
-
-  res.status(200).json({applicants: sortedResp, totalCount: data.totalCount});
+  res.status(200).json({applicants, totalCount: data.totalCount});
 });
 
 export const getApplicant = catchAsync(async (req, res) => {
@@ -151,8 +144,8 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
               Body: fileStream,
             };
 
-            fs.unlink(file.path, function (err) {
-              if (err) throw new BaseError(500, err.message);
+            fs.unlink(file.path, (error) => {
+              if (error) throw new BaseError(500, error.message);
             });
 
             await s3.upload(params).promise();
@@ -193,39 +186,34 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 export const getPdfReport = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
   const {tenantId} = res.locals.user;
-  const {formCategory = 'screening'} = req.query as {
-    formCategory?: 'screening' | 'assessment';
-  };
+  type Query = {formCategory?: 'screening' | 'assessment'};
+  const {formCategory = 'screening'} = req.query as Query;
+
   const applicant = await db.applicants.find(tenantId, applicantId);
-  if (!applicant) throw new BaseError(404, 'Applicant not Found');
+  if (!applicant) throw new BaseError(404, 'Applicant Not Found');
 
   const jobPromise = db.jobs.find(tenantId, applicant.jobId);
   const reportPromise = dbSelectApplicantReport(tenantId, applicant.jobId);
-
   const [job, applicantReport] = await Promise.all([jobPromise, reportPromise]);
+  if (!job) throw new BaseError(404, 'Job Not Found');
+  if (!applicantReport) throw new BaseError(404, 'Applicant Report Not Found');
 
-  let htmlParams = {attributes: []} as any;
+  const htmlParams = {attributes: []} as any;
   if (applicantReport) {
     if (applicantReport.image) {
-      const file = applicant.files?.find(
-        ({key}) => key === applicantReport.image?.label,
+      const imageURL = await getFileURL(
+        applicantReport.image.label,
+        applicant.files,
       );
-      if (!file)
-        throw new BaseError(404, 'Report image is missing on applicant');
-
-      const params = {
-        Bucket: process.env.S3_BUCKET,
-        Key: file.value,
-        Expires: 100,
-      };
-      const imageURL = await new S3().getSignedUrlPromise('getObject', params);
-      htmlParams.imageURL = imageURL;
+      if (imageURL) htmlParams.imageURL = imageURL;
     }
 
     const attributes = applicantReport.attributes.map(({label}) => {
       const attr = applicant.attributes.find((attr) => attr.key === label);
-      if (!attr)
+      if (!attr) {
         throw new BaseError(404, 'Report attribute is missing on applicant');
+      }
+
       return attr;
     });
 
@@ -234,48 +222,21 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
   const formCategoryMap = {
     screening: 'Screening',
-    assessment: 'Assessment Center',
+    assessment: 'Assessment',
   };
   htmlParams.formCategory = formCategoryMap[formCategory];
 
   const report = await dbSelectReport({tenantId, applicantId, formCategory});
   if (!report) throw new BaseError(404, 'Not Found');
+
   htmlParams.rank = report.rank;
   htmlParams.score = report.score;
   htmlParams.standardDeviation = report.standardDeviation;
 
-  /** RADAR CHART */
   if (formCategory === 'assessment') {
-    const requirements =
-      job?.jobRequirements?.map(({requirementLabel}) => requirementLabel) || [];
-    const dataPoints =
-      job?.jobRequirements?.map(
-        (req) => report?.jobRequirementsResult[req.requirementLabel],
-      ) || [];
-
-    const means = job?.jobRequirements?.map(({requirementLabel}) => {
-      return report?.normalization?.find(
-        ({jobRequirementLabel}: any) =>
-          requirementLabel === jobRequirementLabel,
-      )?.mean;
-    });
-
-    const minValsRaw =
-      job?.jobRequirements?.map(({minValue}) => +(minValue || 0)) || [];
-    const minVals = means
-      ? minValsRaw.map((val, index) => val / +((means || [])[index] || 1))
-      : [];
-
-    htmlParams.chartData = {
-      labels: requirements,
-      datasets: [
-        {label: 'vals', data: dataPoints},
-        {label: 'minVals', data: minVals},
-      ],
-    };
+    htmlParams.shouldPlot = true;
+    htmlParams.chartData = buildRadarChart(job.jobRequirements, report);
   }
-
-  htmlParams.shouldPlot = formCategory === 'assessment';
 
   const html = pug.renderFile(
     path.resolve(__dirname, 'report/report.pug'),
@@ -293,3 +254,45 @@ export const getPdfReport = catchAsync(async (req, res) => {
   res.setHeader('Content-Type', 'application/pdf');
   res.send(pdf);
 });
+
+const getFileURL = (
+  fileName: string,
+  applicantFiles: KeyValuePair<string>[],
+) => {
+  const imageKey = applicantFiles.find(({key}) => key === fileName)?.value;
+  if (!imageKey) return;
+
+  const params = {
+    Bucket: process.env.S3_BUCKET,
+    Key: imageKey,
+    Expires: 100,
+  };
+  return new S3().getSignedUrlPromise('getObject', params);
+};
+
+const buildRadarChart = (
+  jobRequirements: JobRequirement[],
+  report: ReturnType<typeof buildReport>,
+) => {
+  const labels = jobRequirements.map(({requirementLabel}) => requirementLabel);
+  const scores = jobRequirements.map(
+    ({requirementLabel}) => report.jobRequirementsResult[requirementLabel],
+  );
+
+  const means = jobRequirements.map(({requirementLabel}) => {
+    return report.normalization?.find(
+      ({jobRequirementLabel}) => requirementLabel === jobRequirementLabel,
+    )?.mean;
+  });
+
+  const minValsRaw = jobRequirements.map(({minValue}) => +(minValue || 0));
+  const minVals = minValsRaw.map((val, index) => val / +(means[index] || 1));
+
+  return {
+    labels,
+    datasets: [
+      {label: 'scores', data: scores},
+      {label: 'minVals', data: minVals},
+    ],
+  };
+};
