@@ -94,7 +94,8 @@ CREATE TABLE IF NOT EXISTS form_submission (
   CONSTRAINT form_submission_id_pk PRIMARY KEY (form_submission_id),
   CONSTRAINT form_id_fk FOREIGN KEY (form_id) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT applicant_id FOREIGN KEY (applicant_id) REFERENCES applicant(applicant_id) ON DELETE CASCADE,
-  CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE
+  CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE,
+  CONSTRAINT applicnat_id_submitter_id_form_id_uq UNIQUE (applicant_id,submitter_id,form_id)
 );
 
 CREATE TABLE IF NOT EXISTS form_submission_field (
