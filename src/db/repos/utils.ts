@@ -14,6 +14,7 @@ export type TRankingRowDb = {
   submissionsCount: string;
   submissions: {
     formFieldId: string;
+    maxValue?: string;
     jobRequirementLabel: string | null;
     value: string;
     intent: FormFieldIntent;
@@ -26,7 +27,7 @@ export type TRankingRowDb = {
   }[];
 };
 
-export type TRankingResultVal = {
+type TRankingResultVal = {
   label: string;
   intent: FormFieldIntent;
   value: number | string[] | {[key: string]: number}; // sumUp, aggregate, countDistinc
@@ -40,10 +41,9 @@ export const buildReport = (row: TRankingRowDb) => {
       aggregate: [],
       count_distinct: {},
     }[key]);
-
   const result = row.submissions.reduce((acc, submission) => {
     submission.forEach(
-      ({formFieldId, intent, value, label, jobRequirementLabel}) => {
+      ({formFieldId, intent, value, label, jobRequirementLabel, maxValue}) => {
         if (!value) return acc;
         if (!acc[formFieldId]) {
           acc[formFieldId] = {label, intent, value: initialValues(intent)};
@@ -51,7 +51,7 @@ export const buildReport = (row: TRankingRowDb) => {
 
         switch (intent) {
           case 'sum_up':
-            (acc[formFieldId].value as number) += +value;
+            (acc[formFieldId].value as number) += +value / +(maxValue || 1);
             if (jobRequirementLabel) {
               if (reqProfile[jobRequirementLabel]?.sum === undefined) {
                 reqProfile[jobRequirementLabel] = {counter: 1, sum: +value};
@@ -65,6 +65,8 @@ export const buildReport = (row: TRankingRowDb) => {
             (acc[formFieldId].value as string[]).push(value);
             break;
           case 'count_distinct':
+            /** QUICK FIX to exclude unchecked values, which procue the string "false" */
+            if (value === 'false') break;
             const currVal = (acc[formFieldId].value as KeyValuePair<number>)[
               value
             ];
@@ -78,10 +80,10 @@ export const buildReport = (row: TRankingRowDb) => {
     return acc;
   }, {} as KeyValuePair<TRankingResultVal>);
 
-  // Convert sum up values to mean
+  // Convert sum up values to mean and percentage of maxValue
   Object.entries(result).forEach(([key, val]) => {
     if (val.intent !== 'sum_up') return;
-    const mean = round(+val.value / +row.submissionsCount);
+    const mean = round(+val.value / +row.submissionsCount, 4);
     result[key] = {...val, value: mean};
   });
 
