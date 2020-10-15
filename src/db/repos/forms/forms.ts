@@ -19,7 +19,7 @@ export type Form = {
     placeholder?: string;
     defaultValue?: string;
     required?: boolean;
-    options?: Array<{label: string; value: string}>;
+    options?: {label: string; value: string}[];
     editable?: boolean;
     deletable?: boolean;
     jobRequirementId?: string;
@@ -51,7 +51,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
       placeholder?: string;
       defaultValue?: string;
       required?: boolean;
-      options?: Array<{label: string; value: string}>;
+      options?: {label: string; value: string}[];
       editable?: boolean;
       deletable?: boolean;
       jobRequirementId?: string;
@@ -117,7 +117,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
       placeholder?: string;
       defaultValue?: string;
       required?: boolean;
-      options?: Array<{label: string; value: string}>;
+      options?: {label: string; value: string}[];
       editable?: boolean;
       deletable?: boolean;
       jobRequirementId?: string;
@@ -129,7 +129,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
 
     await db.tx(async (t) => {
       await t.none('SET CONSTRAINTS ALL DEFERRED');
-      let promises: Promise<any>[] = [];
+      const promises: Promise<any>[] = [];
       if (params.formTitle !== orgignialForm.formTitle) {
         const columns = ['?tenant_id', '?form_id', 'form_title'];
         const cs = new ColumnSet(columns, {table: 'form'});

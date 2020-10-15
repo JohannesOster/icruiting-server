@@ -4,7 +4,7 @@ import {
   createRankingRow,
   createSubmission,
 } from '../factories';
-import {mean, standardDeviation, round} from 'math';
+import {mean, standardDeviation, round} from 'db/math';
 
 describe('database repositories', () => {
   describe('round', () => {

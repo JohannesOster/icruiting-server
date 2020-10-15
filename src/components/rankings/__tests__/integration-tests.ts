@@ -60,8 +60,8 @@ describe('rankings', () => {
         });
 
       await Promise.all(promises).then(async (data) => {
-        const promises: Array<Promise<any>> = [];
-        const [form, ...applicants] = data as [Form, ...Array<Applicant>];
+        const promises: Promise<any>[] = [];
+        const [form, ...applicants] = data as [Form, ...Applicant[]];
 
         applicants.forEach((appl) => {
           const screening = {
@@ -110,8 +110,8 @@ describe('rankings', () => {
         .expect(200);
 
       for (let i = 0; i < resp.body.length - 2; ++i) {
-        expect(parseInt(resp.body[i].score)).toBeGreaterThanOrEqual(
-          parseInt(resp.body[i + 1].score),
+        expect(parseInt(resp.body[i].score, 10)).toBeGreaterThanOrEqual(
+          parseInt(resp.body[i + 1].score, 10),
         );
       }
     });
@@ -149,8 +149,8 @@ describe('rankings', () => {
         });
 
       await Promise.all(promises).then(async (data) => {
-        const promises: Array<Promise<any>> = [];
-        const [form, ...applicants] = data as [Form, ...Array<Applicant>];
+        const promises: Promise<any>[] = [];
+        const [form, ...applicants] = data as [Form, ...Applicant[]];
 
         applicants.forEach((appl) => {
           const assessment = {
@@ -199,8 +199,8 @@ describe('rankings', () => {
         .expect(200);
 
       for (let i = 0; i < resp.body.length - 2; ++i) {
-        expect(parseInt(resp.body[i].score)).toBeGreaterThanOrEqual(
-          parseInt(resp.body[i + 1].score),
+        expect(parseInt(resp.body[i].score, 10)).toBeGreaterThanOrEqual(
+          parseInt(resp.body[i + 1].score, 10),
         );
       }
     });

@@ -98,7 +98,7 @@ describe('tenants', () => {
     it('deletes tenant of authenticated user', async () => {
       const stmt = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
       const {count} = await db.one(stmt, mockUser.tenantId);
-      expect(parseInt(count)).toBe(1);
+      expect(parseInt(count, 10)).toBe(1);
 
       await request(app)
         .del(`/tenants`)
@@ -107,7 +107,7 @@ describe('tenants', () => {
         .expect(200);
 
       const {count: countAfter} = await db.one(stmt, mockUser.tenantId);
-      expect(parseInt(countAfter)).toBe(0);
+      expect(parseInt(countAfter, 10)).toBe(0);
     });
   });
 });

@@ -1,8 +1,8 @@
-import {round} from '../../math';
+import {round} from '../math';
 
 export type FormFieldIntent = 'sum_up' | 'aggregate' | 'count_distinct';
 
-export type KeyVal<T> = {
+export type KeyValuePair<T> = {
   [key: string]: T;
 };
 
@@ -12,15 +12,14 @@ export type TRankingRowDb = {
   score: string;
   standardDeviation: string;
   submissionsCount: string;
-  submissions: Array<
-    Array<{
-      formFieldId: string;
-      jobRequirementLabel: string | null;
-      value: string;
-      intent: FormFieldIntent;
-      label: string;
-    }>
-  >;
+  submissions: {
+    formFieldId: string;
+    maxValue?: string;
+    jobRequirementLabel: string | null;
+    value: string;
+    intent: FormFieldIntent;
+    label: string;
+  }[][];
   normalization?: {
     jobRequirementLabel: string;
     mean: string;
@@ -28,24 +27,23 @@ export type TRankingRowDb = {
   }[];
 };
 
-export type TRankingResultVal = {
+type TRankingResultVal = {
   label: string;
   intent: FormFieldIntent;
-  value: number | Array<string> | {[key: string]: number}; // sumUp, aggregate, countDistinc
+  value: number | string[] | {[key: string]: number}; // sumUp, aggregate, countDistinc
 };
 
 export const buildReport = (row: TRankingRowDb) => {
-  const reqProfile = {} as KeyVal<{counter: number; sum: number}>;
+  const reqProfile = {} as KeyValuePair<{counter: number; sum: number}>;
   const initialValues = (key: FormFieldIntent) =>
     ({
       sum_up: 0,
       aggregate: [],
       count_distinct: {},
     }[key]);
-
   const result = row.submissions.reduce((acc, submission) => {
     submission.forEach(
-      ({formFieldId, intent, value, label, jobRequirementLabel}) => {
+      ({formFieldId, intent, value, label, jobRequirementLabel, maxValue}) => {
         if (!value) return acc;
         if (!acc[formFieldId]) {
           acc[formFieldId] = {label, intent, value: initialValues(intent)};
@@ -53,7 +51,7 @@ export const buildReport = (row: TRankingRowDb) => {
 
         switch (intent) {
           case 'sum_up':
-            (acc[formFieldId].value as number) += +value;
+            (acc[formFieldId].value as number) += +value / +(maxValue || 1);
             if (jobRequirementLabel) {
               if (reqProfile[jobRequirementLabel]?.sum === undefined) {
                 reqProfile[jobRequirementLabel] = {counter: 1, sum: +value};
@@ -67,8 +65,12 @@ export const buildReport = (row: TRankingRowDb) => {
             (acc[formFieldId].value as string[]).push(value);
             break;
           case 'count_distinct':
-            const currVal = (acc[formFieldId].value as KeyVal<number>)[value];
-            (acc[formFieldId].value as KeyVal<number>)[value] =
+            /** QUICK FIX to exclude unchecked values, which procue the string "false" */
+            if (value === 'false') break;
+            const currVal = (acc[formFieldId].value as KeyValuePair<number>)[
+              value
+            ];
+            (acc[formFieldId].value as KeyValuePair<number>)[value] =
               (currVal || 0) + 1;
             break;
         }
@@ -76,12 +78,12 @@ export const buildReport = (row: TRankingRowDb) => {
     );
 
     return acc;
-  }, {} as KeyVal<TRankingResultVal>);
+  }, {} as KeyValuePair<TRankingResultVal>);
 
-  // Convert sum up values to mean
+  // Convert sum up values to mean and percentage of maxValue
   Object.entries(result).forEach(([key, val]) => {
     if (val.intent !== 'sum_up') return;
-    const mean = round(+val.value / +row.submissionsCount);
+    const mean = round(+val.value / +row.submissionsCount, 4);
     result[key] = {...val, value: mean};
   });
 
@@ -99,7 +101,7 @@ export const buildReport = (row: TRankingRowDb) => {
     acc[key] = acc[key] / +normalizer.mean;
 
     return acc;
-  }, {} as KeyVal<number>);
+  }, {} as KeyValuePair<number>);
 
   return {...row, result, jobRequirementsResult};
 };

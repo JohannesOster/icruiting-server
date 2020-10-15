@@ -1,5 +1,5 @@
 import {random} from 'faker';
-import {mean, standardDeviation, round} from '../math';
+import {mean, standardDeviation, round} from './math';
 import {FormFieldIntent} from './repos/utils';
 
 // ! Note this factory func does not represent the real structure of a form field

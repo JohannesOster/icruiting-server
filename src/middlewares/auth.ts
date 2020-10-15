@@ -27,7 +27,7 @@ export const requireAuth: RequestHandler = catchAsync(
       const userPoolID = payload.iss.substring(lastSlashIdx + 1);
       res.locals.user = {
         tenantId: payload['custom:tenant_id'],
-        userPoolID: userPoolID,
+        userPoolID,
         userId: payload.sub,
         userRole: payload['custom:user_role'],
         email: payload.email,

@@ -1,6 +1,7 @@
 import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
 import {catchAsync} from 'errorHandling';
 import db from 'db';
+import {mapCognitoUser} from 'components/utils';
 
 export const createTenant = catchAsync(async (req, res) => {
   const {tenantName} = req.body;
@@ -11,16 +12,7 @@ export const createTenant = catchAsync(async (req, res) => {
 export const deleteTenant = catchAsync(async (req, res) => {
   const {userPoolID, tenantId} = res.locals.user;
 
-  const s3 = new S3();
-  const bucket = process.env.S3_BUCKET || '';
-  const listParams = {Bucket: bucket, Prefix: tenantId};
-
-  const {Contents} = await s3.listObjects(listParams).promise();
-  if (Contents?.length) {
-    const keys = Contents.map(({Key}) => ({Key: Key || ''}));
-    const delParams = {Bucket: bucket, Delete: {Objects: keys}};
-    await s3.deleteObjects(delParams).promise();
-  }
+  deleteTenantFiles(tenantId);
 
   const cIdp = new CognitoIdentityServiceProvider();
   const params = {
@@ -31,23 +23,15 @@ export const deleteTenant = catchAsync(async (req, res) => {
   const users = await cIdp
     .listUsers(params)
     .promise()
-    .then((resp) => {
-      const userMaps = resp.Users?.map((user) => {
-        if (!user.Attributes?.length) return {};
-        const map = user.Attributes.reduce((acc, curr) => {
-          if (!curr.Value) return acc;
-          acc[curr.Name] = curr.Value;
-          return acc;
-        }, {} as {[key: string]: string});
+    .then(({Users}) => {
+      if (!Users) return [];
+      const users = Users.map((user) => mapCognitoUser(user));
 
-        return map;
-      });
-
-      // filter out foreign orgs
-      return userMaps?.filter((user) => user['custom:tenant_id'] === tenantId);
+      // filter out foreign tenants
+      return users.filter((user) => user['custom:tenant_id'] === tenantId);
     });
 
-  const promises = users?.map((user) => {
+  const promises = users.map((user) => {
     const params = {UserPoolId: userPoolID, Username: user.email};
     return cIdp.adminDeleteUser(params).promise();
   });
@@ -57,3 +41,16 @@ export const deleteTenant = catchAsync(async (req, res) => {
 
   res.status(200).json();
 });
+
+const deleteTenantFiles = async (tenantId: string) => {
+  const s3 = new S3();
+  const bucket = process.env.S3_BUCKET!;
+  const listParams = {Bucket: bucket, Prefix: tenantId};
+
+  const {Contents} = await s3.listObjects(listParams).promise();
+  if (!Contents?.length) return;
+
+  const keys = Contents.map(({Key}) => ({Key: Key || ''}));
+  const delParams = {Bucket: bucket, Delete: {Objects: keys}};
+  await s3.deleteObjects(delParams).promise();
+};

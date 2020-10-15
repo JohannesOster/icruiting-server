@@ -1,4 +1,5 @@
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
+import {mapCognitoUser} from 'components/utils';
 import {catchAsync} from 'errorHandling';
 import {removePrefix} from './utils';
 
@@ -36,20 +37,14 @@ export const getMembers = catchAsync(async (req, res) => {
   };
 
   const {Users} = await cIdp.listUsers(params).promise();
+  if (!Users) return res.status(200).json([]);
 
-  const userMaps = Users?.map((user) => {
-    const prefix = 'custom:';
-    const map = user.Attributes?.reduce((acc, curr) => {
-      const attrName = removePrefix(curr.Name, prefix);
-      acc[attrName] = curr.Value;
-      return acc;
-    }, {} as any);
+  const keyModifier = (key: string) => removePrefix(key, 'custom:');
+  const userMaps = Users.map((user) => mapCognitoUser(user, keyModifier));
 
-    return map;
-  });
+  // filter out foreign tenants
+  const filtered = userMaps?.filter((user) => user.tenant_id === tenantId);
 
-  // filter out foreign orgs
-  const filtered = userMaps?.filter((user) => user['tenant_id'] === tenantId);
   // filter out requesting user
   const withoutMe = filtered?.filter((user) => user.email !== email);
 
