@@ -3,11 +3,11 @@ CREATE OR REPLACE VIEW applicant_view AS
 	       array_agg(json_build_object(
 	         'key', form_field.label,
 	         'value', applicant_attribute.attribute_value
-	        )) FILTER (WHERE form_field.component != 'file_upload') AS attributes,
+	        ) ORDER BY form_field.row_index) FILTER (WHERE form_field.component != 'file_upload') AS attributes,
 	       array_agg(json_build_object(
 	         'key', form_field.label,
 	         'value', applicant_attribute.attribute_value
-	        )) FILTER (WHERE form_field.component = 'file_upload') AS files
+	        ) ORDER BY form_field.row_index) FILTER (WHERE form_field.component = 'file_upload') AS files
 	FROM applicant
 	LEFT JOIN applicant_attribute
 	ON applicant_attribute.applicant_id = applicant.applicant_id
