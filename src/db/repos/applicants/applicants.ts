@@ -19,6 +19,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     orderBy?: string;
     offset?: number;
     limit?: number;
+    filter?: string;
   }): Promise<{applicants: Applicant[]; totalCount: string}> => {
     const limitQuery = (val?: number) => ({
       rawType: true,
@@ -32,6 +33,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
         limit: limitQuery(params.limit),
         offset: params.offset || 0,
         order_by: vals.order_by || null,
+        filter: !vals.filter ? null : vals.filter,
       })
       .then((applicants) => {
         if (!applicants?.length) return {applicants: [], totalCount: 0};

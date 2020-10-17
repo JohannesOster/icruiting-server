@@ -12,9 +12,9 @@ import {JobRequirement} from 'db/repos/jobs';
 import {buildReport, KeyValuePair} from 'db/repos/utils';
 
 export const getApplicants = catchAsync(async (req, res) => {
-  const {jobId, offset, limit, orderBy} = req.query as any;
+  const {jobId, offset, limit, orderBy, filter} = req.query as any;
   const {tenantId, userId} = res.locals.user;
-  const params = {tenantId, jobId, userId, offset, limit, orderBy};
+  const params = {tenantId, jobId, userId, offset, limit, orderBy, filter};
   const data = await db.applicants.findAll(params);
 
   // replace S3 filekeys with aws presigned URL
