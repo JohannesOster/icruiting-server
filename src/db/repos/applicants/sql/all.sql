@@ -11,7 +11,7 @@ JOIN (
 	SELECT applicant_id
 	FROM applicant_view
 	CROSS JOIN unnest(attributes) AS attribute
-	WHERE difference(attribute->>'value',${filter}) > 2
+	WHERE difference(attribute->>'value',${filter}) > 3 
 	  OR ${filter} Is NULL
 	GROUP BY applicant_id
 ) AS filter_query
