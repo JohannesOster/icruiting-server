@@ -15,4 +15,3 @@ DROP TYPE IF EXISTS form_field_component;
 DROP TYPE IF EXISTS form_category;
 
 DROP EXTENSION IF EXISTS "uuid-ossp";
-DROP EXTENSION IF EXISTS fuzzystrmatch;
