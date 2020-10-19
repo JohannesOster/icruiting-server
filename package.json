@@ -7,7 +7,7 @@
     "start:dev": "NODE_PATH=./src env NODE_ENV=development nodemon",
     "start": "NODE_PATH=dist/src node dist/src/index.js",
     "build": "rimraf ./dist && tsc && npm run copy-files",
-    "copy-files": "copyfiles src/**/*.sql src/**/*.pug src/**/*.css src/**/*.svg dist/",
+    "copy-files": "copyfiles src/**/*/*.sql src/**/*/*.pug src/**/*/*.css dist/",
     "db-setup": "env NODE_ENV=development npx ts-node ./src/db/setup.ts createAll",
     "db-drop": "env NODE_ENV=development npx ts-node ./src/db/setup.ts dropAll",
     "test": "npx jest --runInBand --detectOpenHandles",
