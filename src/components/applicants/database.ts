@@ -13,6 +13,7 @@ export const dbSelectReport = (params: {
 }): Promise<ReturnType<typeof buildReport> | null> => {
   return db.oneOrNone(selectReport, decamelizeKeys(params)).then((report) => {
     if (!report) return report;
+    report = {...report, normalization: report.normalization[0]};
     return buildReport(report);
   });
 };
