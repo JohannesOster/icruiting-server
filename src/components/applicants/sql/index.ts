@@ -18,7 +18,12 @@ export const selectReport = new QueryFile(
   options,
 );
 
+export const selectAssessmentReport = new QueryFile(
+  join(__dirname, 'selectAssessmentReport.sql'),
+  options,
+);
+
 export const selectApplicantReport = new QueryFile(
   join(__dirname, 'selectApplicantReport.sql'),
-  options,
+  options, 
 );
