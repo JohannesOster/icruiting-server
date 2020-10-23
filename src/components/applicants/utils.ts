@@ -38,16 +38,17 @@ export const buildAssessmentReport = ({
   // build mean for reqProfile
   const reqMeans = Object.entries(reqResult).reduce(
     (acc, [key, {counter, sum}]) => {
-      acc.absolute = {...acc.absolute, [key]: sum / counter};
+      const mean = sum / counter;
+      acc.absolute = {...acc.absolute, [key]: mean};
 
       const normalizer = normalization.find(
-        ({jobRequirementLabel}: any) => (jobRequirementLabel = key),
+        ({jobRequirementLabel}: any) => jobRequirementLabel === key,
       );
       if (!normalizer) return acc;
 
       acc.normalized = {
         ...acc.normalized,
-        [key]: sum / counter / normalizer.mean,
+        [key]: mean / normalizer.mean,
       };
 
       return acc;
