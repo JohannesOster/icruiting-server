@@ -47,7 +47,7 @@ describe('database repositories', () => {
       const mean = sum / row.submissions.length;
 
       const res = buildReport(row);
-      expect(res.result[formField.formFieldId].value).toBe(mean);
+      expect((res.result[formField.formFieldId] as any).value).toBe(mean);
     });
 
     it('builds mean for the jobRequirements', () => {
