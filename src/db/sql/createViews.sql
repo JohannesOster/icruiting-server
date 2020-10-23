@@ -41,7 +41,7 @@ CREATE OR REPLACE VIEW form_submission_view AS
 			FROM form_field
 			LEFT JOIN (SELECT form_field_id, option FROM form_field CROSS JOIN jsonb_array_elements(options) as option) as option
 			ON form_field.form_field_id = option.form_field_id
-			GROUP BY form_field_id) AS form_field
+			GROUP BY form_field.form_field_id) AS form_field
 	ON form_field.form_id = form.form_id
 	JOIN
 		(SELECT form_submission.*, form_field_id, submission_value
