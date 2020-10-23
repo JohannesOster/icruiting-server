@@ -1,4 +1,5 @@
 import {S3} from 'aws-sdk';
+import {round} from 'db/math';
 import {
   FormSubmission,
   reduceFormSubmissions,
@@ -68,7 +69,7 @@ export const buildAssessmentReport = ({
     result,
     reqResult: reqMeans.normalized,
     reqResultRaw: reqMeans.absolute,
-    reqScore: reqScore / scoreNormalizer,
+    reqScore: round(reqScore / scoreNormalizer, 2),
     normalization,
     ...other,
   };
