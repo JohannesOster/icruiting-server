@@ -49,5 +49,5 @@ CREATE OR REPLACE VIEW form_submission_view AS
 	ON submission_field.form_field_id = form_field.form_field_id
 	LEFT JOIN job_requirement
 	ON job_requirement.job_requirement_id = form_field.job_requirement_id
-	GROUP BY submitter_id, applicant_id, form.job_id, form_category, form.tenant_id;
+	GROUP BY submitter_id, applicant_id, form.form_id, form.job_id, form_category, form.tenant_id;
 	
