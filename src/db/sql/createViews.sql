@@ -17,6 +17,7 @@ CREATE OR REPLACE VIEW applicant_view AS
 
 CREATE OR REPLACE VIEW form_submission_view AS 
 	SELECT
+		form.form_id,
 		form.job_id,
 		form_category,
 		form.tenant_id,
@@ -32,13 +33,14 @@ CREATE OR REPLACE VIEW form_submission_view AS
 			'value', submission_value
 		)) AS submission
 	FROM form
-	JOIN 
+	LEFT JOIN 
 		(
 			SELECT 
 				form_field.*,
-				MAX((option->>'value')::NUMERIC) FILTER (WHERE intent='sum_up') AS max_value
+				MAX((option.option->>'value')::NUMERIC) FILTER (WHERE intent='sum_up') AS max_value
 			FROM form_field
-			CROSS JOIN jsonb_array_elements(options) as option
+			LEFT JOIN (SELECT form_field_id, option FROM form_field CROSS JOIN jsonb_array_elements(options) as option) as option
+			ON form_field.form_field_id = option.form_field_id
 			GROUP BY form_field_id) AS form_field
 	ON form_field.form_id = form.form_id
 	JOIN

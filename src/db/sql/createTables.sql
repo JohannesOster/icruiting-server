@@ -1,6 +1,4 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION fuzzystrmatch;
-
 
 CREATE TABLE IF NOT EXISTS tenant (
   tenant_id UUID DEFAULT uuid_generate_v4(),

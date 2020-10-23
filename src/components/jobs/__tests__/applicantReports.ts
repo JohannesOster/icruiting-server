@@ -2,6 +2,7 @@ import request from 'supertest';
 import app from 'app';
 import db from 'db';
 import fake from 'tests/fake';
+import {random} from 'faker';
 import {endConnection, truncateAllTables} from 'db/setup';
 import {dbInsertApplicantReport} from '../database';
 import dataGenerator from 'tests/dataGenerator';
@@ -13,6 +14,12 @@ jest.mock('middlewares/auth', () => ({
     res.locals.user = mockUser;
     next();
   }),
+}));
+
+jest.mock('aws-sdk', () => ({
+  S3: jest.fn().mockImplementation(() => ({
+    getSignedUrlPromise: () => Promise.resolve(random.uuid()),
+  })),
 }));
 
 beforeAll(async () => {
