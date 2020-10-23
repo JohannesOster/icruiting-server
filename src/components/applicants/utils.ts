@@ -66,6 +66,7 @@ export const buildAssessmentReport = ({
   return {
     result,
     reqResult: reqMeans.normalized,
+    reqResultRaw: reqMeans.absolute,
     reqScore: reqScore / scoreNormalizer,
     normalization,
     ...other,
