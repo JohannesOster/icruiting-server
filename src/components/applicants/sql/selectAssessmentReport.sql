@@ -1,4 +1,4 @@
-SELECT 
+SELECT
 	applicant_id,
 	tenant_id,
 	rank,
@@ -14,8 +14,8 @@ FROM
 			array_agg(normalization) as normalization,
 			COUNT(DISTINCT (submitter_id, form_id)) AS submissions_count,
 			ARRAY_AGG(single_submission.submission) AS submissions,
-			SUM(single_submission.score) AS score,
-			ROW_NUMBER() OVER (ORDER BY SUM(single_submission.score) DESC) AS rank
+			ROUND(AVG(single_submission.score), 2) AS score,
+			ROW_NUMBER() OVER (ORDER BY AVG(single_submission.score) DESC) AS rank
 		FROM
 			(SELECT job_id FROM applicant WHERE applicant_id = ${applicant_id}) AS applicant
 			JOIN (SELECT * FROM form_submission_view WHERE form_category = ${form_category} AND tenant_id = ${tenant_id}) AS single_submission

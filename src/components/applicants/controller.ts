@@ -260,9 +260,9 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
 const getFileURL = (
   fileName: string,
-  applicantFiles: KeyValuePair<string>[],
+  applicantFiles?: KeyValuePair<string>[],
 ) => {
-  const imageKey = applicantFiles.find(({key}) => key === fileName)?.value;
+  const imageKey = applicantFiles?.find(({key}) => key === fileName)?.value;
   if (!imageKey) return;
 
   const params = {
@@ -279,7 +279,7 @@ const buildRadarChart = (
 ) => {
   const labels = jobRequirements.map(({requirementLabel}) => requirementLabel);
   const scores = jobRequirements.map(
-    ({requirementLabel}) => report.jobRequirementsResult[requirementLabel],
+    ({requirementLabel}) => report.jobRequirementsResult[requirementLabel] || 0,
   );
 
   const means = jobRequirements.map(({requirementLabel}) => {
@@ -294,8 +294,8 @@ const buildRadarChart = (
   return {
     labels,
     datasets: [
-      {label: 'scores', data: scores},
-      {label: 'minVals', data: minVals},
+      {label: 'Erzielter Wert', data: scores, backgroundColor: "rgb(15,91,165, 0.5)"},
+      {label: 'Mindestmaß', data: minVals},
     ],
   };
 };
