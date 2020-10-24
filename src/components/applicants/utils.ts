@@ -1,4 +1,10 @@
 import {S3} from 'aws-sdk';
+import {round} from 'db/math';
+import {
+  FormSubmission,
+  reduceFormSubmissions,
+  KeyValuePair,
+} from 'db/repos/utils';
 
 export const getApplicantFileURLs = async (
   files?: {key: string; value: string}[],
@@ -15,4 +21,56 @@ export const getApplicantFileURLs = async (
   });
 
   return Promise.all(promises || []);
+};
+
+interface Params {
+  applicantId: string;
+  tenantId: string;
+  submissions: FormSubmission[];
+  normalization: any;
+}
+export const buildAssessmentReport = ({
+  submissions,
+  normalization,
+  ...other
+}: Params) => {
+  const [result, reqResult] = reduceFormSubmissions(submissions);
+
+  // build mean for reqProfile
+  const reqMeans = Object.entries(reqResult).reduce(
+    (acc, [key, {counter, sum}]) => {
+      const mean = round(sum / counter);
+      acc.absolute = {...acc.absolute, [key]: mean};
+
+      const normalizer = normalization.find(
+        ({jobRequirementLabel}: any) => jobRequirementLabel === key,
+      );
+      if (!normalizer) return acc;
+
+      acc.normalized = {
+        ...acc.normalized,
+        [key]: round(mean / normalizer.mean),
+      };
+
+      return acc;
+    },
+    {} as KeyValuePair<KeyValuePair<number>>,
+  );
+
+  const reqScore = Object.values(reqMeans.absolute).reduce((acc, curr) => {
+    return acc + curr;
+  }, 0);
+
+  const scoreNormalizer = normalization.reduce((acc: any, {mean}: any) => {
+    return acc + mean;
+  }, 0);
+
+  return {
+    result,
+    reqResult: reqMeans.normalized,
+    reqResultRaw: reqMeans.absolute,
+    reqScore: round(reqScore / scoreNormalizer, 2),
+    normalization,
+    ...other,
+  };
 };
