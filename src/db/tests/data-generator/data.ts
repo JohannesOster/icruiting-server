@@ -1,12 +1,17 @@
 import {random} from 'faker';
-import fs from 'fs';
+import {flatten} from './utils';
 
 const {uuid, word, words, number: randNumber} = random;
 
-const tenant = {tenant_id: uuid(), tenant_name: uuid()};
+export const tenant = {tenant_id: uuid(), tenant_name: uuid()};
 
-const job = {tenant_id: tenant.tenant_id, job_id: uuid(), job_title: word()};
-const jobRequirements = [
+export const job = {
+  tenant_id: tenant.tenant_id,
+  job_id: uuid(),
+  job_title: word(),
+};
+
+export const jobRequirements = [
   {
     job_requirement_id: uuid(),
     job_id: job.job_id,
@@ -21,14 +26,14 @@ const jobRequirements = [
   },
 ];
 
-const screeningForm = {
+export const screeningForm = {
   form_id: uuid(),
   tenant_id: tenant.tenant_id,
   job_id: job.job_id,
   form_category: 'screening',
 };
 
-const screeningFormFields = [
+export const screeningFormFields = [
   {
     form_field_id: uuid(),
     form_id: screeningForm.form_id,
@@ -47,4 +52,39 @@ const screeningFormFields = [
   },
 ];
 
-export {tenant, job, jobRequirements, screeningForm, screeningFormFields};
+export const applicationForm = {
+  form_id: uuid(),
+  tenant_id: tenant.tenant_id,
+  job_id: job.job_id,
+  form_category: 'screening',
+};
+
+export const applicationFormFields = [
+  {
+    form_field_id: uuid(),
+    form_id: applicationForm.form_id,
+    component: 'input',
+    row_index: 0,
+    label: words(),
+    description: words(),
+    required: true,
+  },
+];
+
+export const applicants = [
+  {
+    tenant_id: tenant.tenant_id,
+    job_id: job.job_id,
+    applicant_id: uuid(),
+  },
+];
+
+export const applicantAttributes = flatten(
+  applicants.map(({applicant_id}) =>
+    applicationFormFields.map(({form_field_id}) => ({
+      applicant_id,
+      form_field_id,
+      attribute_value: words(),
+    })),
+  ),
+);

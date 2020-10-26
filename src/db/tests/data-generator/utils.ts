@@ -13,3 +13,6 @@ export const generateInsert = (table: string, data: any) => {
 
   return `INSERT INTO ${table}(${columns(data[0])}) VALUES\n\t${vals};\n`;
 };
+
+export const flatten = (arr: any[]) =>
+  arr.reduce((acc, val) => acc.concat(val), []);
