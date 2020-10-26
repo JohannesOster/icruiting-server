@@ -53,7 +53,7 @@ CREATE OR REPLACE VIEW form_submission_view AS
 	ON job_requirement.job_requirement_id = form_field.job_requirement_id
 	GROUP BY submitter_id, applicant_id, form.form_id, form.job_id, form_category, form.tenant_id;
 
-CREATE OR REPLACE ranking AS
+CREATE OR REPLACE VIEW ranking AS
 SELECT
 	tenant_id,
 	job_id,
@@ -61,8 +61,7 @@ SELECT
 	applicant_id,
 	COUNT(DISTINCT (submitter_id, form_id, applicant_id)) AS submissions_count,
 	ROUND(STDDEV_POP(score), 2) AS standard_deviation,
-	ROUND(AVG(score), 2) AS score,
- 	ROW_NUMBER() OVER (ORDER BY (AVG(score)) DESC) AS rank
+	ROUND(AVG(score), 2) AS score
 FROM 
 	(SELECT 
 		form_submission.*,
