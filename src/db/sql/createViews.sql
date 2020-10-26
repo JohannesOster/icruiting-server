@@ -15,7 +15,7 @@ CREATE OR REPLACE VIEW applicant_view AS
 	ON applicant_attribute.form_field_id = form_field.form_field_id
 	GROUP BY applicant.applicant_id;
 
-CREATE OR REPLACE VIEW form_submission_view AS 
+CREATE OR REPLACE VIEW form_submission_view AS
 	SELECT
 		form.job_id,
 		form.form_id,
@@ -33,9 +33,9 @@ CREATE OR REPLACE VIEW form_submission_view AS
 			'value', submission_value
 		)) AS submission
 	FROM form
-	LEFT JOIN 
+	LEFT JOIN
 		(
-			SELECT 
+			SELECT
 				form_field.*,
 				MAX((option.option->>'value')::NUMERIC) FILTER (WHERE intent='sum_up') AS max_value
 			FROM form_field
@@ -61,9 +61,10 @@ SELECT
 	applicant_id,
 	COUNT(DISTINCT (submitter_id, form_id, applicant_id)) AS submissions_count,
 	ROUND(STDDEV_POP(score), 2) AS standard_deviation,
-	ROUND(AVG(score), 2) AS score
-FROM 
-	(SELECT 
+	ROUND(AVG(score), 2) AS score,
+  ROW_NUMBER() OVER (PARTITION BY form_category ORDER BY AVG(score)) AS rank
+FROM
+	(SELECT
 		form_submission.*,
 		form.form_category,
 		form.job_id,
