@@ -66,8 +66,8 @@ SELECT
 FROM
 	(SELECT
 		form_submission.*,
-		form.form_category,
-		form.job_id,
+		form_category,
+		job_id,
 		SUM(submission_value::NUMERIC) AS score
 	 FROM form_submission
 	 JOIN form ON form.form_id = form_submission.form_id
