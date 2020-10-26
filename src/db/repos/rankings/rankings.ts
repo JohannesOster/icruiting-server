@@ -1,5 +1,4 @@
 import {IDatabase, IMain} from 'pg-promise';
-import {buildReport} from '../utils';
 import sql from './sql';
 
 export const RankingsRepository = (db: IDatabase<any>, pgp: IMain) => {
@@ -10,7 +9,6 @@ export const RankingsRepository = (db: IDatabase<any>, pgp: IMain) => {
         job_id: jobId,
         form_category: formCategory,
       })
-      .then((ranking) => ranking.map(buildReport));
   };
 
   return {find};

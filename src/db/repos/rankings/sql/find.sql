@@ -1,13 +1,4 @@
-SELECT
-	applicant_id,
-	COUNT(DISTINCT (submitter_id, form_id, applicant_id)) AS submissions_count,
-	ROUND(STDDEV_POP(score), 2) AS standard_deviation,
-	ROUND(AVG(score), 2) AS score,
-  ROW_NUMBER() OVER (ORDER BY (score) DESC) AS rank,
-	ARRAY_AGG(submission) AS submissions
-FROM form_submission_view
+SELECT * FROM ranking
 WHERE form_category=${form_category}
 	AND tenant_id=${tenant_id}
-	AND job_id=${job_id}
-GROUP BY applicant_id
-ORDER BY rank;
+	AND job_id=${job_id};
