@@ -17,8 +17,8 @@ CREATE OR REPLACE VIEW applicant_view AS
 
 CREATE OR REPLACE VIEW form_submission_view AS 
 	SELECT
-		form.form_id,
 		form.job_id,
+		form.form_id,
 		form_category,
 		form.tenant_id,
 		submitter_id,
