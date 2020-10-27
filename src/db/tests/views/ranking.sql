@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan();
+SELECT plan(1);
 
 SELECT has_view('ranking');
 
