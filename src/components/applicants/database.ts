@@ -1,12 +1,10 @@
 import db from '../../db';
 import {
   selectReport,
-  selectAssessmentReport,
   selectApplicantReport as selectApplicantReportSQL,
 } from './sql';
 import {decamelizeKeys} from 'humps';
 import {buildReport} from 'db/repos/utils';
-import {buildAssessmentReport} from './utils';
 
 export const dbSelectReport = (params: {
   tenantId: string;
