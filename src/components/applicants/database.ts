@@ -13,19 +13,7 @@ export const dbSelectReport = (params: {
   applicantId: string;
   formCategory: 'screening' | 'assessment';
 }): Promise<ReturnType<typeof buildReport> | null> => {
-  if (params.formCategory === 'screening') {
-    return db.oneOrNone(selectReport, decamelizeKeys(params)).then((report) => {
-      if (!report) return report;
-      return buildReport(report);
-    });
-  }
-
-  return db
-    .oneOrNone(selectAssessmentReport, decamelizeKeys(params))
-    .then((report) => {
-      if (!report) return report;
-      return buildAssessmentReport(report);
-    });
+  return db.oneOrNone(selectReport, decamelizeKeys(params));
 };
 
 export const dbSelectApplicantReport = (

@@ -1,5 +1,25 @@
 import {round} from '../math';
 
+type BaseReport = {
+  jobId: string;
+  applicantId: string;
+  formCategory: string;
+  overAllSubmissionsCount: string;
+  applicantCategoryScore: string;
+  formCategoryResult: {
+    formId: string;
+    formTitle?: string;
+    submissionsCount: string;
+    applicantFormScore: string;
+    overallFormScore: string;
+    formFields: any[];
+  }[];
+};
+
+export const buildReportFoo = (baseReport: BaseReport) => {
+  return {} as any;
+};
+
 export type FormFieldIntent = 'sum_up' | 'aggregate' | 'count_distinct';
 
 export type KeyValuePair<T> = {

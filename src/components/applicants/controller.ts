@@ -294,7 +294,11 @@ const buildRadarChart = (
   return {
     labels,
     datasets: [
-      {label: 'Erzielter Wert', data: scores, backgroundColor: "rgb(15,91,165, 0.5)"},
+      {
+        label: 'Erzielter Wert',
+        data: scores,
+        backgroundColor: 'rgb(15,91,165, 0.5)',
+      },
       {label: 'Mindestmaß', data: minVals},
     ],
   };

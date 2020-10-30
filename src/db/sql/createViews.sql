@@ -78,5 +78,17 @@ FROM
 	 GROUP BY form_submission.form_submission_id, form.form_id, form_category, job_id) AS submission
 GROUP BY submission.applicant_id, form_category, tenant_id, job_id;
 
-
-
+CREATE OR REPLACE VIEW form_submission_field_view AS
+SELECT
+	form_submission_id,
+	submission_value,
+	form_field.*,
+	options_field.form_field_max
+FROM form_submission_field
+LEFT JOIN
+ (SELECT form_field_id, MAX((option->>'value')::NUMERIC) FILTER (WHERE intent='sum_up') AS form_field_max
+  FROM form_field CROSS JOIN jsonb_array_elements(options) AS option
+  GROUP BY form_field_id) AS options_field
+ON options_field.form_field_id = form_submission_field.form_field_id
+LEFT JOIN form_field
+ON form_field.form_field_id = form_submission_field.form_field_id;
