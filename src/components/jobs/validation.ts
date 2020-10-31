@@ -4,7 +4,7 @@ export const postJobsRules = [
   body('jobTitle').isString(),
   body('jobRequirements').isArray(),
   body('jobRequirements[*].requirementLabel').isString(),
-  body('jobRequirements[*].minValue').optional().isNumeric(),
+  body('jobRequirements[*].minValue').optional({nullable: true}).isNumeric(),
 ];
 
 export const putJobRules = [
