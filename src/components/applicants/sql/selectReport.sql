@@ -12,7 +12,7 @@ SELECT * FROM
          'form_fields_result', form_fields_result,
          'form_stddev', form_stddev,
          'overall_form_stddev', overall_form_stddev
-		)
+		) ORDER BY form_title
 	) AS form_category_result,
 	ROUND(AVG(form_score),2) AS form_category_score,
    SUM(form_stddev) AS form_category_stddev,
