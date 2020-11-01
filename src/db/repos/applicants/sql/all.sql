@@ -4,13 +4,13 @@ SELECT applicant.*,
 FROM applicant_view AS applicant
 LEFT JOIN (
 	SELECT applicant_id, attribute->>'value' AS order_value
-	FROM applicant_view CROSS JOIN unnest(attributes) AS attribute
+	FROM applicant_view CROSS JOIN UNNEST(attributes) AS attribute
 	WHERE attribute->>'key' = ${order_by}) AS order_query
 ON ${order_by} IS NOT NULL AND order_query.applicant_id = applicant.applicant_id
 JOIN (
 	SELECT applicant_id
 	FROM applicant_view
-	CROSS JOIN unnest(attributes) AS attribute
+	CROSS JOIN UNNEST(attributes) AS attribute
 	WHERE attribute->>'value' LIKE CONCAT('%',${filter},'%') 
 	  OR ${filter} Is NULL
 	GROUP BY applicant_id

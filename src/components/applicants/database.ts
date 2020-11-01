@@ -6,12 +6,51 @@ import {
 import {decamelizeKeys} from 'humps';
 import {buildReport} from 'db/repos/utils';
 
+const mergeRequirementResults = (
+  array: {
+    jobRequirementId: string;
+    requirementLabel: string;
+    avgJobRequirementScore: string;
+  }[],
+) => {
+  return array.reduce(
+    (acc, {jobRequirementId, avgJobRequirementScore, requirementLabel}) => {
+      if (!acc[jobRequirementId]) {
+        acc[jobRequirementId] = {avgJobRequirementScore, requirementLabel};
+        return acc;
+      }
+
+      // convert both to number
+      const sum =
+        +acc[jobRequirementId].avgJobRequirementScore + +avgJobRequirementScore;
+      const avg = sum / 2;
+
+      acc[jobRequirementId] = {
+        ...acc[jobRequirementId],
+        avgJobRequirementScore: avg,
+      };
+
+      return acc;
+    },
+    {} as {[key: string]: {[key: string]: string | number}},
+  );
+};
+
 export const dbSelectReport = (params: {
   tenantId: string;
   applicantId: string;
   formCategory: 'screening' | 'assessment';
 }): Promise<ReturnType<typeof buildReport> | null> => {
-  return db.oneOrNone(selectReport, decamelizeKeys(params));
+  return db.oneOrNone(selectReport, decamelizeKeys(params)).then((report) => {
+    if (!report) return;
+    const {aggregatedJobRequirementsResult = [], ...rest} = report;
+    const flattened = aggregatedJobRequirementsResult.flat();
+
+    return {
+      ...rest,
+      formCategoryJobRequirementsResult: mergeRequirementResults(flattened),
+    };
+  });
 };
 
 export const dbSelectApplicantReport = (
