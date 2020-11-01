@@ -1,40 +1,8 @@
 import db from '.';
-import {exec} from 'child_process';
+import {flyway} from './flyway';
 
-const config = {
-  url: 'jdbc:postgresql://localhost:5432/icruiting-test',
-  user: 'oster',
-  password: '',
-  locations: 'filesystem:src/db/migrations',
-};
-
-const buildArgs = () => {
-  Object.entries(config).reduce(
-    (acc, [key, value]) => acc + ` -${key}=${value}`,
-    '',
-  );
-};
-
-export const createAll = async () => {
-  return new Promise((resolve, reject) => {
-    const command = 'flyway migrate' + buildArgs();
-    exec(command, (err, stdout, stderr) => {
-      if (err || stderr) return reject(err || stderr);
-      resolve(stdout);
-    });
-  });
-};
-
-export const dropAll = async () => {
-  return new Promise((resolve, reject) => {
-    const command = 'flyway clean' + buildArgs();
-
-    exec(command, (err, stdout, stderr) => {
-      if (err || stderr) return reject(err || stderr);
-      resolve(stdout);
-    });
-  });
-};
+export const createAll = async () => flyway('migrate');
+export const dropAll = async () => flyway('clean');
 export const endConnection = () => db.$pool.end();
 export const truncateAllTables = () => db.any('TRUNCATE tenant CASCADE;');
 
