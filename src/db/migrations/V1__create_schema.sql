@@ -1,5 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- TABLES
 CREATE TABLE IF NOT EXISTS tenant (
   tenant_id UUID DEFAULT uuid_generate_v4(),
   tenant_name TEXT NOT NULL,
@@ -126,3 +127,80 @@ CREATE TABLE IF NOT EXISTS applicant_report_field (
   CONSTRAINT applicant_report_id_fk FOREIGN KEY (applicant_report_id) REFERENCES applicant_report(applicant_report_id) ON DELETE CASCADE,
   CONSTRAINT form_field_id_fk FOREIGN KEY (form_field_id) REFERENCES form_field(form_field_id) ON DELETE CASCADE
 );
+
+-- FUNCTIONS
+CREATE OR REPLACE FUNCTION screening_exists(tenant_id UUID, user_id TEXT, applicant_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE screening_exists BOOLEAN;
+BEGIN
+  SELECT COUNT(1)::int::boolean
+  INTO screening_exists
+  FROM form_submission
+  LEFT JOIN form
+  ON form_submission.form_id = form.form_id
+  WHERE form.tenant_id = $1
+    AND form.form_category = 'screening'
+    AND form_submission.submitter_id = $2
+    AND form_submission.applicant_id = $3;
+
+  RETURN screening_exists;
+END
+$$ LANGUAGE plpgsql;
+
+-- VIEWS
+CREATE OR REPLACE VIEW applicant_view AS
+	SELECT applicant.*,
+	       array_agg(json_build_object(
+	         'key', form_field.label,
+	         'value', applicant_attribute.attribute_value
+	        ) ORDER BY form_field.row_index) FILTER (WHERE form_field.component != 'file_upload') AS attributes,
+	       array_agg(json_build_object(
+	         'key', form_field.label,
+	         'value', applicant_attribute.attribute_value
+	        ) ORDER BY form_field.row_index) FILTER (WHERE form_field.component = 'file_upload') AS files
+	FROM applicant
+	LEFT JOIN applicant_attribute
+	ON applicant_attribute.applicant_id = applicant.applicant_id
+	LEFT JOIN form_field
+	ON applicant_attribute.form_field_id = form_field.form_field_id
+	GROUP BY applicant.applicant_id;
+
+CREATE OR REPLACE VIEW ranking AS
+SELECT
+	tenant_id,
+	job_id,
+	form_category,
+	applicant_id,
+	COUNT(DISTINCT (submitter_id, form_id, applicant_id)) AS submissions_count,
+	ROUND(STDDEV_POP(score), 2) AS standard_deviation,
+	ROUND(AVG(score), 2) AS score,
+  ROW_NUMBER() OVER (PARTITION BY form_category ORDER BY AVG(score) DESC) AS rank
+FROM
+	(SELECT
+		form_submission.*,
+		form_category,
+		job_id,
+		SUM(submission_value::NUMERIC) AS score
+	 FROM form_submission
+	 JOIN form ON form.form_id = form_submission.form_id
+	 JOIN form_submission_field
+	 ON form_submission_field.form_submission_id = form_submission.form_submission_id
+	 JOIN form_field
+	 ON form_field.form_field_id = form_submission_field.form_field_id AND form_field.intent='sum_up'
+	 GROUP BY form_submission.form_submission_id, form.form_id, form_category, job_id) AS submission
+GROUP BY submission.applicant_id, form_category, tenant_id, job_id;
+
+CREATE OR REPLACE VIEW form_submission_field_view AS
+SELECT
+	form_submission_id,
+	submission_value,
+	form_field.*,
+	options_field.form_field_max
+FROM form_submission_field
+LEFT JOIN
+ (SELECT form_field_id, MAX((option->>'value')::NUMERIC) FILTER (WHERE intent='sum_up') AS form_field_max
+  FROM form_field CROSS JOIN jsonb_array_elements(options) AS option
+  GROUP BY form_field_id) AS options_field
+ON options_field.form_field_id = form_submission_field.form_field_id
+JOIN form_field
+ON form_field.form_field_id = form_submission_field.form_field_id;

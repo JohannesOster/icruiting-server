@@ -1,24 +1,42 @@
 import db from '.';
-import {
-  createTables,
-  dropTables,
-  truncateAll,
-  createFunctions,
-  dropFunctions,
-  createViews,
-  dropViews,
-} from './sql';
+import {exec} from 'child_process';
+
+const config = {
+  url: 'jdbc:postgresql://localhost:5432/icruiting-test',
+  user: 'oster',
+  password: '',
+  locations: 'filesystem:src/db/migrations',
+};
+
+const buildArgs = () => {
+  Object.entries(config).reduce(
+    (acc, [key, value]) => acc + ` -${key}=${value}`,
+    '',
+  );
+};
 
 export const createAll = async () => {
-  await Promise.all([db.any(createTables), db.any(createFunctions)]);
-  return db.any(createViews);
+  return new Promise((resolve, reject) => {
+    const command = 'flyway migrate' + buildArgs();
+    exec(command, (err, stdout, stderr) => {
+      if (err || stderr) return reject(err || stderr);
+      resolve(stdout);
+    });
+  });
 };
+
 export const dropAll = async () => {
-  await db.any(dropViews);
-  return Promise.all([db.any(dropTables), db.any(dropFunctions)]);
+  return new Promise((resolve, reject) => {
+    const command = 'flyway clean' + buildArgs();
+
+    exec(command, (err, stdout, stderr) => {
+      if (err || stderr) return reject(err || stderr);
+      resolve(stdout);
+    });
+  });
 };
 export const endConnection = () => db.$pool.end();
-export const truncateAllTables = () => db.any(truncateAll);
+export const truncateAllTables = () => db.any('TRUNCATE tenant CASCADE;');
 
 require('make-runnable');
 
