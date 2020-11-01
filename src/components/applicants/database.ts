@@ -11,12 +11,20 @@ const mergeRequirementResults = (
     jobRequirementId: string;
     requirementLabel: string;
     avgJobRequirementScore: string;
+    minValue: string;
   }[],
 ) => {
   return array.reduce(
-    (acc, {jobRequirementId, avgJobRequirementScore, requirementLabel}) => {
+    (
+      acc,
+      {jobRequirementId, avgJobRequirementScore, requirementLabel, minValue},
+    ) => {
       if (!acc[jobRequirementId]) {
-        acc[jobRequirementId] = {avgJobRequirementScore, requirementLabel};
+        acc[jobRequirementId] = {
+          avgJobRequirementScore,
+          requirementLabel,
+          minValue,
+        };
         return acc;
       }
 
@@ -43,7 +51,8 @@ export const dbSelectReport = (params: {
 }): Promise<ReturnType<typeof buildReport> | null> => {
   return db.oneOrNone(selectReport, decamelizeKeys(params)).then((report) => {
     if (!report) return;
-    const {aggregatedJobRequirementsResult = [], ...rest} = report;
+    const {aggregatedJobRequirementsResult, ...rest} = report;
+    if (!aggregatedJobRequirementsResult) return rest;
     const flattened = aggregatedJobRequirementsResult.flat();
 
     return {

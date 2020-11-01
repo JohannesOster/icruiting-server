@@ -15,7 +15,7 @@ SELECT * FROM
 				'job_requirements_result', job_requirements_result
 			) ORDER BY form_title
 		) AS form_category_result,
-		ARRAY_AGG(job_requirements_result) FILTER (WHERE job_requirements_result IS NOT NULL) AS aggregated_job_requirements_result,
+		JSON_AGG(job_requirements_result) FILTER (WHERE job_requirements_result IS NOT NULL) AS aggregated_job_requirements_result,
 		ROUND(AVG(form_score),2) AS form_category_score,
 		SUM(form_stddev) AS form_category_stddev,
 		ROUND(AVG(overall_form_score),2) AS overall_form_category_score,
@@ -54,6 +54,7 @@ SELECT * FROM
 				JSON_BUIlD_OBJECT(
 					'job_requirement_id', job_requirement_id,
 					'requirement_label', requirement_label,
+					'min_value', min_value,
 					'avg_job_requirement_score', avg_job_requirement_score
 				)
 			) FILTER (WHERE avg_job_requirement_score IS NOT NULL) AS job_requirements_result
@@ -64,6 +65,7 @@ SELECT * FROM
 				form_field_id,
 				enhanced_form_submission_field.job_requirement_id,
 				requirement_label,
+				min_value,
 				intent,
 				component,
 				row_index,
@@ -112,6 +114,7 @@ SELECT * FROM
 							 form_field_id,
 							 enhanced_form_submission_field.job_requirement_id,
 							 requirement_label,
+							 min_value,
 							 intent,
 							 component,
 							 row_index,

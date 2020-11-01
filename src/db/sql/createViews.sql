@@ -90,5 +90,5 @@ LEFT JOIN
   FROM form_field CROSS JOIN jsonb_array_elements(options) AS option
   GROUP BY form_field_id) AS options_field
 ON options_field.form_field_id = form_submission_field.form_field_id
-LEFT JOIN form_field
+JOIN form_field
 ON form_field.form_field_id = form_submission_field.form_field_id;
