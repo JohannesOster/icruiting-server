@@ -2,39 +2,7 @@ import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
 import {catchAsync} from 'errorHandling';
 import db from 'db';
 import {mapCognitoUser} from 'components/utils';
-import {
-  CognitoUserPool,
-  CognitoUserAttribute,
-} from 'amazon-cognito-identity-js';
-
-const signUp = async (
-  tenantId: string,
-  name: string,
-  email: string,
-  password: string,
-): Promise<any> => {
-  const config = {
-    UserPoolId: process.env.AWS_USER_POOL_ID || '',
-    ClientId: process.env.AWS_CLIENT_ID || '',
-  };
-  const userPool = new CognitoUserPool(config);
-  return new Promise((resolve, reject) => {
-    userPool.signUp(
-      email,
-      password,
-      [
-        new CognitoUserAttribute({Name: 'name', Value: name}),
-        new CognitoUserAttribute({Name: 'custom:tenant_id', Value: tenantId}),
-        new CognitoUserAttribute({Name: 'custom:user_role', Value: 'admin'}),
-      ],
-      [],
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      },
-    );
-  });
-};
+import {signUp} from './signUp';
 
 export const createTenant = catchAsync(async (req, res) => {
   const {tenantName, name, email, password} = req.body;
