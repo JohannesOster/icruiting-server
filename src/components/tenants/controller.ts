@@ -22,6 +22,26 @@ export const createTenant = catchAsync(async (req, res) => {
   res.status(201).json({user: User, tenant, subscription});
 });
 
+export const getSubscriptions = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+
+  if (req.params.tenantId !== tenantId) {
+    throw new BaseError(401, `Can't access subscriptions of other tenants.`);
+  }
+
+  const tenant = await db.tenants.find(tenantId);
+  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
+  if (!tenant.stripeCustomerId)
+    throw new BaseError(500, 'Missing stripe customerId');
+
+  const subscriptions = await stripe.subscriptions.list({
+    customer: tenant.stripeCustomerId,
+    expand: ['data.plan.product'],
+  });
+
+  res.status(200).json(subscriptions.data);
+});
+
 export const deleteTenant = catchAsync(async (req, res) => {
   const {userPoolID, tenantId} = res.locals.user;
 
