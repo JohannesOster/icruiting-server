@@ -1,5 +1,5 @@
 import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
-import {catchAsync} from 'errorHandling';
+import {BaseError, catchAsync} from 'errorHandling';
 import db from 'db';
 import {mapCognitoUser} from 'components/utils';
 import {signUp} from './signUp';
@@ -10,15 +10,26 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 });
 
 export const createTenant = catchAsync(async (req, res) => {
-  const {tenantName, name, email, password} = req.body;
+  const {tenantName, name, email, password, stripePriceId} = req.body;
   const {id} = await stripe.customers.create({email});
+  const subscription = await stripe.subscriptions.create({
+    customer: id,
+    items: [{price: stripePriceId}],
+    trial_period_days: 14,
+  });
   const tenant = await db.tenants.insert({tenantName, stripeCustomerId: id});
   const {User} = await signUp(tenant.tenantId, name, email, password);
-  res.status(201).json({user: User, tenant});
+  res.status(201).json({user: User, tenant, subscription});
 });
 
 export const deleteTenant = catchAsync(async (req, res) => {
   const {userPoolID, tenantId} = res.locals.user;
+
+  const tenant = await db.tenants.find(tenantId);
+  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
+  if (tenant.stripeCustomerId) {
+    await stripe.customers.del(tenant.stripeCustomerId);
+  }
 
   deleteTenantFiles(tenantId);
 

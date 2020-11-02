@@ -82,10 +82,10 @@ jest.mock('aws-sdk', () => ({
 jest.mock('stripe', () =>
   jest.fn().mockImplementation(() => ({
     customers: {
-      create: () => ({
-        id: faker.random.uuid(),
-      }),
+      create: () => Promise.resolve({id: faker.random.uuid()}),
+      del: () => Promise.resolve({}),
     },
+    subscriptions: {create: () => Promise.resolve({})},
   })),
 );
 
@@ -100,6 +100,7 @@ describe('tenants', () => {
     email: faker.internet.email(),
     password: faker.internet.password(),
     name: faker.name.lastName(),
+    stripePriceId: faker.random.uuid(),
   });
   describe('POST /tenants', () => {
     it('returns 201 json response', async (done) => {
