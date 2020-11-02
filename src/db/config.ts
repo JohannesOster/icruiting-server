@@ -9,18 +9,18 @@ const config = {
   development: {
     url: process.env.DEV_DB_URL || '',
     flyway: {
-      url: 'jdbc:postgresql://localhost:5432/icruiting-dev',
-      user: 'oster',
-      password: '',
+      url: `jdbc:${process.env.FLYWAY_DEV_DB_URL}`,
+      user: process.env.FLYWAY_DEV_DB_USER,
+      password: process.env.FLYWAY_DEV_DB_PASSWORD,
       locations: 'filesystem:src/db/migrations',
     },
   },
   test: {
     url: process.env.TEST_DB_URL || '',
     flyway: {
-      url: 'jdbc:postgresql://localhost:5432/icruiting-test',
-      user: 'oster',
-      password: '',
+      url: `jdbc:${process.env.FLYWAY_TEST_DB_URL}`,
+      user: process.env.FLYWAY_TEST_DB_USER,
+      password: process.env.FLYWAY_TEST_DB_PASSWORD,
       locations: 'filesystem:src/db/migrations',
     },
   },
