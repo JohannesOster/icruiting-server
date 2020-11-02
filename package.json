@@ -10,6 +10,7 @@
     "copy-files": "copyfiles \"src/**/*/*.sql\" \"src/**/*/*.pug\" \"src/**/*/*.css\" dist/",
     "db-setup": "env NODE_ENV=development npx ts-node ./src/db/setup.ts createAll",
     "db-drop": "env NODE_ENV=development npx ts-node ./src/db/setup.ts dropAll",
+    "db-migrate": "npx ts-node ./src/db/flyway.ts flyway migrate",
     "test": "npx jest --runInBand --detectOpenHandles",
     "heroku-prebuild": "npm install --dev",
     "lint": "tslint --project .",

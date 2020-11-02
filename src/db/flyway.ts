@@ -15,3 +15,5 @@ const execute = (command: string) => {
 };
 
 export const flyway = (command: string) => execute(`flyway ${command} ${args}`);
+
+require('make-runnable');
