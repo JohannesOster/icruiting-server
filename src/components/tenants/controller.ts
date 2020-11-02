@@ -3,10 +3,16 @@ import {catchAsync} from 'errorHandling';
 import db from 'db';
 import {mapCognitoUser} from 'components/utils';
 import {signUp} from './signUp';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2020-08-27',
+});
 
 export const createTenant = catchAsync(async (req, res) => {
   const {tenantName, name, email, password} = req.body;
-  const tenant = await db.tenants.insert({tenantName});
+  const {id} = await stripe.customers.create({email});
+  const tenant = await db.tenants.insert({tenantName, stripeCustomerId: id});
   const {User} = await signUp(tenant.tenantId, name, email, password);
   res.status(201).json({user: User, tenant});
 });

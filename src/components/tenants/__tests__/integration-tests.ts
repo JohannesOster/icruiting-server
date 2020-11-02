@@ -79,6 +79,16 @@ jest.mock('aws-sdk', () => ({
   })),
 }));
 
+jest.mock('stripe', () =>
+  jest.fn().mockImplementation(() => ({
+    customers: {
+      create: () => ({
+        id: faker.random.uuid(),
+      }),
+    },
+  })),
+);
+
 afterAll(async () => {
   await truncateAllTables();
   endConnection();

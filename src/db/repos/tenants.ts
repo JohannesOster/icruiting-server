@@ -11,6 +11,7 @@ export const TenantsRepository = (db: IDatabase<any>, pgp: IMain) => ({
   insert: (params: {
     tenantId?: string;
     tenantName: string;
+    stripeCustomerId?: string;
   }): Promise<Tenant> => {
     const values = decamelizeKeys(params);
     const stmt = pgp.helpers.insert(values, null, 'tenant') + ' RETURNING *';
