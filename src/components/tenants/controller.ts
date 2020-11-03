@@ -79,7 +79,28 @@ export const postPaymentMethod = catchAsync(async (req, res) => {
     customer: tenant.stripeCustomerId,
   });
 
+  await stripe.customers.update(tenant.stripeCustomerId, {
+    invoice_settings: {default_payment_method: paymentMethod.id},
+  });
+
   res.status(201).json(resp);
+});
+
+export const deletePaymentMethod = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+  const {paymentMethodId} = req.params;
+
+  if (req.params.tenantId !== tenantId) {
+    throw new BaseError(401, `Can't attach payment method to other tenants.`);
+  }
+
+  const tenant = await db.tenants.find(tenantId);
+  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
+  if (!tenant.stripeCustomerId)
+    throw new BaseError(500, 'Missing stripe customerId');
+
+  const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
+  res.status(201).json(paymentMethod);
 });
 
 export const deleteTenant = catchAsync(async (req, res) => {
