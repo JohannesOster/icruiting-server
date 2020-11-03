@@ -54,12 +54,25 @@ export const getPaymentMethods = catchAsync(async (req, res) => {
   if (!tenant.stripeCustomerId)
     throw new BaseError(500, 'Missing stripe customerId');
 
-  const paymentMethods = await stripe.paymentMethods.list({
+  const customer = (await stripe.customers.retrieve(
+    tenant.stripeCustomerId,
+  )) as any;
+  if (!customer) throw new BaseError(404, 'Stripe customer Not Found');
+
+  const {data} = await stripe.paymentMethods.list({
     customer: tenant.stripeCustomerId,
     type: 'card',
   });
 
-  res.status(200).json(paymentMethods.data);
+  if (!data) throw new BaseError(404, 'Payment Methods Not Found');
+
+  const paymentMethods = data.map((paymentMethod) => {
+    if (paymentMethod.id !== customer.invoice_settings.default_payment_method)
+      return paymentMethod;
+    return {is_default: true, ...paymentMethod};
+  });
+
+  res.status(200).json(paymentMethods);
 });
 
 export const postPaymentMethod = catchAsync(async (req, res) => {
