@@ -42,6 +42,46 @@ export const getSubscriptions = catchAsync(async (req, res) => {
   res.status(200).json(subscriptions.data);
 });
 
+export const getPaymentMethods = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+
+  if (req.params.tenantId !== tenantId) {
+    throw new BaseError(401, `Can't access payment methods of other tenants.`);
+  }
+
+  const tenant = await db.tenants.find(tenantId);
+  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
+  if (!tenant.stripeCustomerId)
+    throw new BaseError(500, 'Missing stripe customerId');
+
+  const paymentMethods = await stripe.paymentMethods.list({
+    customer: tenant.stripeCustomerId,
+    type: 'card',
+  });
+
+  res.status(200).json(paymentMethods.data);
+});
+
+export const postPaymentMethod = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+  const {paymentMethod} = req.body;
+
+  if (req.params.tenantId !== tenantId) {
+    throw new BaseError(401, `Can't attach payment method to other tenants.`);
+  }
+
+  const tenant = await db.tenants.find(tenantId);
+  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
+  if (!tenant.stripeCustomerId)
+    throw new BaseError(500, 'Missing stripe customerId');
+
+  const resp = await stripe.paymentMethods.attach(paymentMethod.id, {
+    customer: tenant.stripeCustomerId,
+  });
+
+  res.status(201).json(resp);
+});
+
 export const deleteTenant = catchAsync(async (req, res) => {
   const {userPoolID, tenantId} = res.locals.user;
 
