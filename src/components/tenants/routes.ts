@@ -5,6 +5,7 @@ import {
   getSubscriptions,
   getPaymentMethods,
   postPaymentMethod,
+  setDefaultPaymentMethod,
   deletePaymentMethod,
 } from './controller';
 import {createTenantRules} from './validation';
@@ -20,6 +21,7 @@ router.use(requireAdmin);
 router.get('/:tenantId/subscriptions', getSubscriptions);
 router.get('/:tenantId/paymentMethods', getPaymentMethods);
 router.post('/:tenantId/paymentMethods', postPaymentMethod);
+router.post('/:tenantId/paymentMethods/default', setDefaultPaymentMethod);
 router.delete(
   '/:tenantId/paymentMethods/:paymentMethodId',
   deletePaymentMethod,
