@@ -42,6 +42,39 @@ export const getSubscriptions = catchAsync(async (req, res) => {
   res.status(200).json(subscriptions.data);
 });
 
+export const deleteSubscription = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+  const {subscriptionId} = req.params;
+
+  if (req.params.tenantId !== tenantId) {
+    throw new BaseError(401, `Can't access subscriptions of other tenants.`);
+  }
+
+  await stripe.subscriptions.del(subscriptionId);
+  res.status(200).json({});
+});
+
+export const postSubscription = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+  const {priceId} = req.body;
+
+  if (req.params.tenantId !== tenantId) {
+    throw new BaseError(401, `Can't access subscriptions of other tenants.`);
+  }
+
+  const tenant = await db.tenants.find(tenantId);
+  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
+  if (!tenant.stripeCustomerId)
+    throw new BaseError(500, 'Missing stripe customerId');
+
+  const subscription = await stripe.subscriptions.create({
+    customer: tenant.stripeCustomerId,
+    items: [{price: priceId}],
+  });
+
+  res.status(200).json(subscription);
+});
+
 export const getPaymentMethods = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
 
@@ -113,6 +146,18 @@ export const deletePaymentMethod = catchAsync(async (req, res) => {
     throw new BaseError(500, 'Missing stripe customerId');
 
   const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
+
+  const {data} = await stripe.paymentMethods.list({
+    customer: tenant.stripeCustomerId,
+    type: 'card',
+  });
+
+  if (data.length) {
+    await stripe.customers.update(tenant.stripeCustomerId, {
+      invoice_settings: {default_payment_method: data[0].id},
+    });
+  }
+
   res.status(201).json(paymentMethod);
 });
 
