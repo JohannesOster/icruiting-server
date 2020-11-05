@@ -1,5 +1,6 @@
-import {catchAsync} from 'errorHandling';
 import Stripe from 'stripe';
+import {catchAsync} from 'errorHandling';
+import webhookHandler from './webhookHandler';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2020-08-27',
@@ -20,13 +21,17 @@ export const webhook = catchAsync(async (req, res) => {
       process.env.STRIPE_WEBHOOK_SECRET || '',
     );
   } catch (err) {
-    console.log(err);
-    console.log(`⚠️  Webhook signature verification failed.`);
-    console.log(`⚠️  Check the env file and enter the correct webhook secret.`);
+    console.error(err);
+    console.error(`⚠️  Webhook signature verification failed.`);
     return res.sendStatus(400);
   }
 
-  console.log(event);
-
   res.json({received: true});
+
+  try {
+    const handler = webhookHandler[event.type];
+    if (handler) handler(event.data.object);
+  } catch (error) {
+    console.error(error);
+  }
 });
