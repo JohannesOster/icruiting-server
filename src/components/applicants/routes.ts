@@ -10,10 +10,12 @@ import {
 import {getApplicantsRules, validateGetReport} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth, requireAdmin} from 'middlewares';
+import {requireSubscription} from 'middlewares/stripe';
 
 const router = express.Router();
 
 router.use(requireAuth);
+router.use(requireSubscription);
 router.get('/', getApplicantsRules, validate, getApplicants);
 router.get('/:applicantId', getApplicant);
 
