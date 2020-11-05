@@ -1,3 +1,5 @@
+const faker = require('faker');
+
 jest.mock('stripe', () =>
   jest.fn().mockImplementation(() => ({
     customers: {
