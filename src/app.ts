@@ -8,7 +8,7 @@ const app = express();
 
 app.use(
   bodyParser.json({
-    verify: (req, res, buf) => {
+    verify: (req, _res, buf) => {
       (req as any).rawBody = buf; // pass raw body for stripe webhook endpoint
     },
   }),

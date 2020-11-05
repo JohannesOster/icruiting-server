@@ -3,8 +3,8 @@ import app from 'app';
 import db from 'db';
 import faker from 'faker';
 import {endConnection, truncateAllTables} from 'db/setup';
-import fake from 'tests/fake';
-import dataGenerator from 'tests/dataGenerator';
+import fake from 'testUtils/fake';
+import dataGenerator from 'testUtils/dataGenerator';
 import {CognitoUserAttribute} from 'amazon-cognito-identity-js';
 
 const mockUser = fake.user();
