@@ -2,8 +2,8 @@ import request from 'supertest';
 import app from 'app';
 import db from 'db';
 import {endConnection, truncateAllTables} from 'db/setup';
-import fake from 'tests/fake';
-import dataGenerator from 'tests/dataGenerator';
+import fake from 'testUtils/fake';
+import dataGenerator from 'testUtils/dataGenerator';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({

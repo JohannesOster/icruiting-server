@@ -7,10 +7,12 @@ import {
 import {postFormSubmissionRules, putFormSubmissionRules} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth} from 'middlewares';
+import {requireSubscription} from 'middlewares/stripe';
 
 const router = express.Router();
 
 router.use(requireAuth);
+router.use(requireSubscription);
 router.post('/', postFormSubmissionRules, validate, postFormSubmission);
 router.put(
   '/:formSubmissionId',

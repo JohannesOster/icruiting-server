@@ -5,4 +5,5 @@ export const createTenantRules = [
   body('name').isString(),
   body('email').isEmail(),
   body('password').isString(),
+  body('stripePriceId').isString(),
 ];

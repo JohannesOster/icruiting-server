@@ -9,7 +9,6 @@ import {dbSelectReport, dbSelectApplicantReport} from './database';
 import {getApplicantFileURLs} from './utils';
 import db from 'db';
 import {JobRequirement} from 'db/repos/jobs';
-import {buildReport, KeyValuePair} from 'db/repos/utils';
 
 export const getApplicants = catchAsync(async (req, res) => {
   const {jobId, offset, limit, orderBy, filter} = req.query as any;
@@ -260,7 +259,7 @@ export const getPdfReport = catchAsync(async (req, res) => {
 
 const getFileURL = (
   fileName: string,
-  applicantFiles?: KeyValuePair<string>[],
+  applicantFiles?: {[key: string]: string}[],
 ) => {
   const imageKey = applicantFiles?.find(({key}) => key === fileName)?.value;
   if (!imageKey) return;
@@ -273,10 +272,7 @@ const getFileURL = (
   return new S3().getSignedUrlPromise('getObject', params);
 };
 
-const buildRadarChart = (
-  jobRequirements: JobRequirement[],
-  report: ReturnType<typeof buildReport>,
-) => {
+const buildRadarChart = (jobRequirements: JobRequirement[], report: any) => {
   const labels = jobRequirements.map(({requirementLabel}) => requirementLabel);
   const scores = jobRequirements.map(
     ({requirementLabel}) => report.jobRequirementsResult[requirementLabel] || 0,
@@ -284,7 +280,7 @@ const buildRadarChart = (
 
   const means = jobRequirements.map(({requirementLabel}) => {
     return report.normalization?.find(
-      ({jobRequirementLabel}) => requirementLabel === jobRequirementLabel,
+      ({jobRequirementLabel}: any) => requirementLabel === jobRequirementLabel,
     )?.mean;
   });
 
