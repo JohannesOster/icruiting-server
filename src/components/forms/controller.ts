@@ -47,11 +47,14 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
   const form = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
-  await validateSubscription(form.tenantId);
+  try {
+    await validateSubscription(form.tenantId);
+  } catch (error) {
+    return res.render('form', {error: error.message});
+  }
 
   const submitAction = config.baseURL + req.originalUrl;
   const params = {formId, submitAction, formFields: form.formFields};
-  res.header('Content-Type', 'text/html');
   res.render('form', params);
 });
 
@@ -60,7 +63,11 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
   const form = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
-  await validateSubscription(form.tenantId);
+  try {
+    await validateSubscription(form.tenantId);
+  } catch (error) {
+    res.render('submission', {error});
+  }
 
   if (form.formCategory !== 'application') {
     const errorMsg =
@@ -139,7 +146,6 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
     applicant.attributes = map.attributes;
     promises.push(db.applicants.insert(applicant));
 
-    res.header('Content-Type', 'text/html');
     Promise.all(promises)
       .then(() => res.render('form-submission'))
       .catch((error) => {
