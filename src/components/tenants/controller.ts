@@ -75,6 +75,26 @@ export const postSubscription = catchAsync(async (req, res) => {
   res.status(200).json(subscription);
 });
 
+export const getSetupIntent = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+
+  if (req.params.tenantId !== tenantId) {
+    throw new BaseError(401, `Can't access payment methods of other tenants.`);
+  }
+
+  const tenant = await db.tenants.find(tenantId);
+  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
+  if (!tenant.stripeCustomerId)
+    throw new BaseError(500, 'Missing stripe customerId');
+
+  const setupIntent = await stripe.setupIntents.create({
+    payment_method_types: ['sepa_debit'],
+    customer: tenant.stripeCustomerId,
+  });
+
+  res.status(200).json(setupIntent.client_secret);
+});
+
 export const getPaymentMethods = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
 
@@ -94,7 +114,7 @@ export const getPaymentMethods = catchAsync(async (req, res) => {
 
   const {data} = await stripe.paymentMethods.list({
     customer: tenant.stripeCustomerId,
-    type: 'card',
+    type: 'sepa_debit',
   });
 
   if (!data) throw new BaseError(404, 'Payment Methods Not Found');
@@ -106,30 +126,6 @@ export const getPaymentMethods = catchAsync(async (req, res) => {
   });
 
   res.status(200).json(paymentMethods);
-});
-
-export const postPaymentMethod = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
-  const {paymentMethod} = req.body;
-
-  if (req.params.tenantId !== tenantId) {
-    throw new BaseError(401, `Can't attach payment method to other tenants.`);
-  }
-
-  const tenant = await db.tenants.find(tenantId);
-  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-  if (!tenant.stripeCustomerId)
-    throw new BaseError(500, 'Missing stripe customerId');
-
-  const resp = await stripe.paymentMethods.attach(paymentMethod.id, {
-    customer: tenant.stripeCustomerId,
-  });
-
-  await stripe.customers.update(tenant.stripeCustomerId, {
-    invoice_settings: {default_payment_method: paymentMethod.id},
-  });
-
-  res.status(201).json(resp);
 });
 
 export const deletePaymentMethod = catchAsync(async (req, res) => {
@@ -149,13 +145,19 @@ export const deletePaymentMethod = catchAsync(async (req, res) => {
 
   const {data} = await stripe.paymentMethods.list({
     customer: tenant.stripeCustomerId,
-    type: 'card',
+    type: 'sepa_debit',
   });
 
   if (data.length) {
-    await stripe.customers.update(tenant.stripeCustomerId, {
-      invoice_settings: {default_payment_method: data[0].id},
-    });
+    const customer: any = await stripe.customers.retrieve(
+      tenant.stripeCustomerId,
+    );
+
+    if (!customer.invoice_settings.default_payment_method) {
+      await stripe.customers.update(tenant.stripeCustomerId, {
+        invoice_settings: {default_payment_method: data[0].id},
+      });
+    }
   }
 
   res.status(201).json(paymentMethod);

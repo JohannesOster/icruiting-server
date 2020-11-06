@@ -4,11 +4,11 @@ import {
   deleteTenant,
   getSubscriptions,
   getPaymentMethods,
-  postPaymentMethod,
   setDefaultPaymentMethod,
   deletePaymentMethod,
   deleteSubscription,
   postSubscription,
+  getSetupIntent,
 } from './controller';
 import {createTenantRules} from './validation';
 import {validate} from 'middlewares/common';
@@ -23,8 +23,8 @@ router.use(requireAdmin);
 router.post('/:tenantId/subscriptions', postSubscription);
 router.get('/:tenantId/subscriptions', getSubscriptions);
 router.delete('/:tenantId/subscriptions/:subscriptionId', deleteSubscription);
+router.get('/:tenantId/paymentMethods/setupIntent', getSetupIntent);
 router.get('/:tenantId/paymentMethods', getPaymentMethods);
-router.post('/:tenantId/paymentMethods', postPaymentMethod);
 router.post('/:tenantId/paymentMethods/default', setDefaultPaymentMethod);
 router.delete(
   '/:tenantId/paymentMethods/:paymentMethodId',
