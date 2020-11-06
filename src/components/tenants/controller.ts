@@ -23,19 +23,10 @@ export const createTenant = catchAsync(async (req, res) => {
 });
 
 export const getSubscriptions = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
-
-  if (req.params.tenantId !== tenantId) {
-    throw new BaseError(401, `Can't access subscriptions of other tenants.`);
-  }
-
-  const tenant = await db.tenants.find(tenantId);
-  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-  if (!tenant.stripeCustomerId)
-    throw new BaseError(500, 'Missing stripe customerId');
+  const {stripeCustomerId} = res.locals.user;
 
   const subscriptions = await stripe.subscriptions.list({
-    customer: tenant.stripeCustomerId,
+    customer: stripeCustomerId,
     expand: ['data.plan.product'],
   });
 
@@ -43,32 +34,18 @@ export const getSubscriptions = catchAsync(async (req, res) => {
 });
 
 export const deleteSubscription = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
   const {subscriptionId} = req.params;
-
-  if (req.params.tenantId !== tenantId) {
-    throw new BaseError(401, `Can't access subscriptions of other tenants.`);
-  }
 
   await stripe.subscriptions.del(subscriptionId);
   res.status(200).json({});
 });
 
 export const postSubscription = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {stripeCustomerId} = res.locals.user;
   const {priceId} = req.body;
 
-  if (req.params.tenantId !== tenantId) {
-    throw new BaseError(401, `Can't access subscriptions of other tenants.`);
-  }
-
-  const tenant = await db.tenants.find(tenantId);
-  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-  if (!tenant.stripeCustomerId)
-    throw new BaseError(500, 'Missing stripe customerId');
-
   const subscription = await stripe.subscriptions.create({
-    customer: tenant.stripeCustomerId,
+    customer: stripeCustomerId,
     items: [{price: priceId}],
   });
 
@@ -76,44 +53,23 @@ export const postSubscription = catchAsync(async (req, res) => {
 });
 
 export const getSetupIntent = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
-
-  if (req.params.tenantId !== tenantId) {
-    throw new BaseError(401, `Can't access payment methods of other tenants.`);
-  }
-
-  const tenant = await db.tenants.find(tenantId);
-  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-  if (!tenant.stripeCustomerId)
-    throw new BaseError(500, 'Missing stripe customerId');
-
+  const {stripeCustomerId} = res.locals.user;
   const setupIntent = await stripe.setupIntents.create({
     payment_method_types: ['sepa_debit'],
-    customer: tenant.stripeCustomerId,
+    customer: stripeCustomerId,
   });
 
   res.status(200).json(setupIntent.client_secret);
 });
 
 export const getPaymentMethods = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {stripeCustomerId} = res.locals.user;
 
-  if (req.params.tenantId !== tenantId) {
-    throw new BaseError(401, `Can't access payment methods of other tenants.`);
-  }
-
-  const tenant = await db.tenants.find(tenantId);
-  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-  if (!tenant.stripeCustomerId)
-    throw new BaseError(500, 'Missing stripe customerId');
-
-  const customer = (await stripe.customers.retrieve(
-    tenant.stripeCustomerId,
-  )) as any;
+  const customer = (await stripe.customers.retrieve(stripeCustomerId)) as any;
   if (!customer) throw new BaseError(404, 'Stripe customer Not Found');
 
   const {data} = await stripe.paymentMethods.list({
-    customer: tenant.stripeCustomerId,
+    customer: stripeCustomerId,
     type: 'sepa_debit',
   });
 
@@ -129,32 +85,21 @@ export const getPaymentMethods = catchAsync(async (req, res) => {
 });
 
 export const deletePaymentMethod = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {stripeCustomerId} = res.locals.user;
   const {paymentMethodId} = req.params;
-
-  if (req.params.tenantId !== tenantId) {
-    throw new BaseError(401, `Can't attach payment method to other tenants.`);
-  }
-
-  const tenant = await db.tenants.find(tenantId);
-  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-  if (!tenant.stripeCustomerId)
-    throw new BaseError(500, 'Missing stripe customerId');
 
   const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
 
   const {data} = await stripe.paymentMethods.list({
-    customer: tenant.stripeCustomerId,
+    customer: stripeCustomerId,
     type: 'sepa_debit',
   });
 
   if (data.length) {
-    const customer: any = await stripe.customers.retrieve(
-      tenant.stripeCustomerId,
-    );
+    const customer: any = await stripe.customers.retrieve(stripeCustomerId);
 
     if (!customer.invoice_settings.default_payment_method) {
-      await stripe.customers.update(tenant.stripeCustomerId, {
+      await stripe.customers.update(stripeCustomerId, {
         invoice_settings: {default_payment_method: data[0].id},
       });
     }
@@ -164,19 +109,10 @@ export const deletePaymentMethod = catchAsync(async (req, res) => {
 });
 
 export const setDefaultPaymentMethod = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {stripeCustomerId} = res.locals.user;
   const {paymentMethodId} = req.body;
 
-  if (req.params.tenantId !== tenantId) {
-    throw new BaseError(401, `Can't access payment methods of other tenants.`);
-  }
-
-  const tenant = await db.tenants.find(tenantId);
-  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-  if (!tenant.stripeCustomerId)
-    throw new BaseError(500, 'Missing stripe customerId');
-
-  const resp = await stripe.customers.update(tenant.stripeCustomerId, {
+  const resp = await stripe.customers.update(stripeCustomerId, {
     invoice_settings: {default_payment_method: paymentMethodId},
   });
 
