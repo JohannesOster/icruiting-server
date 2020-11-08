@@ -1,5 +1,5 @@
 SELECT applicant.*,
-			 assessments.*,
+			 assessments_view.assessments,
        COUNT(*) OVER () total_count
 FROM applicant_view AS applicant
 LEFT JOIN (
@@ -29,8 +29,8 @@ LEFT JOIN
 			) ORDER BY form_title
 		) AS assessments
 	FROM assessments_view 
-	GROUP BY applicant_id, submitter_id) as assessments
-ON assessments.applicant_id = applicant.applicant_id AND assessments.submitter_id=${user_id}
+	GROUP BY applicant_id, submitter_id) as assessments_view
+ON assessments_view.applicant_id = applicant.applicant_id AND assessments_view.submitter_id=${user_id}
 WHERE applicant.tenant_id = ${tenant_id}
   AND (applicant.job_id = ${job_id} OR ${job_id} IS NULL)
 ORDER BY order_query.order_value
