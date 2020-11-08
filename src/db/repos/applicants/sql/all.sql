@@ -1,4 +1,5 @@
 SELECT applicant.*,
+			 assessments.*,
        COUNT(*) OVER () total_count,
        screening_exists(${tenant_id}, ${user_id}, applicant.applicant_id)
 FROM applicant_view AS applicant
@@ -16,6 +17,21 @@ JOIN (
 	GROUP BY applicant_id
 ) AS filter_query
 ON filter_query.applicant_id = applicant.applicant_id
+JOIN
+	(SELECT
+		applicant_id,
+		submitter_id,
+		ARRAY_AGG(
+			JSON_BUILD_OBJECT(
+				'form_id', form_id,
+				'form_category', form_category,
+				'form_title', form_title,
+				'score', score
+			) ORDER BY form_title
+		) AS assessments
+	FROM assessments_view 
+	GROUP BY applicant_id, submitter_id) as assessments
+ON assessments.applicant_id = applicant.applicant_id AND assessments.submitter_id=${user_id}
 WHERE applicant.tenant_id = ${tenant_id}
   AND (applicant.job_id = ${job_id} OR ${job_id} IS NULL)
 ORDER BY order_query.order_value
