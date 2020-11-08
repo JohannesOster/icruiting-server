@@ -16,7 +16,7 @@ JOIN (
 	GROUP BY applicant_id
 ) AS filter_query
 ON filter_query.applicant_id = applicant.applicant_id
-JOIN
+LEFT JOIN
 	(SELECT
 		applicant_id,
 		submitter_id,
