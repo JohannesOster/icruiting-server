@@ -1,7 +1,6 @@
 SELECT applicant.*,
 			 assessments.*,
-       COUNT(*) OVER () total_count,
-       screening_exists(${tenant_id}, ${user_id}, applicant.applicant_id)
+       COUNT(*) OVER () total_count
 FROM applicant_view AS applicant
 LEFT JOIN (
 	SELECT applicant_id, attribute->>'value' AS order_value
