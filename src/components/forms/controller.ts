@@ -52,9 +52,20 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
   } catch (error) {
     return res.render('form', {error: error.message});
   }
-
   const submitAction = config.baseURL + req.originalUrl;
-  const params = {formId, submitAction, formFields: form.formFields};
+  let params: any = {formId, submitAction, formFields: form.formFields};
+  const tenant = await db.tenants.find(form.tenantId);
+
+  if (tenant?.theme) {
+    const urlParams = {
+      Bucket: process.env.S3_BUCKET,
+      Key: tenant.theme,
+      Expires: 100,
+    };
+    const url = await new S3().getSignedUrlPromise('getObject', urlParams);
+    params = {...params, theme: url};
+  }
+
   res.render('form', params);
 });
 

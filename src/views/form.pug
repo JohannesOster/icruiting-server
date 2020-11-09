@@ -9,6 +9,8 @@ html
       include ic-onSubmit.js
     style
       include ic-forms.css
+    if theme
+      link(href=theme, rel='stylesheet')
 
   body(onload="post_iframe_size();")
     if error
