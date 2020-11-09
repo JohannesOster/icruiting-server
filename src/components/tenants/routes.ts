@@ -9,6 +9,8 @@ import {
   deleteSubscription,
   postSubscription,
   getSetupIntent,
+  postTheme,
+  deleteTheme,
 } from './controller';
 import {createTenantRules} from './validation';
 import {validate} from 'middlewares/common';
@@ -24,6 +26,10 @@ router.use(requireAdmin);
 router.delete('/', deleteTenant);
 
 router.use(requireStripeCustomerId);
+
+router.post('/:tenantId/themes', postTheme);
+router.delete('/:tenantId/themes', deleteTheme);
+
 router.get('/:tenantId/subscriptions', getSubscriptions);
 router.post('/:tenantId/subscriptions', postSubscription);
 router.delete('/:tenantId/subscriptions/:subscriptionId', deleteSubscription);

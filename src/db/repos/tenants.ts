@@ -7,6 +7,7 @@ type Tenant = {
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
   stripeSubscriptionStatus?: string;
+  theme?: string;
   createdAt: string;
 };
 
@@ -45,5 +46,12 @@ export const TenantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     );
   };
 
-  return {insert, delete: deleteTenant, find, updateSubscription};
+  const updateTheme = async (tenantId: string, theme: string | null = null) => {
+    return db.one(
+      'UPDATE tenant SET theme=${theme} WHERE tenant_id=${tenant_id} RETURNING *',
+      decamelizeKeys({tenantId, theme}),
+    );
+  };
+
+  return {insert, delete: deleteTenant, find, updateSubscription, updateTheme};
 };
