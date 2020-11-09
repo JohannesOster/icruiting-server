@@ -159,6 +159,21 @@ export const postTheme = catchAsync(async (req, res, next) => {
   });
 });
 
+export const getTenant = catchAsync(async (req, res) => {
+  const {tenantId} = res.locals.user;
+  let tenant = await db.tenants.find(tenantId);
+  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
+  if (tenant.theme) {
+    const url = await new S3().getSignedUrlPromise('getObject', {
+      Bucket: process.env.S3_BUCKET!,
+      Key: tenant.theme,
+      Expires: 100,
+    });
+    tenant = {...tenant, theme: url};
+  }
+  res.status(200).json(tenant);
+});
+
 export const deleteTheme = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
 

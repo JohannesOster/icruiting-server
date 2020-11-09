@@ -11,6 +11,7 @@ import {
   getSetupIntent,
   postTheme,
   deleteTheme,
+  getTenant,
 } from './controller';
 import {createTenantRules} from './validation';
 import {validate} from 'middlewares/common';
@@ -23,6 +24,7 @@ router.post('/', createTenantRules, validate, createTenant);
 
 router.use(requireAuth);
 router.use(requireAdmin);
+router.get('/:tenantId', getTenant);
 router.delete('/', deleteTenant);
 
 router.use(requireStripeCustomerId);
