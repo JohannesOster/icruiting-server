@@ -16,7 +16,7 @@ html
     else
       div(id='ic-iframe-container')
         form(
-          class="ic-form",
+          class="icruiting",
           method="POST",
           id=formId,
           action=submitAction,
@@ -24,13 +24,14 @@ html
           onSubmit="onSubmit()")
 
           each formField in formFields
-            div(class="ic-form-field-container")
-              label(for=formField.formFieldId class="ic-font-300") #{formField.label}#{formField.required ? '*' : ''}
-              span(class="ic-description ic-font-200") #{formField.description}
+            div(class="field-container")
+              label(for=formField.formFieldId) #{formField.label}
+                if formField.required
+                    span(class="req") *
+              span(class="desc") #{formField.description}
               case formField.component
                 when "input" 
                   input(
-                    class="ic-input ic-font-200",
                     id=formField.formFieldId,
                     name=formField.formFieldId,
                     placeholder=formField.placeholder,
@@ -39,7 +40,6 @@ html
                   )
                 when "textarea"
                   textarea(
-                    class="ic-textarea ic-font-200",
                     id=formField.formFieldId,
                     name=formField.formFieldId,
                     placeholder=formField.placeholder
@@ -47,7 +47,6 @@ html
                   )
                 when "select"
                   select(
-                    class="ic-select",
                     id=formField.formFieldId,
                     name=formField.formFieldId,
                     required=formField.required 
@@ -56,7 +55,7 @@ html
                       option(value=option.value) #{option.label}
                 when "radio"
                   each option in formField.options
-                    div(style="display: flex")
+                    div(class="radio-option-container")
                       input(
                         type="radio"
                         name=formField.formFieldId,
@@ -64,19 +63,18 @@ html
                         checked=formField.defaultValue === option.value
                         required=formField.required 
                       )
-                      span(style="margin-left: 5px" class="ic-font-200") #{option.label}
+                      span(class="radio-option-label") #{option.label}
                 when "checkbox"
                   each option in formField.options
-                    div(style="display: flex")
+                    div(class="checkbox-option-container")
                       input(
                         type="checkbox"
                         name=formField.formFieldId,
                         value=option.value
                         checked=formField.defaultValue === option.value
-                        style="margin-top: 3.5px;min-width:13px;"
                         required=formField.required && formField.options.length === 1
                       )
-                      span(style="margin-left: 5px" class="ic-font-200") #{option.label}
+                      span(class="checkbox-option-label") #{option.label}
                 when "file_upload"
                   input(type="hidden", name=formField.formFieldId id=`fileKey-${formField.formFieldId}`)
                   input(
@@ -87,7 +85,7 @@ html
                   )
                 default: span Invalides Formularelement
           div
-            button(class="ic-submit-button ic-font-300" id="ic-submit-button" type="submit") 
-              span(class="ic-submitt-button-label") Absenden
-              div(class="ic-spinner-container")
-                span(class="ic-spinner")
+            button(class="submit-button" id="ic-submit-button" type="submit") 
+              span(class="submitt-button-label") Absenden
+              div(class="spinner-container")
+                span(class="spinner")
