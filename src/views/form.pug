@@ -24,13 +24,13 @@ html
           action=submitAction,
           enctype="multipart/form-data"
           onSubmit="onSubmit()")
-
           each formField in formFields
             div(class="field-container")
               label(for=formField.formFieldId) #{formField.label}
                 if formField.required
                     span(class="req") *
-              span(class="desc") #{formField.description}
+              if formField.description
+                span(class="desc") #{formField.description}
               case formField.component
                 when "input" 
                   input(
@@ -60,23 +60,25 @@ html
                     div(class="radio-option-container")
                       input(
                         type="radio"
+                        id=formFieldformFieldId+'-'+option.value
                         name=formField.formFieldId,
                         value=option.value
                         checked=formField.defaultValue === option.value
                         required=formField.required 
                       )
-                      span(class="radio-option-label") #{option.label}
+                      label(class="radio-option-label" for=formFieldformFieldId+'-'+option.value) #{option.label}
                 when "checkbox"
                   each option in formField.options
                     div(class="checkbox-option-container")
                       input(
                         type="checkbox"
+                        id=formFieldformFieldId+'-'+option.value
                         name=formField.formFieldId,
                         value=option.value
                         checked=formField.defaultValue === option.value
                         required=formField.required && formField.options.length === 1
                       )
-                      span(class="checkbox-option-label") #{option.label}
+                      label(class="checkbox-option-label" for=formFieldformFieldId+'-'+option.value) #{option.label}
                 when "file_upload"
                   input(type="hidden", name=formField.formFieldId id=`fileKey-${formField.formFieldId}`)
                   input(
