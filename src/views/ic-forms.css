@@ -130,6 +130,7 @@ input[type='date'] {
 
 .icruiting .submit-button {
   background: none;
+  cursor: pointer;
   background-color: var(--color-primary);
   padding: 8px 16px 10px;
   border-radius: 2px;
