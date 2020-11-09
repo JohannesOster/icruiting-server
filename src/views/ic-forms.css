@@ -110,6 +110,12 @@ input[type='date'] {
   border-color: var(--input-border-active);
 }
 
+.icruiting .radio-options-container,
+.icruiting .checkbox-options-container {
+  display: grid;
+  row-gap: 8px;
+}
+
 .icruiting .radio-option-container,
 .icruiting .checkbox-option-container {
   display: grid;
