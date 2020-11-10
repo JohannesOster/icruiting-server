@@ -1,3 +1,4 @@
+DROP VIEW IF EXISTS assessments_view;
 CREATE OR REPLACE VIEW assessments_view AS
 SELECT
 	form.form_id,
