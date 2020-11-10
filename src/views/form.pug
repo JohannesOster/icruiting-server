@@ -36,13 +36,13 @@ html
                 when "section_header"
                   h3 #{formField.label}
                   if formField.description
-                    span(class="desc") #{formField.description} 
-                when "input" 
+                    span(class="desc") #{formField.description}
+                when "input"
                   input(
                     id=formField.formFieldId,
                     name=formField.formFieldId,
                     placeholder=formField.placeholder,
-                    required=formField.required, 
+                    required=formField.required,
                     type=(formField.props && formField.props.type) || 'text'
                   )
                 when "textarea"
@@ -50,15 +50,14 @@ html
                     id=formField.formFieldId,
                     name=formField.formFieldId,
                     placeholder=formField.placeholder
-                    required=formField.required 
+                    required=formField.required
                   )
                 when "select"
                   select(
                     id=formField.formFieldId,
                     name=formField.formFieldId,
-                    required=formField.required 
+                    required=formField.required
                   )
-                    option
                     each option in formField.options
                       option(value=option.value) #{option.label}
                 when "radio"
@@ -71,7 +70,7 @@ html
                           name=formField.formFieldId,
                           value=option.value
                           checked=formField.defaultValue === option.value
-                          required=formField.required 
+                          required=formField.required
                         )
                         label(class="radio-option-label" for=formFieldformFieldId+'-'+option.value) #{option.label}
                 when "checkbox"
@@ -93,11 +92,11 @@ html
                     type="file",
                     name=formField.formFieldId,
                     accept=(formField.props && formField.props.accept) || "application/pdf, image/jpeg",
-                    required=formField.required 
+                    required=formField.required
                   )
                 default: span Invalides Formularelement
           div
-            button(class="submit-button" id="ic-submit-button" type="submit") 
+            button(class="submit-button" id="ic-submit-button" type="submit")
               span(class="submitt-button-label") Absenden
               div(class="spinner-container")
                 span(class="spinner")
