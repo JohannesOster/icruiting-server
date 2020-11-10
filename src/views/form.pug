@@ -26,12 +26,17 @@ html
           onSubmit="onSubmit()")
           each formField in formFields
             div(class="field-container")
-              label(for=formField.formFieldId) #{formField.label}
-                if formField.required
-                    span(class="req") *
-              if formField.description
-                span(class="desc") #{formField.description}
+              if formField.component !== "section_header"
+                label(for=formField.formFieldId) #{formField.label}
+                  if formField.required
+                      span(class="req") *
+                if formField.description
+                  span(class="desc") #{formField.description}
               case formField.component
+                when "section_header"
+                  h3 #{formField.label}
+                  if formField.description
+                    span(class="desc") #{formField.description} 
                 when "input" 
                   input(
                     id=formField.formFieldId,

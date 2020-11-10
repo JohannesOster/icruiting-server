@@ -23,6 +23,11 @@ body {
   grid-row-gap: 16px;
 }
 
+.icruiting h3 {
+  margin: 0;
+  padding: 0;
+}
+
 .icruiting .field-container {
   display: grid;
   grid-row-gap: 5px;
