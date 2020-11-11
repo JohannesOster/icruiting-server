@@ -58,7 +58,6 @@ html
                     name=formField.formFieldId,
                     required=formField.required 
                   )
-                    option
                     each option in formField.options
                       option(value=option.value) #{option.label}
                 when "radio"
