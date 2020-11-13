@@ -11,6 +11,7 @@ import {
 import {postFormRules, putFormRules} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAdmin, requireAuth} from 'middlewares';
+import {requireSubscription} from 'middlewares/stripe';
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.get('/:formId/html', renderHTMLForm);
 router.post('/:formId/html', submitHTMLForm);
 
 router.use(requireAuth);
+router.use(requireSubscription);
 router.get('/', getForms);
 router.get('/:formId', getForm);
 

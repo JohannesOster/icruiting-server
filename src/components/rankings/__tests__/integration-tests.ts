@@ -2,9 +2,9 @@ import request from 'supertest';
 import faker from 'faker';
 import app from 'app';
 import db from 'db';
-import fake from 'tests/fake';
+import fake from 'testUtils/fake';
 import {endConnection, truncateAllTables} from 'db/setup';
-import dataGenerator from 'tests/dataGenerator';
+import dataGenerator from 'testUtils/dataGenerator';
 import {Form} from 'db/repos/forms';
 import {Applicant} from 'db/repos/applicants';
 

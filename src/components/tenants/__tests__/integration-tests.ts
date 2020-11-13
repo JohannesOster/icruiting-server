@@ -3,8 +3,9 @@ import app from 'app';
 import db from 'db';
 import faker from 'faker';
 import {endConnection, truncateAllTables} from 'db/setup';
-import fake from 'tests/fake';
-import dataGenerator from 'tests/dataGenerator';
+import fake from 'testUtils/fake';
+import dataGenerator from 'testUtils/dataGenerator';
+import {CognitoUserAttribute} from 'amazon-cognito-identity-js';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
@@ -13,6 +14,26 @@ jest.mock('middlewares/auth', () => ({
     res.locals.user = mockUser;
     next();
   }),
+}));
+
+jest.mock('amazon-cognito-identity-js', () => ({
+  CognitoUserAttribute: jest.fn().mockImplementation((args: any) => args),
+  CognitoUserPool: jest.fn().mockImplementation(() => ({
+    signUp: (
+      email: string,
+      _passwort: string,
+      attributes: CognitoUserAttribute[],
+      _validationData: CognitoUserAttribute[],
+      callback: (error: any, result: any) => void,
+    ) => {
+      callback(null, {
+        User: {
+          Username: email,
+          Attributes: attributes,
+        },
+      });
+    },
+  })),
 }));
 
 jest.mock('aws-sdk', () => ({
@@ -25,6 +46,19 @@ jest.mock('aws-sdk', () => ({
     }),
   })),
   CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({
+    adminCreateUser: (parmas: {
+      UserPoolId: string;
+      Username: string;
+      UserAttributes: {Name: string; Value: string}[];
+    }) => ({
+      promise: () =>
+        Promise.resolve({
+          User: {
+            Username: parmas.Username,
+            Attributes: parmas.UserAttributes,
+          },
+        }),
+    }),
     listUsers: () => ({
       promise: () =>
         Promise.resolve({
@@ -51,12 +85,19 @@ afterAll(async () => {
 });
 
 describe('tenants', () => {
+  const params = (tenant = fake.tenant()) => ({
+    ...tenant,
+    email: faker.internet.email(),
+    password: faker.internet.password(),
+    name: faker.name.lastName(),
+    stripePriceId: faker.random.uuid(),
+  });
   describe('POST /tenants', () => {
     it('returns 201 json response', async (done) => {
       request(app)
         .post('/tenants')
         .set('Accept', 'application/json')
-        .send(fake.tenant())
+        .send(params())
         .expect('Content-Type', /json/)
         .expect(201, done);
     });
@@ -71,14 +112,14 @@ describe('tenants', () => {
 
     it('returns inserted tenant entity', async () => {
       const tenant = fake.tenant();
-      const resp = await request(app)
+      const {body} = await request(app)
         .post('/tenants')
         .set('Accept', 'application/json')
-        .send(tenant)
+        .send(params(tenant))
         .expect(201);
 
-      expect(resp.body.tenantName).toBe(tenant.tenantName);
-      expect(!!resp.body.tenantId).toBe(true);
+      expect(body.tenant.tenantName).toBe(tenant.tenantName);
+      expect(!!body.tenant.tenantId).toBe(true);
     });
   });
 

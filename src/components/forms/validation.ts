@@ -6,6 +6,7 @@ const formRules = [
   body('formTitle').optional({nullable: true}).isString(),
   body('formFields').isArray({min: 1}),
   body('formFields[*].component').isIn([
+    'section_header',
     'input',
     'textarea',
     'select',

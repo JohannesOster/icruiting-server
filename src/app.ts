@@ -6,7 +6,13 @@ import {routes} from './routes';
 
 const app = express();
 
-app.use(bodyParser.json());
+app.use(
+  bodyParser.json({
+    verify: (req, _res, buf) => {
+      (req as any).rawBody = buf; // pass raw body for stripe webhook endpoint
+    },
+  }),
+);
 app.use(cors());
 
 app.set('views', __dirname + '/views');

@@ -1,9 +1,15 @@
 type Environment = 'production' | 'development' | 'test';
 
 const config = {
-  production: {baseURL: 'https://icruiting.herokuapp.com'},
-  development: {baseURL: 'http://localhost:5000'},
-  test: {baseURL: 'http://localhost:5000'},
+  production: {
+    baseURL: 'https://icruiting.herokuapp.com',
+    freeStripeProducId: 'prod_INnhF3X9Yvijfx', // used to filter free plan
+  },
+  development: {
+    baseURL: 'http://localhost:5000',
+    freeStripeProducId: 'prod_INnqsrNBN4yq8x',
+  },
+  test: {baseURL: 'http://localhost:5000', freeStripeProducId: ''},
 };
 
 const configForEnv = () => {

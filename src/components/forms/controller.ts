@@ -4,6 +4,7 @@ import {S3} from 'aws-sdk';
 import {catchAsync, BaseError} from 'errorHandling';
 import db from 'db';
 import config from 'config';
+import {validateSubscription} from './utils';
 
 export const getForms = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
@@ -45,9 +46,26 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
   const form = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
+
+  try {
+    await validateSubscription(form.tenantId);
+  } catch (error) {
+    return res.render('form', {error: error.message});
+  }
   const submitAction = config.baseURL + req.originalUrl;
-  const params = {formId, submitAction, formFields: form.formFields};
-  res.header('Content-Type', 'text/html');
+  let params: any = {formId, submitAction, formFields: form.formFields};
+  const tenant = await db.tenants.find(form.tenantId);
+
+  if (tenant?.theme) {
+    const urlParams = {
+      Bucket: process.env.S3_BUCKET,
+      Key: tenant.theme,
+      Expires: 100,
+    };
+    const url = await new S3().getSignedUrlPromise('getObject', urlParams);
+    params = {...params, theme: url};
+  }
+
   res.render('form', params);
 });
 
@@ -55,6 +73,12 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
   const form = await db.forms.find(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
+
+  try {
+    await validateSubscription(form.tenantId);
+  } catch (error) {
+    res.render('submission', {error});
+  }
 
   if (form.formCategory !== 'application') {
     const errorMsg =
@@ -66,10 +90,10 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
 
   const formidable = new IncomingForm();
   formidable.maxFileSize = 500 * 1024 * 1024;
-  formidable.parse(req, (err: Error, fields: any, files: any) => {
-    if (err) {
-      console.error(err);
-      return res.render('form-submission', {error: err});
+  formidable.parse(req, (error: Error, fields: any, files: any) => {
+    if (error) {
+      console.error(error);
+      return res.render('form-submission', {error});
     }
 
     const s3 = new S3();
@@ -133,7 +157,6 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
     applicant.attributes = map.attributes;
     promises.push(db.applicants.insert(applicant));
 
-    res.header('Content-Type', 'text/html');
     Promise.all(promises)
       .then(() => res.render('form-submission'))
       .catch((error) => {
