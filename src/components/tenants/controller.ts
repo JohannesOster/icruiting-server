@@ -1,11 +1,11 @@
 import fs from 'fs';
-import {S3, CognitoIdentityServiceProvider, FSx} from 'aws-sdk';
-import {BaseError, catchAsync} from 'errorHandling';
-import db from 'db';
-import {mapCognitoUser} from 'components/utils';
-import {signUp} from './signUp';
 import Stripe from 'stripe';
 import {IncomingForm} from 'formidable';
+import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
+import db from 'db';
+import {BaseError, catchAsync} from 'errorHandling';
+import {mapCognitoUser} from '../utils';
+import {signUp} from './signUp';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2020-08-27',
@@ -13,6 +13,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 
 export const createTenant = catchAsync(async (req, res) => {
   const {tenantName, name, email, password, stripePriceId} = req.body;
+
   const {id} = await stripe.customers.create({email});
   const subscription = await stripe.subscriptions.create({
     customer: id,
@@ -21,6 +22,7 @@ export const createTenant = catchAsync(async (req, res) => {
   });
   const tenant = await db.tenants.insert({tenantName, stripeCustomerId: id});
   const {User} = await signUp(tenant.tenantId, name, email, password);
+
   res.status(201).json({user: User, tenant, subscription});
 });
 
@@ -37,7 +39,6 @@ export const getSubscriptions = catchAsync(async (req, res) => {
 
 export const deleteSubscription = catchAsync(async (req, res) => {
   const {subscriptionId} = req.params;
-
   await stripe.subscriptions.del(subscriptionId);
   res.status(200).json({});
 });
@@ -56,6 +57,7 @@ export const postSubscription = catchAsync(async (req, res) => {
 
 export const getSetupIntent = catchAsync(async (req, res) => {
   const {stripeCustomerId} = res.locals.user;
+
   const setupIntent = await stripe.setupIntents.create({
     payment_method_types: ['sepa_debit'],
     customer: stripeCustomerId,
@@ -123,6 +125,7 @@ export const setDefaultPaymentMethod = catchAsync(async (req, res) => {
 
 export const postTheme = catchAsync(async (req, res, next) => {
   const {tenantId} = res.locals.user;
+
   const tenant = await db.tenants.find(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
 
@@ -161,6 +164,7 @@ export const postTheme = catchAsync(async (req, res, next) => {
 
 export const getTenant = catchAsync(async (req, res) => {
   const {tenantId} = res.locals.user;
+
   let tenant = await db.tenants.find(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
   if (tenant.theme) {
@@ -171,6 +175,7 @@ export const getTenant = catchAsync(async (req, res) => {
     });
     tenant = {...tenant, theme: url};
   }
+
   res.status(200).json(tenant);
 });
 
@@ -179,7 +184,6 @@ export const deleteTheme = catchAsync(async (req, res) => {
 
   const tenant = await db.tenants.find(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-
   if (!tenant.theme) throw new BaseError(404, 'Theme Not Found');
 
   const s3 = new S3();
@@ -187,6 +191,7 @@ export const deleteTheme = catchAsync(async (req, res) => {
   const delParams = {Bucket: bucket, Delete: {Objects: [{Key: tenant.theme!}]}};
   await s3.deleteObjects(delParams).promise();
   await db.tenants.updateTheme(tenantId, null);
+
   res.status(200).json();
 });
 
