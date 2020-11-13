@@ -133,34 +133,6 @@ describe('applicants', () => {
       expect(res.body.applicants.length).toBe(0);
     });
 
-    it('includes boolean weather screening exists or not', async () => {
-      const {jobId, applicantId} = applicants[0];
-      const form = await dataGenerator.insertForm(
-        mockUser.tenantId,
-        jobId,
-        'screening',
-      );
-
-      await dataGenerator.insertFormSubmission(
-        mockUser.tenantId,
-        applicantId!,
-        mockUser.userId,
-        form.formId,
-        form.formFields.map(({formFieldId}) => formFieldId),
-      );
-
-      const res = await request(app)
-        .get('/applicants')
-        .set('Accept', 'application/json')
-        .expect(200);
-
-      const filtered = res.body.applicants.filter(
-        (appl: any) => appl.screeningExists,
-      );
-      expect(filtered.length).toBe(1);
-      expect(filtered[0].applicantId).toBe(applicantId);
-    });
-
     it('limits by limit query', async () => {
       const res = await request(app)
         .get(`/applicants?limit=${0}`)

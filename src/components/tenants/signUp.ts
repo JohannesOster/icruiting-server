@@ -14,20 +14,15 @@ export const signUp = async (
     ClientId: process.env.AWS_CLIENT_ID || '',
   };
   const userPool = new CognitoUserPool(config);
+  const attributes = [
+    new CognitoUserAttribute({Name: 'name', Value: name}),
+    new CognitoUserAttribute({Name: 'custom:tenant_id', Value: tenantId}),
+    new CognitoUserAttribute({Name: 'custom:user_role', Value: 'admin'}),
+  ];
   return new Promise((resolve, reject) => {
-    userPool.signUp(
-      email,
-      password,
-      [
-        new CognitoUserAttribute({Name: 'name', Value: name}),
-        new CognitoUserAttribute({Name: 'custom:tenant_id', Value: tenantId}),
-        new CognitoUserAttribute({Name: 'custom:user_role', Value: 'admin'}),
-      ],
-      [],
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      },
-    );
+    userPool.signUp(email, password, attributes, [], (error, result) => {
+      if (error) return reject(error);
+      resolve(result);
+    });
   });
 };
