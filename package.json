@@ -5,13 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start:dev": "NODE_PATH=./src env NODE_ENV=development nodemon",
-    "start": "NODE_PATH=dist/src npm run db-migrate node dist/src/index.js",
+    "start": "NODE_PATH=dist/src node dist/src/index.js",
     "build": "rimraf ./dist && tsc && npm run copy-files",
     "copy-files": "copyfiles \"src/**/*/*.sql\" \"src/**/*/*.pug\" \"src/**/*/*.css\" dist/",
     "db-migrate": "npx ts-node ./src/db/flyway.ts flyway migrate",
     "db-drop": "npx ts-node ./src/db/flyway.ts flyway clean",
     "test": "npx jest --runInBand --detectOpenHandles",
-    "heroku-prebuild": "npm install --dev",
+    "heroku-prebuild": "npm install --dev && npm run db-migrate",
     "lint": "tslint --project ."
   },
   "keywords": [],
