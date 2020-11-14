@@ -12,7 +12,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 });
 
 export const createTenant = catchAsync(async (req, res) => {
-  const {tenantName, name, email, password, stripePriceId} = req.body;
+  const {
+    tenantName,
+    givenName,
+    familyName,
+    preferredName,
+    email,
+    password,
+    stripePriceId,
+  } = req.body;
 
   const {id} = await stripe.customers.create({email});
   const subscription = await stripe.subscriptions.create({
@@ -21,7 +29,14 @@ export const createTenant = catchAsync(async (req, res) => {
     trial_period_days: 14,
   });
   const tenant = await db.tenants.insert({tenantName, stripeCustomerId: id});
-  const {User} = await signUp(tenant.tenantId, name, email, password);
+  const {User} = await signUp({
+    tenantId: tenant.tenantId,
+    givenName,
+    familyName,
+    preferredName,
+    email,
+    password,
+  });
 
   res.status(201).json({user: User, tenant, subscription});
 });
