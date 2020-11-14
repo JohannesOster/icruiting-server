@@ -89,7 +89,6 @@ describe('tenants', () => {
     ...tenant,
     email: faker.internet.email(),
     password: faker.internet.password(),
-    name: faker.name.familyName(),
     stripePriceId: faker.random.uuid(),
   });
   describe('POST /tenants', () => {

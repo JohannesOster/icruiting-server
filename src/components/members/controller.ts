@@ -33,7 +33,7 @@ export const getMembers = catchAsync(async (req, res) => {
   const params = {
     UserPoolId: userPoolID,
     Filter: 'cognito:user_status="CONFIRMED"',
-    AttributesToGet: ['email', 'name', 'custom:user_role', 'custom:tenant_id'],
+    AttributesToGet: ['email', 'custom:user_role', 'custom:tenant_id'],
   };
 
   const {Users} = await cIdp.listUsers(params).promise();
