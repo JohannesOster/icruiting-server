@@ -11,7 +11,7 @@ JOIN (
 	SELECT applicant_id
 	FROM applicant_view
 	CROSS JOIN UNNEST(attributes) AS attribute
-	WHERE attribute->>'value' LIKE CONCAT('%',${filter},'%') 
+	WHERE LOWER(attribute->>'value') LIKE CONCAT('%',LOWER(${filter}),'%') 
 	  OR ${filter} Is NULL
 	GROUP BY applicant_id
 ) AS filter_query
