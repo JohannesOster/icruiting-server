@@ -7,14 +7,14 @@ import config from 'config';
 import {validateSubscription} from './utils';
 
 export const getForms = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const jobId = req.query.jobId as string;
   const resp = await db.forms.findAll(tenantId, jobId);
   res.status(200).json(resp);
 });
 
 export const getForm = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const {formId} = req.params;
   const resp = await db.forms.find(tenantId, formId);
   if (!resp) throw new BaseError(404, 'Not Found');
@@ -22,14 +22,14 @@ export const getForm = catchAsync(async (req, res) => {
 });
 
 export const postForm = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const params = {...req.body, tenantId};
   const resp = await db.forms.insert(params);
   res.status(201).json(resp);
 });
 
 export const putForm = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const params = {...req.body, tenantId};
   const resp = await db.forms.update(params);
   res.status(200).json(resp);
@@ -37,7 +37,7 @@ export const putForm = catchAsync(async (req, res) => {
 
 export const deleteForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   await db.forms.remove(tenantId, formId);
   res.status(200).json();
 });

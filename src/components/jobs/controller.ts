@@ -5,14 +5,14 @@ import {dbInsertApplicantReport, dbUpdateApplicantReport} from './database';
 import db from 'db';
 
 export const getJobs = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const resp = await db.jobs.all(tenantId);
   res.status(200).json(resp);
 });
 
 export const getJob = catchAsync(async (req, res) => {
   const {jobId} = req.params;
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const resp = await db.jobs.find(tenantId, jobId);
   if (!resp) throw new BaseError(404, 'Not Found');
   res.status(200).json(resp);
@@ -20,7 +20,7 @@ export const getJob = catchAsync(async (req, res) => {
 
 export const postJob = catchAsync(async (req, res) => {
   const {jobTitle, jobRequirements} = req.body;
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const params = {jobTitle, tenantId, jobRequirements};
   const resp = await db.jobs.insert(params);
   res.status(201).json(resp);
@@ -28,14 +28,14 @@ export const postJob = catchAsync(async (req, res) => {
 
 export const putJob = catchAsync(async (req, res) => {
   const {jobId} = req.params;
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const resp = await db.jobs.update(tenantId, {...req.body, jobId});
   res.status(200).json(resp);
 });
 
 export const deleteJob = catchAsync(async (req, res) => {
   const {jobId} = req.params;
-  const {tenantId, userId} = res.locals.user;
+  const {tenantId, userId} = req.user;
 
   const {applicants} = await db.applicants.findAll({tenantId, jobId, userId});
 
@@ -59,7 +59,7 @@ export const deleteJob = catchAsync(async (req, res) => {
 });
 
 export const postApplicantReport = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const {jobId} = req.params;
   const params = {tenantId, jobId, ...req.body};
   const report = await dbInsertApplicantReport(params);
@@ -67,7 +67,7 @@ export const postApplicantReport = catchAsync(async (req, res) => {
 });
 
 export const updateApplicantReport = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const {applicantReportId} = req.params;
   const params = {tenantId, applicantReportId, ...req.body};
   const report = await dbUpdateApplicantReport(params);
@@ -75,7 +75,7 @@ export const updateApplicantReport = catchAsync(async (req, res) => {
 });
 
 export const getApplicantReport = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const {jobId} = req.params;
   const report = await dbSelectApplicantReport(tenantId, jobId);
   if (!report) throw new BaseError(404, 'Not Found');

@@ -1,0 +1,1 @@
+ALTER TABLE tenant ADD COLUMN stripe_customer_id TEXT DEFAULT NULL;

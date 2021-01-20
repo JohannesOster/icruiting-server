@@ -11,7 +11,7 @@ const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
-    res.locals.user = mockUser;
+    req.user = mockUser;
     next();
   }),
 }));

@@ -2,7 +2,7 @@ import {BaseError, catchAsync} from 'errorHandling';
 import db from 'db';
 
 export const getFormSubmission = catchAsync(async (req, res) => {
-  const {userId, tenantId} = res.locals.user;
+  const {userId, tenantId} = req.user;
   const {formId, applicantId} = req.params;
   const params = {formId, applicantId, submitterId: userId, tenantId};
   const resp = await db.formSubmissions.find(params);
@@ -11,14 +11,14 @@ export const getFormSubmission = catchAsync(async (req, res) => {
 });
 
 export const postFormSubmission = catchAsync(async (req, res) => {
-  const {userId, tenantId} = res.locals.user;
+  const {userId, tenantId} = req.user;
   const params = {...req.body, submitterId: userId, tenantId};
   const resp = await db.formSubmissions.insert(params);
   res.status(201).json(resp);
 });
 
 export const putFormSubmission = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const {formSubmissionId} = req.params;
   const {submission} = req.body;
   const params = {submission, formSubmissionId, tenantId};

@@ -1,0 +1,70 @@
+html
+  head
+    title icruiting-report
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    style
+      include report.css
+  body
+    div(class="a4-container")
+      header(class="banner")
+        h1 Bewerber*innengutachten
+        h3 #{formCategory}
+      main(class="container")
+        div(class="header-container")
+          if !!imageURL
+            img(src=imageURL height="150px" width="auto" style="margin-right:16px;")
+          section(style="flex:1;")
+            table
+              tbody
+                for attribute in attributes
+                  tr
+                    td #{attribute.key}
+                    td #{attribute.value}
+        section(style="display:grid;row-gap:8px;")
+          h4 Übersicht
+          table
+            tbody
+              tr
+                td Rang
+                td #{rank}
+              tr
+                td Gesamtscore
+                td #{score}
+              tr
+                td Standardabweichung
+                td #{standardDeviation}
+      if shouldPlot
+        div(id="radar-chart-container" style="display:flex;align-items:center;justify-content:center;margin-top:-80px;")
+          img(id="radar-chart-image" style="width:80vw;height:80vw;")
+          canvas(id="radar-chart" height="2000" width="2000")
+
+    script(type='text/javascript', src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js")
+    script(type='text/javascript').
+      function plotRadar() {
+        const canvas = document.getElementById('radar-chart');
+        const ctx = canvas.getContext('2d');
+
+        const data = !{JSON.stringify(chartData)};
+        const options = {
+          legend: {display: false},
+          animation: {duration: 0},
+          responsiveAnimationDuration: 0,
+          responsive: false,
+          scale: {
+            pointLabels: {fontSize: 40},
+            ticks: {beginAtZero: true, fontSize: 40},
+            gridLines: {lineWidth: 3},
+            angleLines: {lineWidth: 3}
+          },
+        }
+        const radarChart = new Chart(ctx, {type: 'radar', data, options});
+
+        const radarImage = document.getElementById('radar-chart-image').setAttribute('src', canvas.toDataURL('image/png'));
+        radarChart.destroy();
+        canvas.parentElement.removeChild(canvas);
+      }
+
+      if(#{shouldPlot}) plotRadar();
+
+

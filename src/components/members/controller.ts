@@ -6,7 +6,7 @@ import {removePrefix} from './utils';
 export const createMember = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {emails} = req.body;
-  const {userPoolID, tenantId} = res.locals.user;
+  const {userPoolID, tenantId} = req.user;
 
   const promises = emails.map((email: string) => {
     const params = {
@@ -29,7 +29,7 @@ export const createMember = catchAsync(async (req, res) => {
 
 export const getMembers = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
-  const {userPoolID, tenantId, email} = res.locals.user;
+  const {userPoolID, tenantId, email} = req.user;
   const params = {
     UserPoolId: userPoolID,
     Filter: 'cognito:user_status="CONFIRMED"',
@@ -53,7 +53,7 @@ export const getMembers = catchAsync(async (req, res) => {
 
 export const updateMember = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
-  const {userPoolID} = res.locals.user;
+  const {userPoolID} = req.user;
   const {user_role} = req.body;
   const {username} = req.params;
 

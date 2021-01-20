@@ -27,7 +27,7 @@ export const createTenant = catchAsync(async (req, res) => {
 });
 
 export const getSubscriptions = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = res.locals.user;
+  const {stripeCustomerId} = req.user;
 
   const subscriptions = await stripe.subscriptions.list({
     customer: stripeCustomerId,
@@ -44,11 +44,11 @@ export const deleteSubscription = catchAsync(async (req, res) => {
 });
 
 export const postSubscription = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = res.locals.user;
+  const {stripeCustomerId} = req.user;
   const {priceId} = req.body;
 
   const subscription = await stripe.subscriptions.create({
-    customer: stripeCustomerId,
+    customer: stripeCustomerId!,
     items: [{price: priceId}],
   });
 
@@ -56,7 +56,7 @@ export const postSubscription = catchAsync(async (req, res) => {
 });
 
 export const getSetupIntent = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = res.locals.user;
+  const {stripeCustomerId} = req.user;
 
   const setupIntent = await stripe.setupIntents.create({
     payment_method_types: ['sepa_debit'],
@@ -67,13 +67,13 @@ export const getSetupIntent = catchAsync(async (req, res) => {
 });
 
 export const getPaymentMethods = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = res.locals.user;
+  const {stripeCustomerId} = req.user;
 
-  const customer = (await stripe.customers.retrieve(stripeCustomerId)) as any;
+  const customer = (await stripe.customers.retrieve(stripeCustomerId!)) as any;
   if (!customer) throw new BaseError(404, 'Stripe customer Not Found');
 
   const {data} = await stripe.paymentMethods.list({
-    customer: stripeCustomerId,
+    customer: stripeCustomerId!,
     type: 'sepa_debit',
   });
 
@@ -89,21 +89,21 @@ export const getPaymentMethods = catchAsync(async (req, res) => {
 });
 
 export const deletePaymentMethod = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = res.locals.user;
+  const {stripeCustomerId} = req.user;
   const {paymentMethodId} = req.params;
 
   const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
 
   const {data} = await stripe.paymentMethods.list({
-    customer: stripeCustomerId,
+    customer: stripeCustomerId!,
     type: 'sepa_debit',
   });
 
   if (data.length) {
-    const customer: any = await stripe.customers.retrieve(stripeCustomerId);
+    const customer: any = await stripe.customers.retrieve(stripeCustomerId!);
 
     if (!customer.invoice_settings.default_payment_method) {
-      await stripe.customers.update(stripeCustomerId, {
+      await stripe.customers.update(stripeCustomerId!, {
         invoice_settings: {default_payment_method: data[0].id},
       });
     }
@@ -113,10 +113,10 @@ export const deletePaymentMethod = catchAsync(async (req, res) => {
 });
 
 export const setDefaultPaymentMethod = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = res.locals.user;
+  const {stripeCustomerId} = req.user;
   const {paymentMethodId} = req.body;
 
-  const resp = await stripe.customers.update(stripeCustomerId, {
+  const resp = await stripe.customers.update(stripeCustomerId!, {
     invoice_settings: {default_payment_method: paymentMethodId},
   });
 
@@ -124,7 +124,7 @@ export const setDefaultPaymentMethod = catchAsync(async (req, res) => {
 });
 
 export const postTheme = catchAsync(async (req, res, next) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
 
   const tenant = await db.tenants.find(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
@@ -163,7 +163,7 @@ export const postTheme = catchAsync(async (req, res, next) => {
 });
 
 export const getTenant = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
 
   let tenant = await db.tenants.find(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
@@ -180,7 +180,7 @@ export const getTenant = catchAsync(async (req, res) => {
 });
 
 export const deleteTheme = catchAsync(async (req, res) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
 
   const tenant = await db.tenants.find(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
@@ -196,7 +196,7 @@ export const deleteTheme = catchAsync(async (req, res) => {
 });
 
 export const deleteTenant = catchAsync(async (req, res) => {
-  const {userPoolID, tenantId} = res.locals.user;
+  const {userPoolID, tenantId} = req.user;
 
   const tenant = await db.tenants.find(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');

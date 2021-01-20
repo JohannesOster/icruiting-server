@@ -10,7 +10,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 export const requireSubscription: RequestHandler = catchAsync(
   async (req, res, next) => {
     let tenantId;
-    if (res.locals.user) tenantId = res.locals.user.tenantId;
+    if (req.user) tenantId = req.user.tenantId;
     if (!tenantId) tenantId = req.params.tenantId;
     if (!tenantId) throw new BaseError(422, 'Missing tenant_id');
 

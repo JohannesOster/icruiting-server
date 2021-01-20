@@ -12,7 +12,7 @@ import {JobRequirement} from 'db/repos/jobs';
 
 export const getApplicants = catchAsync(async (req, res) => {
   const {jobId, offset, limit, orderBy, filter} = req.query as any;
-  const {tenantId, userId} = res.locals.user;
+  const {tenantId, userId} = req.user;
   const params = {tenantId, jobId, userId, offset, limit, orderBy, filter};
   const data = await db.applicants.findAll(params);
 
@@ -27,7 +27,7 @@ export const getApplicants = catchAsync(async (req, res) => {
 
 export const getApplicant = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
 
   const applicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Not Found');
@@ -42,7 +42,7 @@ export const getApplicant = catchAsync(async (req, res) => {
 
 export const getReport = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   type QueryType = {formCategory: 'screening' | 'assessment'};
   const {formCategory} = req.query as QueryType;
 
@@ -55,7 +55,7 @@ export const getReport = catchAsync(async (req, res) => {
 
 export const deleteApplicant = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
 
   const applicant = await db.applicants.find(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Not Found');
@@ -74,7 +74,7 @@ export const deleteApplicant = catchAsync(async (req, res) => {
 });
 
 export const updateApplicant = catchAsync(async (req, res, next) => {
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   const {applicantId} = req.params;
   const formidable = new IncomingForm({multiples: true} as any);
 
@@ -184,7 +184,7 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
 
 export const getPdfReport = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
-  const {tenantId} = res.locals.user;
+  const {tenantId} = req.user;
   type Query = {formCategory?: 'screening' | 'assessment'};
   const {formCategory = 'screening'} = req.query as Query;
 

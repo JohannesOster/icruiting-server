@@ -1,0 +1,16 @@
+html
+  head
+    title icruiting-webform
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    script
+      include ic-iframe-resize.js
+    style
+      include ic-forms.css
+
+  body(onload="post_iframe_size();")
+    div(id='ic-iframe-container')
+      if error
+        p(class="ic-font-300") Ein Fehler ist aufgetreten #{error}
+      else
+        p(class="ic-font-300") Bewerbung erfolgreich abgeschickt!

@@ -11,12 +11,12 @@ import {routes as stripe} from 'components/stripe';
 const router = express.Router();
 
 router.use('/tenants', tenants);
-router.use('/stripe', stripe);
-router.use('/applicants', applicants);
-router.use('/forms', forms);
-router.use('/jobs', jobs);
 router.use('/members', members);
+router.use('/stripe', stripe);
+router.use('/jobs', jobs);
+router.use('/forms', forms);
 router.use('/form-submissions', formSubmissions);
+router.use('/applicants', applicants);
 router.use('/rankings', rankings);
 
 export {router as routes};

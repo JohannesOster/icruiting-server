@@ -25,7 +25,7 @@ export const requireAuth: RequestHandler = catchAsync(
 
       const lastSlashIdx = payload.iss.lastIndexOf('/');
       const userPoolID = payload.iss.substring(lastSlashIdx + 1);
-      res.locals.user = {
+      req.user = {
         tenantId: payload['custom:tenant_id'],
         userPoolID,
         userId: payload.sub,
@@ -40,7 +40,7 @@ export const requireAuth: RequestHandler = catchAsync(
 
 export const requireAdmin: RequestHandler = catchAsync(
   async (req, res, next) => {
-    const userRole = res.locals.user.userRole;
+    const userRole = req.user.userRole;
     if (userRole !== 'admin') throw new BaseError(403, 'Admin required');
     next();
   },
