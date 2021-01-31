@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsc-watch --onSuccess \"npm run start\"",
+    "dev": "tsc-watch --onSuccess \"npm run dev:start\"",
     "dev:start": "npm run copy-files && npm start",
     "start": "NODE_PATH=dist/src node dist/src/index.js",
     "build": "rimraf ./dist && tsc && npm run copy-files",

@@ -21,6 +21,26 @@ export const getForm = catchAsync(async (req, res) => {
   res.status(200).json(resp);
 });
 
+export const exportForm = catchAsync(async (req, res) => {
+  const {tenantId} = req.user;
+  const {formId} = req.params;
+  const form: any = await db.forms.find(tenantId, formId); // has to be any in order to delete props
+  if (!form) throw new BaseError(404, 'Not Found');
+
+  // remove unnecessary ids
+  delete form.tenantId;
+  delete form.formId;
+  delete form.jobId;
+  delete form.createdAt;
+  form.formFields.forEach((field: any) => {
+    delete field.formId;
+    delete field.formFieldId;
+    delete field.jobRequirementId;
+  });
+
+  res.attachment('form.json').send(form);
+});
+
 export const postForm = catchAsync(async (req, res) => {
   const {tenantId} = req.user;
   const params = {...req.body, tenantId};

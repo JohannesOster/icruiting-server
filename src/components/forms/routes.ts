@@ -7,6 +7,7 @@ import {
   getForm,
   renderHTMLForm,
   submitHTMLForm,
+  exportForm,
 } from './controller';
 import {postFormRules, putFormRules} from './validation';
 import {validate} from 'middlewares/common';
@@ -25,6 +26,7 @@ router.get('/:formId', getForm);
 
 router.use(requireAdmin);
 router.post('/', postFormRules, validate, postForm);
+router.get('/:formId/export', exportForm);
 router.delete('/:formId', deleteForm);
 router.put('/:formId', putFormRules, validate, putForm);
 
