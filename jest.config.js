@@ -6,5 +6,4 @@ module.exports = {
   globalTeardown: './jest.teardown.js',
   setupFilesAfterEnv: ['./jest.setupAfterEnv.js'],
   moduleDirectories: ['node_modules', 'src'],
-  modulePathIgnorePatterns: ['<rootDir>/dist/'],
 };

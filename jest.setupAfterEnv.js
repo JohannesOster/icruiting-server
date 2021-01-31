@@ -10,4 +10,4 @@ jest.mock('stripe', () =>
   })),
 );
 
-jest.mock('./src/middlewares/stripe');
+jest.mock('middlewares/stripe');
