@@ -1,6 +1,6 @@
 import {query} from 'express-validator';
 
-export const getApplicantsRules = [
+export const listRules = [
   query('jobId').optional().isUUID(),
   query('offset').optional().isInt(),
   query('limit').optional().isInt(),
@@ -8,6 +8,6 @@ export const getApplicantsRules = [
   query('filter').optional().isString(),
 ];
 
-export const validateGetReport = [
+export const getReportRules = [
   query('formCategory').isIn(['assessment', 'screening']),
 ];

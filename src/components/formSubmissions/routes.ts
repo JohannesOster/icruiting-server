@@ -1,25 +1,16 @@
 import express from 'express';
-import {
-  postFormSubmission,
-  putFormSubmission,
-  getFormSubmission,
-} from './controller';
-import {postFormSubmissionRules, putFormSubmissionRules} from './validation';
+import * as controller from './controller';
 import {validate} from 'middlewares/common';
 import {requireAuth} from 'middlewares';
 import {requireSubscription} from 'middlewares/stripe';
+import {createRules, updateRules} from 'components/jobs/validation';
 
 const router = express.Router();
 
 router.use(requireAuth);
 router.use(requireSubscription);
-router.post('/', postFormSubmissionRules, validate, postFormSubmission);
-router.put(
-  '/:formSubmissionId',
-  putFormSubmissionRules,
-  validate,
-  putFormSubmission,
-);
-router.get('/:formId/:applicantId', getFormSubmission);
+router.post('/', createRules, validate, controller.create);
+router.put('/:formSubmissionId', updateRules, validate, controller.update);
+router.get('/:formId/:applicantId', controller.retrieve);
 
 export {router as routes};

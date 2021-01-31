@@ -1,9 +1,8 @@
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
-import {mapCognitoUser} from 'components/utils';
+import {mapCognitoUser, removePrefix} from 'components/utils';
 import {catchAsync} from 'errorHandling';
-import {removePrefix} from './utils';
 
-export const createMember = catchAsync(async (req, res) => {
+export const create = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {emails} = req.body;
   const {userPoolID, tenantId} = req.user;
@@ -27,7 +26,7 @@ export const createMember = catchAsync(async (req, res) => {
   res.status(201).json(resp);
 });
 
-export const getMembers = catchAsync(async (req, res) => {
+export const retrieve = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {userPoolID, tenantId, email} = req.user;
   const params = {
@@ -51,7 +50,7 @@ export const getMembers = catchAsync(async (req, res) => {
   res.status(200).json(withoutMe);
 });
 
-export const updateMember = catchAsync(async (req, res) => {
+export const update = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();
   const {userPoolID} = req.user;
   const {user_role} = req.body;

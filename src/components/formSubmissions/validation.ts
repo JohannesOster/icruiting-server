@@ -1,12 +1,12 @@
 import {body} from 'express-validator';
 
-export const postFormSubmissionRules = [
+export const createRules = [
   body('formId').isUUID(),
   body('applicantId').isUUID(),
   body('submission').exists(),
 ];
 
-export const putFormSubmissionRules = [
+export const updateRules = [
   body('formId').isUUID(),
   body('applicantId').isUUID(),
   body('formSubmissionId').isUUID(),

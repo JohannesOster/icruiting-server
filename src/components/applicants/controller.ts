@@ -10,22 +10,7 @@ import {getApplicantFileURLs} from './utils';
 import db from 'db';
 import {JobRequirement} from 'db/repos/jobs';
 
-export const getApplicants = catchAsync(async (req, res) => {
-  const {jobId, offset, limit, orderBy, filter} = req.query as any;
-  const {tenantId, userId} = req.user;
-  const params = {tenantId, jobId, userId, offset, limit, orderBy, filter};
-  const data = await db.applicants.findAll(params);
-
-  // replace S3 filekeys with aws presigned URL
-  const promises = data.applicants.map(({files, ...appl}) =>
-    getApplicantFileURLs(files).then((files) => ({...appl, files})),
-  );
-
-  const applicants = await Promise.all(promises);
-  res.status(200).json({applicants, totalCount: data.totalCount});
-});
-
-export const getApplicant = catchAsync(async (req, res) => {
+export const retrieve = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
   const {tenantId} = req.user;
 
@@ -40,40 +25,22 @@ export const getApplicant = catchAsync(async (req, res) => {
   res.status(200).json(resp);
 });
 
-export const getReport = catchAsync(async (req, res) => {
-  const {applicantId} = req.params;
-  const {tenantId} = req.user;
-  type QueryType = {formCategory: 'screening' | 'assessment'};
-  const {formCategory} = req.query as QueryType;
+export const list = catchAsync(async (req, res) => {
+  const {jobId, offset, limit, orderBy, filter} = req.query as any;
+  const {tenantId, userId} = req.user;
+  const params = {tenantId, jobId, userId, offset, limit, orderBy, filter};
+  const data = await db.applicants.findAll(params);
 
-  const params = {applicantId, tenantId, formCategory};
-  const data = await dbSelectReport(params);
-  if (!data) throw new BaseError(404, 'Not Found');
+  // replace S3 filekeys with aws presigned URL
+  const promises = data.applicants.map(({files, ...appl}) =>
+    getApplicantFileURLs(files).then((files) => ({...appl, files})),
+  );
 
-  res.status(200).json(data);
+  const applicants = await Promise.all(promises);
+  res.status(200).json({applicants, totalCount: data.totalCount});
 });
 
-export const deleteApplicant = catchAsync(async (req, res) => {
-  const {applicantId} = req.params;
-  const {tenantId} = req.user;
-
-  const applicant = await db.applicants.find(tenantId, applicantId);
-  if (!applicant) throw new BaseError(404, 'Not Found');
-
-  if (applicant.files?.length) {
-    const files = applicant.files;
-    const s3 = new S3();
-    const bucket = process.env.S3_BUCKET || '';
-    const fileKeys = files.map(({value}) => ({Key: value}));
-    const delParams = {Bucket: bucket, Delete: {Objects: fileKeys}};
-    await s3.deleteObjects(delParams).promise();
-  }
-
-  await db.applicants.remove(tenantId, applicantId);
-  res.status(200).json({});
-});
-
-export const updateApplicant = catchAsync(async (req, res, next) => {
+export const update = catchAsync(async (req, res, next) => {
   const {tenantId} = req.user;
   const {applicantId} = req.params;
   const formidable = new IncomingForm({multiples: true} as any);
@@ -180,6 +147,39 @@ export const updateApplicant = catchAsync(async (req, res, next) => {
       next(error);
     }
   });
+});
+
+export const getReport = catchAsync(async (req, res) => {
+  const {applicantId} = req.params;
+  const {tenantId} = req.user;
+  type QueryType = {formCategory: 'screening' | 'assessment'};
+  const {formCategory} = req.query as QueryType;
+
+  const params = {applicantId, tenantId, formCategory};
+  const data = await dbSelectReport(params);
+  if (!data) throw new BaseError(404, 'Not Found');
+
+  res.status(200).json(data);
+});
+
+export const del = catchAsync(async (req, res) => {
+  const {applicantId} = req.params;
+  const {tenantId} = req.user;
+
+  const applicant = await db.applicants.find(tenantId, applicantId);
+  if (!applicant) throw new BaseError(404, 'Not Found');
+
+  if (applicant.files?.length) {
+    const files = applicant.files;
+    const s3 = new S3();
+    const bucket = process.env.S3_BUCKET || '';
+    const fileKeys = files.map(({value}) => ({Key: value}));
+    const delParams = {Bucket: bucket, Delete: {Objects: fileKeys}};
+    await s3.deleteObjects(delParams).promise();
+  }
+
+  await db.applicants.remove(tenantId, applicantId);
+  res.status(200).json({});
 });
 
 export const getPdfReport = catchAsync(async (req, res) => {
