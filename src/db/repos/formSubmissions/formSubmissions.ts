@@ -26,7 +26,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     {table: 'form_submission_field'},
   );
 
-  const insert = async (params: {
+  const create = async (params: {
     tenantId: string;
     applicantId: string;
     submitterId: string;
@@ -61,7 +61,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
       .then((data) => ({...sub, submission: reduceSubmission(data)}));
   };
 
-  const find = (params: {
+  const retrieve = (params: {
     formId: string;
     submitterId: string;
     applicantId: string;
@@ -111,5 +111,5 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
       .then((data) => ({...sub, submission: reduceSubmission(data)}));
   };
 
-  return {insert, find, update};
+  return {create, retrieve, update};
 };

@@ -74,7 +74,7 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
   }
   const submitAction = config.baseURL + req.originalUrl;
   let params: any = {formId, submitAction, formFields: form.formFields};
-  const tenant = await db.tenants.find(form.tenantId);
+  const tenant = await db.tenants.retrieve(form.tenantId);
 
   if (tenant?.theme) {
     const urlParams = {
@@ -175,7 +175,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
     );
 
     applicant.attributes = map.attributes;
-    promises.push(db.applicants.insert(applicant));
+    promises.push(db.applicants.create(applicant));
 
     Promise.all(promises)
       .then(() => res.render('form-submission'))

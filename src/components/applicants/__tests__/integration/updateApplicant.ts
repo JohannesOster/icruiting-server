@@ -53,7 +53,7 @@ describe('applicants', () => {
         ],
       };
 
-      applicant = await db.applicants.insert(_applicant);
+      applicant = await db.applicants.create(_applicant);
     });
 
     it('returns json 200 response', (done) => {

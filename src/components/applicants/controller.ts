@@ -10,7 +10,7 @@ export const retrieve = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
   const {tenantId} = req.user;
 
-  const applicant = await db.applicants.find(tenantId, applicantId);
+  const applicant = await db.applicants.retrieve(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Not Found');
 
   const resp = await getApplicantFileURLs(applicant.files).then((files) => ({
@@ -25,7 +25,7 @@ export const list = catchAsync(async (req, res) => {
   const {jobId, offset, limit, orderBy, filter} = req.query as any;
   const {tenantId, userId} = req.user;
   const params = {tenantId, jobId, userId, offset, limit, orderBy, filter};
-  const data = await db.applicants.findAll(params);
+  const data = await db.applicants.list(params);
 
   // replace S3 filekeys with aws presigned URL
   const promises = data.applicants.map(({files, ...appl}) =>
@@ -54,7 +54,7 @@ export const update = catchAsync(async (req, res, next) => {
       const form = await db.forms.retrieve(null, formId);
       if (!form) throw new BaseError(404, 'Form Not Found');
 
-      applicant = await db.applicants.find(tenantId, applicantId);
+      applicant = await db.applicants.retrieve(tenantId, applicantId);
       if (!applicant) throw new BaseError(404, 'Not Found');
       const oldFiles = applicant?.files;
 
@@ -162,7 +162,7 @@ export const del = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
   const {tenantId} = req.user;
 
-  const applicant = await db.applicants.find(tenantId, applicantId);
+  const applicant = await db.applicants.retrieve(tenantId, applicantId);
   if (!applicant) throw new BaseError(404, 'Not Found');
 
   if (applicant.files?.length) {
@@ -174,6 +174,6 @@ export const del = catchAsync(async (req, res) => {
     await s3.deleteObjects(delParams).promise();
   }
 
-  await db.applicants.remove(tenantId, applicantId);
+  await db.applicants.del(tenantId, applicantId);
   res.status(200).json({});
 });

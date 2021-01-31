@@ -34,15 +34,15 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     {table: 'job_requirement'},
   );
 
-  const all = (tenantId: string): Promise<Job[]> => {
+  const list = (tenantId: string): Promise<Job[]> => {
     return db.any(sql.find, {tenant_id: tenantId, job_id: null});
   };
 
-  const find = (tenantId: string, jobId: string): Promise<Job | null> => {
+  const retrieve = (tenantId: string, jobId: string): Promise<Job | null> => {
     return db.oneOrNone(sql.find, {tenant_id: tenantId, job_id: jobId});
   };
 
-  const insert = async (values: {
+  const create = async (values: {
     jobTitle: string;
     tenantId: string;
     jobRequirements: {
@@ -98,18 +98,18 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       await t.none(reqStmt);
     });
 
-    return find(tenantId, job.jobId).then((job) => {
+    return retrieve(tenantId, job.jobId).then((job) => {
       if (!job) throw new Error('Did not find job after update');
       return job;
     });
   };
 
-  const remove = (tenantId: string, jobId: string): Promise<null> => {
+  const del = (tenantId: string, jobId: string): Promise<null> => {
     return db.none(
       'DELETE FROM job WHERE tenant_id=${tenant_id} AND job_id=${job_id}',
       {tenant_id: tenantId, job_id: jobId},
     );
   };
 
-  return {all, find, insert, update, remove};
+  return {create, retrieve, update, del, list};
 };

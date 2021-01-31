@@ -12,7 +12,7 @@ export type Applicant = {
 };
 
 export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
-  const findAll = (params: {
+  const list = (params: {
     tenantId: string;
     jobId: string;
     userId: string;
@@ -45,7 +45,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
       });
   };
 
-  const find = (
+  const retrieve = (
     tenantId: string,
     applicantId: string,
   ): Promise<Applicant | null> => {
@@ -53,7 +53,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     return db.oneOrNone(sql.find, params);
   };
 
-  const insert = async (params: {
+  const create = async (params: {
     tenantId: string;
     jobId: string;
     attributes: {formFieldId: string; attributeValue: string}[];
@@ -75,7 +75,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
       const attrStmt = insert(attrVals, cs);
       await db.any(attrStmt);
 
-      return find(params.tenantId, applicantId).then((applicant) => {
+      return retrieve(params.tenantId, applicantId).then((applicant) => {
         if (!applicant) throw new Error('Did not find applicant after insert');
         return applicant;
       });
@@ -84,7 +84,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     }
   };
 
-  const remove = (tenantId: string, applicantId: string): Promise<null> => {
+  const del = (tenantId: string, applicantId: string): Promise<null> => {
     const stmt =
       'DELETE FROM applicant' +
       ' WHERE tenant_id=${tenant_id} AND applicant_id=${applicant_id} ';
@@ -117,11 +117,11 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     );
     await db.any(stmt);
 
-    return find(params.tenantId, params.applicantId).then((applicant) => {
+    return retrieve(params.tenantId, params.applicantId).then((applicant) => {
       if (!applicant) throw new Error('Did not find applicant after update');
       return applicant;
     });
   };
 
-  return {findAll, find, insert, remove, update};
+  return {create, retrieve, update, del, list};
 };

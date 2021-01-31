@@ -18,7 +18,7 @@ export const create = catchAsync(async (req, res) => {
     items: [{price: stripePriceId}],
     trial_period_days: 14,
   });
-  const tenant = await db.tenants.insert({tenantName, stripeCustomerId: id});
+  const tenant = await db.tenants.create({tenantName, stripeCustomerId: id});
   const {User} = await signUp({tenantId: tenant.tenantId, email, password});
 
   res.status(201).json({user: User, tenant, subscription});
@@ -27,7 +27,7 @@ export const create = catchAsync(async (req, res) => {
 export const retrieve = catchAsync(async (req, res) => {
   const {tenantId} = req.user;
 
-  let tenant = await db.tenants.find(tenantId);
+  let tenant = await db.tenants.retrieve(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
   if (tenant.theme) {
     const url = await new S3().getSignedUrlPromise('getObject', {
@@ -44,7 +44,7 @@ export const retrieve = catchAsync(async (req, res) => {
 export const del = catchAsync(async (req, res) => {
   const {userPoolID, tenantId} = req.user;
 
-  const tenant = await db.tenants.find(tenantId);
+  const tenant = await db.tenants.retrieve(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
   if (tenant.stripeCustomerId) {
     await stripe.customers.del(tenant.stripeCustomerId);
@@ -75,7 +75,7 @@ export const del = catchAsync(async (req, res) => {
   });
 
   await Promise.all(promises || []);
-  await db.tenants.delete(tenantId);
+  await db.tenants.del(tenantId);
 
   res.status(200).json();
 });

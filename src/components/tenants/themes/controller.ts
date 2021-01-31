@@ -7,7 +7,7 @@ import {BaseError, catchAsync} from 'errorHandling';
 export const create = catchAsync(async (req, res, next) => {
   const {tenantId} = req.user;
 
-  const tenant = await db.tenants.find(tenantId);
+  const tenant = await db.tenants.retrieve(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
 
   const s3 = new S3();
@@ -46,7 +46,7 @@ export const create = catchAsync(async (req, res, next) => {
 export const del = catchAsync(async (req, res) => {
   const {tenantId} = req.user;
 
-  const tenant = await db.tenants.find(tenantId);
+  const tenant = await db.tenants.retrieve(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
   if (!tenant.theme) throw new BaseError(404, 'Theme Not Found');
 

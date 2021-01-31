@@ -6,11 +6,11 @@ import {EFormCategory} from 'db/repos/forms';
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {
     const tenant = fake.tenant(tenantId);
-    return db.tenants.insert(tenant);
+    return db.tenants.create(tenant);
   },
   insertJob: (tenantId: string) => {
     const job = fake.job(tenantId);
-    return db.jobs.insert(job);
+    return db.jobs.create(job);
   },
   insertForm: (
     tenantId: string,
@@ -34,7 +34,7 @@ const dataGenerator = {
     formFieldIds: string[],
   ) => {
     const applicant = fake.applicant(tenantId, jobId, formFieldIds);
-    return db.applicants.insert(applicant);
+    return db.applicants.create(applicant);
   },
   insertFormSubmission: (
     tenantId: string,
@@ -50,7 +50,7 @@ const dataGenerator = {
       formId,
       formFieldIds,
     );
-    return db.formSubmissions.insert(formSubmission);
+    return db.formSubmissions.create(formSubmission);
   },
 };
 

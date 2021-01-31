@@ -56,7 +56,7 @@ describe('rankings', () => {
             jobId,
             formFieldIds,
           );
-          promises.push(db.applicants.insert(applicant));
+          promises.push(db.applicants.create(applicant));
         });
 
       await Promise.all(promises).then(async (data) => {
@@ -80,7 +80,7 @@ describe('rankings', () => {
             ),
           };
 
-          promises.push(db.formSubmissions.insert(screening));
+          promises.push(db.formSubmissions.create(screening));
         });
 
         await Promise.all(promises);
@@ -145,7 +145,7 @@ describe('rankings', () => {
             jobId,
             formFieldIds,
           );
-          promises.push(db.applicants.insert(applicant));
+          promises.push(db.applicants.create(applicant));
         });
 
       await Promise.all(promises).then(async (data) => {
@@ -169,7 +169,7 @@ describe('rankings', () => {
             ),
           };
 
-          promises.push(db.formSubmissions.insert(assessment));
+          promises.push(db.formSubmissions.create(assessment));
         });
 
         await Promise.all(promises);

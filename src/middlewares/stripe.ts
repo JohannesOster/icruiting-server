@@ -14,7 +14,7 @@ export const requireSubscription: RequestHandler = catchAsync(
     if (!tenantId) tenantId = req.params.tenantId;
     if (!tenantId) throw new BaseError(422, 'Missing tenant_id');
 
-    const tenant = await db.tenants.find(tenantId);
+    const tenant = await db.tenants.retrieve(tenantId);
     if (!tenant) throw new BaseError(404, 'Authorized tenant Not Found.');
 
     if (!tenant.stripeCustomerId)
