@@ -1,5 +1,5 @@
 import {query} from 'express-validator';
 
-export const validateRetrieve = [
+export const retrieveRules = [
   query('formCategory').isIn(['screening', 'assessment']),
 ];

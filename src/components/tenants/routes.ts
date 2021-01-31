@@ -1,6 +1,6 @@
 import express from 'express';
 import * as controller from './controller';
-import {createTenantRules} from './validation';
+import {createRules} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth, requireAdmin} from 'middlewares';
 import {requireStripeCustomerId} from './middleware';
@@ -10,7 +10,7 @@ import {routes as paymentMethods} from './paymentMethods';
 
 const router = express.Router();
 
-router.post('/', createTenantRules, validate, controller.create);
+router.post('/', createRules, validate, controller.create);
 
 router.use(requireAuth);
 router.use(requireAdmin);

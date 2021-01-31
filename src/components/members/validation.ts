@@ -1,8 +1,8 @@
 import {body} from 'express-validator';
 
-export const validateRetrieve = [
+export const retrieveRules = [
   body('emails').isArray({min: 1}),
   body('emails[*]').isString(),
 ];
 
-export const validateUpdate = [body('user_role').isIn(['admin', 'member'])];
+export const updateRules = [body('user_role').isIn(['admin', 'member'])];

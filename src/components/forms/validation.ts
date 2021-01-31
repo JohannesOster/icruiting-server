@@ -26,5 +26,5 @@ const formRules = [
   body('formFields[*].deletable').optional({nullable: true}).isBoolean(),
 ];
 
-export const postFormRules = formRules;
-export const putFormRules = [...formRules, body('formId')];
+export const createRules = formRules;
+export const updateRules = [...formRules, body('formId')];
