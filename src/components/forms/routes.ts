@@ -1,14 +1,5 @@
 import express from 'express';
-import {
-  postForm,
-  putForm,
-  deleteForm,
-  getForms,
-  getForm,
-  renderHTMLForm,
-  submitHTMLForm,
-  exportForm,
-} from './controller';
+import * as controller from './controller';
 import {postFormRules, putFormRules} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAdmin, requireAuth} from 'middlewares';
@@ -16,18 +7,18 @@ import {requireSubscription} from 'middlewares/stripe';
 
 const router = express.Router();
 
-router.get('/:formId/html', renderHTMLForm);
-router.post('/:formId/html', submitHTMLForm);
+router.get('/:formId/html', controller.renderHTMLForm);
+router.post('/:formId/html', controller.submitHTMLForm);
 
 router.use(requireAuth);
 router.use(requireSubscription);
-router.get('/', getForms);
-router.get('/:formId', getForm);
+router.get('/', controller.list);
+router.get('/:formId', controller.retrieve);
 
 router.use(requireAdmin);
-router.post('/', postFormRules, validate, postForm);
-router.get('/:formId/export', exportForm);
-router.delete('/:formId', deleteForm);
-router.put('/:formId', putFormRules, validate, putForm);
+router.post('/', postFormRules, validate, controller.create);
+router.get('/:formId/export', controller.exportForm);
+router.delete('/:formId', controller.del);
+router.put('/:formId', putFormRules, validate, controller.update);
 
 export {router as routes};

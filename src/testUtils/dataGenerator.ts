@@ -26,7 +26,7 @@ const dataGenerator = {
       form = fake.assessmentForm(tenantId, jobId);
     }
 
-    return db.forms.insert(form);
+    return db.forms.create(form);
   },
   insertApplicant: (
     tenantId: string,

@@ -6,25 +6,46 @@ import db from 'db';
 import config from 'config';
 import {validateSubscription} from './utils';
 
-export const getForms = catchAsync(async (req, res) => {
+export const create = catchAsync(async (req, res) => {
   const {tenantId} = req.user;
-  const jobId = req.query.jobId as string;
-  const resp = await db.forms.findAll(tenantId, jobId);
+  const params = {...req.body, tenantId};
+  const resp = await db.forms.create(params);
+  res.status(201).json(resp);
+});
+
+export const retrieve = catchAsync(async (req, res) => {
+  const {tenantId} = req.user;
+  const {formId} = req.params;
+  const resp = await db.forms.retrieve(tenantId, formId);
+  if (!resp) throw new BaseError(404, 'Not Found');
   res.status(200).json(resp);
 });
 
-export const getForm = catchAsync(async (req, res) => {
+export const update = catchAsync(async (req, res) => {
   const {tenantId} = req.user;
+  const params = {...req.body, tenantId};
+  const resp = await db.forms.update(params);
+  res.status(200).json(resp);
+});
+
+export const del = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const resp = await db.forms.find(tenantId, formId);
-  if (!resp) throw new BaseError(404, 'Not Found');
+  const {tenantId} = req.user;
+  await db.forms.del(tenantId, formId);
+  res.status(200).json();
+});
+
+export const list = catchAsync(async (req, res) => {
+  const {tenantId} = req.user;
+  const jobId = req.query.jobId as string;
+  const resp = await db.forms.list(tenantId, jobId);
   res.status(200).json(resp);
 });
 
 export const exportForm = catchAsync(async (req, res) => {
   const {tenantId} = req.user;
   const {formId} = req.params;
-  const form: any = await db.forms.find(tenantId, formId); // has to be any in order to delete props
+  const form: any = await db.forms.retrieve(tenantId, formId); // has to be any in order to delete props
   if (!form) throw new BaseError(404, 'Not Found');
 
   // remove unnecessary ids
@@ -41,30 +62,9 @@ export const exportForm = catchAsync(async (req, res) => {
   res.attachment('form.json').send(form);
 });
 
-export const postForm = catchAsync(async (req, res) => {
-  const {tenantId} = req.user;
-  const params = {...req.body, tenantId};
-  const resp = await db.forms.insert(params);
-  res.status(201).json(resp);
-});
-
-export const putForm = catchAsync(async (req, res) => {
-  const {tenantId} = req.user;
-  const params = {...req.body, tenantId};
-  const resp = await db.forms.update(params);
-  res.status(200).json(resp);
-});
-
-export const deleteForm = catchAsync(async (req, res) => {
-  const {formId} = req.params;
-  const {tenantId} = req.user;
-  await db.forms.remove(tenantId, formId);
-  res.status(200).json();
-});
-
 export const renderHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const form = await db.forms.find(null, formId);
+  const form = await db.forms.retrieve(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
   try {
@@ -91,7 +91,7 @@ export const renderHTMLForm = catchAsync(async (req, res) => {
 
 export const submitHTMLForm = catchAsync(async (req, res) => {
   const {formId} = req.params;
-  const form = await db.forms.find(null, formId);
+  const form = await db.forms.retrieve(null, formId);
   if (!form) throw new BaseError(404, 'Not Found');
 
   try {

@@ -1,44 +1,21 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
-
-export type EFormCategory = 'application' | 'screening' | 'assessment';
-
-export type Form = {
-  tenantId: string;
-  formId: string;
-  formCategory: EFormCategory;
-  formTitle?: string;
-  jobId: string;
-  formFields: {
-    formId: string;
-    formFieldId: string;
-    rowIndex: number;
-    component: string;
-    label: string;
-    placeholder?: string;
-    defaultValue?: string;
-    required?: boolean;
-    options?: {label: string; value: string}[];
-    editable?: boolean;
-    deletable?: boolean;
-    jobRequirementId?: string;
-  }[];
-};
+import {EFormCategory, Form} from './types';
 
 export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
-  const findAll = (tenantId: string, jobId: string): Promise<Form[]> => {
+  const list = (tenantId: string, jobId: string): Promise<Form[]> => {
     return db.any(sql.all, {tenant_id: tenantId, job_id: jobId});
   };
 
-  const find = (
+  const retrieve = (
     tenantId: string | null,
     formId: string,
   ): Promise<Form | null> => {
     return db.oneOrNone(sql.find, {tenant_id: tenantId, form_id: formId});
   };
 
-  const insert = async (params: {
+  const create = async (params: {
     tenantId: string;
     formCategory: EFormCategory;
     formTitle?: string;
@@ -123,7 +100,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
       jobRequirementId?: string;
     }[];
   }): Promise<Form> => {
-    const orgignialForm = await find(params.tenantId, params.formId);
+    const orgignialForm = await retrieve(params.tenantId, params.formId);
     if (!orgignialForm) throw new Error('Di not find form to update');
     const {update, insert, ColumnSet} = pgp.helpers;
 
@@ -240,17 +217,17 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
       return t.batch(promises);
     });
 
-    return find(params.tenantId, params.formId).then((form) => {
+    return retrieve(params.tenantId, params.formId).then((form) => {
       if (!form) throw new Error('Did not find form after update');
       return form;
     });
   };
 
-  const remove = (tenantId: string, formId: string): Promise<null> => {
+  const del = (tenantId: string, formId: string): Promise<null> => {
     const stmt =
       'DELETE FROM form WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
     return db.none(stmt, {tenant_id: tenantId, form_id: formId});
   };
 
-  return {findAll, find, insert, update, remove};
+  return {create, retrieve, update, del, list};
 };
