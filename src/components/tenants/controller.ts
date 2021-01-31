@@ -1,6 +1,4 @@
-import fs from 'fs';
 import Stripe from 'stripe';
-import {IncomingForm} from 'formidable';
 import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
 import db from 'db';
 import {BaseError, catchAsync} from 'errorHandling';
@@ -11,7 +9,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2020-08-27',
 });
 
-export const createTenant = catchAsync(async (req, res) => {
+export const create = catchAsync(async (req, res) => {
   const {tenantName, email, password, stripePriceId} = req.body;
 
   const {id} = await stripe.customers.create({email});
@@ -26,143 +24,7 @@ export const createTenant = catchAsync(async (req, res) => {
   res.status(201).json({user: User, tenant, subscription});
 });
 
-export const getSubscriptions = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = req.user;
-
-  const subscriptions = await stripe.subscriptions.list({
-    customer: stripeCustomerId,
-    expand: ['data.plan.product'],
-  });
-
-  res.status(200).json(subscriptions.data);
-});
-
-export const deleteSubscription = catchAsync(async (req, res) => {
-  const {subscriptionId} = req.params;
-  await stripe.subscriptions.del(subscriptionId);
-  res.status(200).json({});
-});
-
-export const postSubscription = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = req.user;
-  const {priceId} = req.body;
-
-  const subscription = await stripe.subscriptions.create({
-    customer: stripeCustomerId!,
-    items: [{price: priceId}],
-  });
-
-  res.status(200).json(subscription);
-});
-
-export const getSetupIntent = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = req.user;
-
-  const setupIntent = await stripe.setupIntents.create({
-    payment_method_types: ['sepa_debit'],
-    customer: stripeCustomerId,
-  });
-
-  res.status(200).json(setupIntent.client_secret);
-});
-
-export const getPaymentMethods = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = req.user;
-
-  const customer = (await stripe.customers.retrieve(stripeCustomerId!)) as any;
-  if (!customer) throw new BaseError(404, 'Stripe customer Not Found');
-
-  const {data} = await stripe.paymentMethods.list({
-    customer: stripeCustomerId!,
-    type: 'sepa_debit',
-  });
-
-  if (!data) throw new BaseError(404, 'Payment Methods Not Found');
-
-  const paymentMethods = data.map((paymentMethod) => {
-    if (paymentMethod.id !== customer.invoice_settings.default_payment_method)
-      return paymentMethod;
-    return {is_default: true, ...paymentMethod};
-  });
-
-  res.status(200).json(paymentMethods);
-});
-
-export const deletePaymentMethod = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = req.user;
-  const {paymentMethodId} = req.params;
-
-  const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
-
-  const {data} = await stripe.paymentMethods.list({
-    customer: stripeCustomerId!,
-    type: 'sepa_debit',
-  });
-
-  if (data.length) {
-    const customer: any = await stripe.customers.retrieve(stripeCustomerId!);
-
-    if (!customer.invoice_settings.default_payment_method) {
-      await stripe.customers.update(stripeCustomerId!, {
-        invoice_settings: {default_payment_method: data[0].id},
-      });
-    }
-  }
-
-  res.status(201).json(paymentMethod);
-});
-
-export const setDefaultPaymentMethod = catchAsync(async (req, res) => {
-  const {stripeCustomerId} = req.user;
-  const {paymentMethodId} = req.body;
-
-  const resp = await stripe.customers.update(stripeCustomerId!, {
-    invoice_settings: {default_payment_method: paymentMethodId},
-  });
-
-  res.status(200).json(resp);
-});
-
-export const postTheme = catchAsync(async (req, res, next) => {
-  const {tenantId} = req.user;
-
-  const tenant = await db.tenants.find(tenantId);
-  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-
-  const s3 = new S3();
-  const bucket = process.env.S3_BUCKET!;
-
-  const formidable = new IncomingForm();
-  formidable.parse(req, async (error, fields, files) => {
-    try {
-      if (error) throw new BaseError(500, error);
-
-      const file = files.theme;
-      const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
-      if (extension !== 'css')
-        throw new BaseError(422, `Invalid fileformat ${extension}`);
-      const fileId = (Math.random() * 1e32).toString(36);
-      const fileKey = tenant.theme || tenantId + '.' + fileId + '.' + extension;
-      const fileStream = fs.createReadStream(file.path);
-
-      const params = {
-        Key: fileKey,
-        Bucket: bucket,
-        ContentType: file.type,
-        Body: fileStream,
-      };
-      await s3.upload(params).promise();
-
-      if (!tenant.theme) await db.tenants.updateTheme(tenantId, fileKey);
-
-      res.status(201).json({message: 'Successfully updated theme'});
-    } catch (error) {
-      next(error);
-    }
-  });
-});
-
-export const getTenant = catchAsync(async (req, res) => {
+export const retrieve = catchAsync(async (req, res) => {
   const {tenantId} = req.user;
 
   let tenant = await db.tenants.find(tenantId);
@@ -179,23 +41,7 @@ export const getTenant = catchAsync(async (req, res) => {
   res.status(200).json(tenant);
 });
 
-export const deleteTheme = catchAsync(async (req, res) => {
-  const {tenantId} = req.user;
-
-  const tenant = await db.tenants.find(tenantId);
-  if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-  if (!tenant.theme) throw new BaseError(404, 'Theme Not Found');
-
-  const s3 = new S3();
-  const bucket = process.env.S3_BUCKET!;
-  const delParams = {Bucket: bucket, Delete: {Objects: [{Key: tenant.theme!}]}};
-  await s3.deleteObjects(delParams).promise();
-  await db.tenants.updateTheme(tenantId, null);
-
-  res.status(200).json();
-});
-
-export const deleteTenant = catchAsync(async (req, res) => {
+export const del = catchAsync(async (req, res) => {
   const {userPoolID, tenantId} = req.user;
 
   const tenant = await db.tenants.find(tenantId);

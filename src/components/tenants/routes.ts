@@ -4,36 +4,22 @@ import {createTenantRules} from './validation';
 import {validate} from 'middlewares/common';
 import {requireAuth, requireAdmin} from 'middlewares';
 import {requireStripeCustomerId} from './middleware';
+import {routes as themes} from './themes';
+import {routes as subscriptions} from './subscriptions';
+import {routes as paymentMethods} from './paymentMethods';
 
 const router = express.Router();
 
-router.post('/', createTenantRules, validate, controller.createTenant);
+router.post('/', createTenantRules, validate, controller.create);
 
 router.use(requireAuth);
 router.use(requireAdmin);
-router.delete('/', controller.deleteTenant);
-router.get('/:tenantId', controller.getTenant);
+router.delete('/', controller.del);
+router.get('/:tenantId', controller.retrieve);
 
 router.use(requireStripeCustomerId);
-
-router.post('/:tenantId/themes', controller.postTheme);
-router.delete('/:tenantId/themes', controller.deleteTheme);
-
-router.get('/:tenantId/subscriptions', controller.getSubscriptions);
-router.post('/:tenantId/subscriptions', controller.postSubscription);
-router.delete(
-  '/:tenantId/subscriptions/:subscriptionId',
-  controller.deleteSubscription,
-);
-router.get('/:tenantId/paymentMethods', controller.getPaymentMethods);
-router.get('/:tenantId/paymentMethods/setupIntent', controller.getSetupIntent);
-router.post(
-  '/:tenantId/paymentMethods/default',
-  controller.setDefaultPaymentMethod,
-);
-router.delete(
-  '/:tenantId/paymentMethods/:paymentMethodId',
-  controller.deletePaymentMethod,
-);
+router.use('/:tenantId/themes', themes);
+router.use('/:tenantId/subscriptions', subscriptions);
+router.use('/:tenantId/paymentMethods', paymentMethods);
 
 export {router as routes};
