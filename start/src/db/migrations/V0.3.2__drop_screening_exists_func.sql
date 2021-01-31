@@ -1,1 +1,0 @@
-DROP FUNCTION IF EXISTS screening_exists;
