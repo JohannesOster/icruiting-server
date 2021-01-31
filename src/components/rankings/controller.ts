@@ -1,7 +1,7 @@
 import {catchAsync} from 'errorHandling';
 import db from 'db';
 
-export const getRanking = catchAsync(async (req, res) => {
+export const retrieve = catchAsync(async (req, res) => {
   const jobId = req.params.jobId;
   const {tenantId} = req.user;
   const formCategory = req.query.formCategory as string;
