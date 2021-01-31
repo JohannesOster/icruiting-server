@@ -5,14 +5,14 @@ import {EFormCategory, Form} from './types';
 
 export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const list = (tenantId: string, jobId: string): Promise<Form[]> => {
-    return db.any(sql.all, {tenant_id: tenantId, job_id: jobId});
+    return db.any(sql.list, {tenant_id: tenantId, job_id: jobId});
   };
 
   const retrieve = (
     tenantId: string | null,
     formId: string,
   ): Promise<Form | null> => {
-    return db.oneOrNone(sql.find, {tenant_id: tenantId, form_id: formId});
+    return db.oneOrNone(sql.retrieve, {tenant_id: tenantId, form_id: formId});
   };
 
   const create = async (params: {

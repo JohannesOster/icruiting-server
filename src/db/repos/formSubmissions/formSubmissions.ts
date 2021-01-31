@@ -67,7 +67,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     applicantId: string;
     tenantId: string;
   }): Promise<FormSubmission | null> => {
-    return db.oneOrNone(sql.find, decamelizeKeys(params)).then((data) => {
+    return db.oneOrNone(sql.retrieve, decamelizeKeys(params)).then((data) => {
       if (!data) return data;
       return {...data, submission: reduceSubmission(data.submission)};
     });

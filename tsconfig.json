@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "src",
+    "baseUrl": "./src",
     "outDir": "dist",
     "rootDir": ".",
     "target": "es5",
@@ -13,6 +13,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "typeRoots": ["./node_modules/@types", "./typings"]
+    "typeRoots": ["../node_modules/@types", "./typings"]
   }
 }

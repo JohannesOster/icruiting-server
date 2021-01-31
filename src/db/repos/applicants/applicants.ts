@@ -28,7 +28,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     const vals = decamelizeKeys(params) as any;
 
     return db
-      .any(sql.all, {
+      .any(sql.list, {
         ...vals,
         limit: limitQuery(params.limit),
         offset: params.offset || 0,
@@ -50,7 +50,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     applicantId: string,
   ): Promise<Applicant | null> => {
     const params = decamelizeKeys({tenantId, applicantId});
-    return db.oneOrNone(sql.find, params);
+    return db.oneOrNone(sql.retrieve, params);
   };
 
   const create = async (params: {

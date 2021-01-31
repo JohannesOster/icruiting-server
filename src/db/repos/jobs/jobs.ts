@@ -35,11 +35,11 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   );
 
   const list = (tenantId: string): Promise<Job[]> => {
-    return db.any(sql.find, {tenant_id: tenantId, job_id: null});
+    return db.any(sql.retrieve, {tenant_id: tenantId, job_id: null});
   };
 
   const retrieve = (tenantId: string, jobId: string): Promise<Job | null> => {
-    return db.oneOrNone(sql.find, {tenant_id: tenantId, job_id: jobId});
+    return db.oneOrNone(sql.retrieve, {tenant_id: tenantId, job_id: jobId});
   };
 
   const create = async (values: {
