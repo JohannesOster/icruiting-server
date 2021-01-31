@@ -1,5 +1,5 @@
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
-import {mapCognitoUser, removePrefix} from 'components/utils';
+import {mapCognitoUser, removePrefix} from '../utils';
 import {catchAsync} from 'errorHandling';
 
 export const create = catchAsync(async (req, res) => {

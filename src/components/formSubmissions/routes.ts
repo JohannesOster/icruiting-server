@@ -3,7 +3,7 @@ import * as controller from './controller';
 import {validate} from 'middlewares/common';
 import {requireAuth} from 'middlewares';
 import {requireSubscription} from 'middlewares/stripe';
-import {createRules, updateRules} from 'components/jobs/validation';
+import {createRules, updateRules} from './validation';
 
 const router = express.Router();
 
