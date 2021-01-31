@@ -19,7 +19,6 @@ router.get(
   validate,
   controller.getReport,
 );
-router.get('/:applicantId/pdf-report', controller.getPdfReport);
 router.put('/:applicantId', controller.update);
 router.delete('/:applicantId', controller.del);
 

@@ -1,8 +1,5 @@
 import db from '../../db';
-import {
-  selectReport,
-  selectApplicantReport as selectApplicantReportSQL,
-} from './sql';
+import {selectReport} from './sql';
 import {decamelizeKeys} from 'humps';
 
 const mergeRequirementResults = (
@@ -59,19 +56,4 @@ export const dbSelectReport = (params: {
       formCategoryJobRequirementsResult: mergeRequirementResults(flattened),
     };
   });
-};
-
-export const dbSelectApplicantReport = (
-  tenantId: string,
-  jobId: string,
-): Promise<{
-  tenantId: string;
-  jobId: string;
-  attributes: {label: string; formItemId: string}[];
-  image?: {label: string; formItemId: string};
-} | null> => {
-  return db.oneOrNone(
-    selectApplicantReportSQL,
-    decamelizeKeys({tenantId, jobId}),
-  );
 };

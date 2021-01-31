@@ -1,14 +1,10 @@
 import fs from 'fs';
-import pug from 'pug';
-import path from 'path';
 import {S3} from 'aws-sdk';
-import puppeteer from 'puppeteer';
 import {IncomingForm} from 'formidable';
 import {BaseError, catchAsync} from 'errorHandling';
-import {dbSelectReport, dbSelectApplicantReport} from './database';
+import {dbSelectReport} from './database';
 import {getApplicantFileURLs} from './utils';
 import db from 'db';
-import {JobRequirement} from 'db/repos/jobs';
 
 export const retrieve = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
@@ -181,121 +177,3 @@ export const del = catchAsync(async (req, res) => {
   await db.applicants.remove(tenantId, applicantId);
   res.status(200).json({});
 });
-
-export const getPdfReport = catchAsync(async (req, res) => {
-  const {applicantId} = req.params;
-  const {tenantId} = req.user;
-  type Query = {formCategory?: 'screening' | 'assessment'};
-  const {formCategory = 'screening'} = req.query as Query;
-
-  const applicant = await db.applicants.find(tenantId, applicantId);
-  if (!applicant) throw new BaseError(404, 'Applicant Not Found');
-
-  const jobPromise = db.jobs.find(tenantId, applicant.jobId);
-  const reportPromise = dbSelectApplicantReport(tenantId, applicant.jobId);
-  const [job, applicantReport] = await Promise.all([jobPromise, reportPromise]);
-  if (!job) throw new BaseError(404, 'Job Not Found');
-  if (!applicantReport) throw new BaseError(404, 'Applicant Report Not Found');
-
-  const htmlParams = {attributes: []} as any;
-  if (applicantReport) {
-    if (applicantReport.image) {
-      const imageURL = await getFileURL(
-        applicantReport.image.label,
-        applicant.files,
-      );
-      if (imageURL) htmlParams.imageURL = imageURL;
-    }
-
-    const attributes = applicantReport.attributes.map(({label}) => {
-      const attr = applicant.attributes.find((attr) => attr.key === label);
-      if (!attr) {
-        throw new BaseError(404, 'Report attribute is missing on applicant');
-      }
-
-      return attr;
-    });
-
-    htmlParams.attributes = attributes;
-  }
-
-  const formCategoryMap = {
-    screening: 'Screening',
-    assessment: 'Assessment',
-  };
-  htmlParams.formCategory = formCategoryMap[formCategory];
-
-  const report = await dbSelectReport({tenantId, applicantId, formCategory});
-  if (!report) throw new BaseError(404, 'Not Found');
-
-  htmlParams.rank = report.rank;
-  htmlParams.score = report.score;
-  htmlParams.standardDeviation = report.standardDeviation;
-
-  if (formCategory === 'assessment') {
-    htmlParams.shouldPlot = true;
-    htmlParams.chartData = buildRadarChart(job.jobRequirements, report);
-  }
-
-  const html = pug.renderFile(
-    path.resolve(__dirname, 'report/report.pug'),
-    htmlParams,
-  );
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-  });
-  const page = await browser.newPage();
-  await page.goto(
-    `data:text/html;base64,${Buffer.from(html).toString('base64')}`,
-    {waitUntil: 'networkidle0'},
-  );
-  const pdf = await page.pdf({format: 'A4'});
-  await browser.close();
-
-  res.setHeader('Content-Type', 'application/pdf');
-  res.send(pdf);
-});
-
-const getFileURL = (
-  fileName: string,
-  applicantFiles?: {[key: string]: string}[],
-) => {
-  const imageKey = applicantFiles?.find(({key}) => key === fileName)?.value;
-  if (!imageKey) return;
-
-  const params = {
-    Bucket: process.env.S3_BUCKET,
-    Key: imageKey,
-    Expires: 100,
-  };
-  return new S3().getSignedUrlPromise('getObject', params);
-};
-
-const buildRadarChart = (jobRequirements: JobRequirement[], report: any) => {
-  const labels = jobRequirements.map(({requirementLabel}) => requirementLabel);
-  const scores = jobRequirements.map(
-    ({requirementLabel}) => report.jobRequirementsResult[requirementLabel] || 0,
-  );
-
-  const means = jobRequirements.map(({requirementLabel}) => {
-    return report.normalization?.find(
-      ({jobRequirementLabel}: any) => requirementLabel === jobRequirementLabel,
-    )?.mean;
-  });
-
-  const minValsRaw = jobRequirements.map(({minValue}) => +(minValue || 0));
-  const minVals = minValsRaw.map((val, index) => val / +(means[index] || 1));
-
-  return {
-    labels,
-    datasets: [
-      {
-        label: 'Erzielter Wert',
-        data: scores,
-        backgroundColor: 'rgb(15,91,165, 0.5)',
-      },
-      {label: 'Mindestmaß', data: minVals},
-    ],
-  };
-};
