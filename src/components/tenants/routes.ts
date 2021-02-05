@@ -14,7 +14,7 @@ router.post('/', createRules, validate, controller.create);
 
 router.use(requireAuth);
 router.use(requireAdmin);
-router.delete('/', controller.del);
+router.delete('/:tenantId', controller.del);
 router.get('/:tenantId', controller.retrieve);
 
 router.use(requireStripeCustomerId);

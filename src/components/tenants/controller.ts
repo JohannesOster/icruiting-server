@@ -27,6 +27,10 @@ export const create = catchAsync(async (req, res) => {
 export const retrieve = catchAsync(async (req, res) => {
   const {tenantId} = req.user;
 
+  // In order to hide weather or not the requested exists 404 is thrown event if tenant exist
+  if (tenantId !== req.params.tenantId)
+    throw new BaseError(404, 'Tenant Not Found');
+
   let tenant = await db.tenants.retrieve(tenantId);
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
   if (tenant.theme) {
