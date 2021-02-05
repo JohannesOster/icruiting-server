@@ -4,7 +4,7 @@ import {S3} from 'aws-sdk';
 import db from 'db';
 import {BaseError, catchAsync} from 'errorHandling';
 
-export const create = catchAsync(async (req, res, next) => {
+export const upload = catchAsync(async (req, res, next) => {
   const {tenantId} = req.user;
 
   const tenant = await db.tenants.retrieve(tenantId);
@@ -36,7 +36,7 @@ export const create = catchAsync(async (req, res, next) => {
 
       if (!tenant.theme) await db.tenants.updateTheme(tenantId, fileKey);
 
-      res.status(201).json({message: 'Successfully updated theme'});
+      res.status(201).json({message: 'Successfully uploaded theme'});
     } catch (error) {
       next(error);
     }

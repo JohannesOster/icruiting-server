@@ -80,14 +80,18 @@ describe('tenants', () => {
       expect(parseInt(countAfter, 10)).toBe(0);
     });
 
-    it('returns 404 if params.tenantId does not equal user.tenantId', async () => {
-      /* Insert second tenantId to make sure 404 is thrown because of missing access rights and not because of missing data */
+    it('uses tenantId of jwt not parameter', async () => {
       const {tenantId} = await dataGenerator.insertTenant(faker.random.uuid());
-      request(app)
+
+      await request(app)
         .del(`/tenants/${tenantId}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(404);
+        .expect(200);
+
+      const stmt = 'SELECT COUNT(*) FROM tenant WHERE tenant_id=$1';
+      const {count} = await db.one(stmt, tenantId);
+      expect(parseInt(count, 10)).toBe(1);
     });
   });
 });

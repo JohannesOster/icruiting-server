@@ -111,10 +111,7 @@ export const submitHTMLForm = catchAsync(async (req, res) => {
   const formidable = new IncomingForm();
   formidable.maxFileSize = 500 * 1024 * 1024;
   formidable.parse(req, (error: Error, fields: any, files: any) => {
-    if (error) {
-      console.error(error);
-      return res.render('form-submission', {error});
-    }
+    if (error) return res.render('form-submission', {error});
 
     const s3 = new S3();
     const promises = [];
