@@ -11,6 +11,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   let statusCode = res.statusCode !== 200 ? res.statusCode : 500;
   if (err.statusCode) statusCode = err.statusCode;
   res.status(statusCode).json({
+    statusCode,
     message: err.message,
     ...(process.env.NODE_ENV !== 'production' ? {stack: err.stack} : {}),
   });
@@ -21,5 +22,5 @@ export const validate: RequestHandler = (req, res, next) => {
 
   if (errors.isEmpty()) return next();
 
-  res.status(422).json({errors: errors.array()});
+  res.status(422).json({statusCode: 422, errors: errors.array()});
 };
