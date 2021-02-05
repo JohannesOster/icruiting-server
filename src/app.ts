@@ -20,7 +20,6 @@ app.set('view engine', 'pug');
 
 app.use('/', routes);
 
-app.use(cors());
 app.use(notFound);
 app.use(errorHandler);
 
