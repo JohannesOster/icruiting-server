@@ -20,6 +20,8 @@ export const requireSubscription: RequestHandler = catchAsync(
     if (!tenant.stripeCustomerId)
       throw new BaseError(404, 'Stripe customer id not found');
 
+    req.user.stripeCustomerId = tenant.stripeCustomerId;
+
     const subsCount = await Promise.all([
       stripe.subscriptions.list({
         customer: tenant.stripeCustomerId,
