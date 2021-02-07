@@ -1,11 +1,12 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import {notFound, errorHandler} from './middlewares';
+import {notFound, errorHandler, monitor} from './middlewares';
 import {routes} from './routes';
 
 const app = express();
 
+app.use(monitor);
 app.use(
   bodyParser.json({
     verify: (req, _res, buf) => {
