@@ -189,7 +189,6 @@ form
 -----------------
 formScore                         // wie hat der Kandidat in dieser einen Übung abgeschnitten?
 stdDevFormScore                   // wie stark schwanken die Meinungen über diesen Kandidaten bezogen auf diese Übung
-- ACHTUNG: Formulareintragsscore! nehmen
 overallAvgFormScore               // wie gut haben Kanditaten durchschnittlich abgeschnitten?
 overallAvgStdDevFormScore         // wie stark schwanken die Meinungen durchschnittlich über die einzelnen Kandidaten (durschnitt aller std's)
 overallStdDevFormScore            // wie stark schwanken die Ergebnisse in dieser Übung? (std' aller formScores)
@@ -210,24 +209,39 @@ possible_max / possible_min       // was ist das mögliche Interval? (muss nicht
 /*
 ALGORITHM
 ===================
-1) split up current data in
+0) split up current data in
 
 {
   // general informations about the formField to get intent and calc min/max
   formData: [formId].[formFieldId]: {intent, options},
   data: [applicantId].[formSubmissionId].[formId].[formFieldId]: [all values for this applicant and field]
 
-  // - after calculating formFieldScores
+  // (1) formField
+  // - postprocess
   formFieldScores: [applicantId].[formId].[formFieldId]: score}
   stdDevFormFieldScores: [applicantId].[formId].[formFieldId]: stdev;
 
-  // helper for stdDevFormScore
+
+  // (2) form
+  // - preprocess (helper for stdDevFormScore)
   formSubmissionScore: [applicantId][formSubmissionsId][formId];
+  formFieldMax: [formId][formFieldId]: max;
+  formFieldMin: [formId][formFieldId] min;
+  // - postprocess
   formScores: [applicantId][formId]: score
   formScoreStdevs: [applicantId][formId]: stdev
+
+  // (3) formCategory
+  // - preprocess
+  formMax: [formId]: max;
+  formMin: [formId] min;
+  // - postprocess1
+  formCategoryScores: [applicantId];
+
+
 }
 
-2) calculate formField -realted scores
+1) =========================================================== calculate formField -realted scores
 
 formFieldScore(applicantId, formId, formFieldId) {
   const submissions = Object.values(data[applicandId])
@@ -284,7 +298,7 @@ possible_max / possible_min() {
 }
 
 
-3) calculate form related
+2) ============================================ calculate form related
 
 formScore(applicanId, formId) {
   // all formFieldScores for one form of one applicant
@@ -316,10 +330,38 @@ overallAvgStdDevFormScore(formId) {
   return avg(vals);
 }
 
-overallStdDevFormScore            // wie stark schwanken die Ergebnisse in dieser Übung? (std' aller formScores)
-overall_max / overall_min         // in welchem Intervall liegen die Ergebnisse für dies Übung?
-possible_max / possible_min       // was ist das mögliche Interval? (muss nicht immer 0-x sein)
+overallStdDevFormScore(formId) {
+  const scores = Object.values(formScores);
+  const vals = scores.map(score => score[formId]);
+  return std(vals); 
+}
 
+overall_max / overall_min(formId) {
+  const scores = Object.values(formScores);
+  const vals = scores.map(score => score[formId]);
+  return max/min(vals); 
+}
+possible_max / possible_min(formId) {
+  const max = Object.values(formFieldMax[formId]);
+  const sum(max)
+}
 
+3) Calculate formCategoryRelated
+=====================================
+formCategoryScore(applicantId) {
+  return sum(Object.values(formScores[applicantId]))
+}
+overallStdDevFormCategoryScore() {
+  return std(Object.values(formCategoryScores));
+}
+overlallAvgFormCategoryScore() {
+  return avg(Object.values(formCategoryScores));
+}
+overall_max / overall_min {
+  return min/max(Object.values(formCategoryScores));
+}
+possible_max / possible_min {
+  return sum(Object.values(formMax))
+}
 
 */
