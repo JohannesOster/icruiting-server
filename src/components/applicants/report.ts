@@ -176,19 +176,23 @@ formCategory:
 !! in welcher Range liegen die Ergebnisse und was sind die möglichen Min / Max
 
 formCategoryScore               // wie hat der Kandidat abgeschnitten
+  - sum(formScore)
 overallStdDevFormCategoryScore  // wie stark schwanken die Ergebnisse?
+  - std(formCategoryScore)
 overlallAvgFormCategoryScore    // wie gut sind Kandidaten durchschnittlich
+  - avg(formCategoryScore)
 overall_max / overall_min       // in welchem Interval liegen die Ergebnisse?
+  - max / min formCategoryScore
 possible_max / possible_min     // was ist das mögliche Interval? (muss nicht immer 0-x sein)
 
 form
 -----------------
 formScore                         // wie hat der Kandidat in dieser einen Übung abgeschnitten?
 stdDevFormScore                   // wie stark schwanken die Meinungen über diesen Kandidaten bezogen auf diese Übung
+- ACHTUNG: Formulareintragsscore! nehmen
 overallAvgFormScore               // wie gut haben Kanditaten durchschnittlich abgeschnitten?
 overallAvgStdDevFormScore         // wie stark schwanken die Meinungen durchschnittlich über die einzelnen Kandidaten (durschnitt aller std's)
 overallStdDevFormScore            // wie stark schwanken die Ergebnisse in dieser Übung? (std' aller formScores)
-
 overall_max / overall_min         // in welchem Intervall liegen die Ergebnisse für dies Übung?
 possible_max / possible_min       // was ist das mögliche Interval? (muss nicht immer 0-x sein)
 
@@ -199,10 +203,9 @@ stdDevFormFieldScore              // wie stark schwanken die Meinungen über die
 overallAvgFormFieldScore          // wie gut waren Kandidaten durchschnittlich in diesem Feld
 overallAvgStdDevFormScore         // wie stark schwanken die Meinungen durchschnittlich bei dieser Frage?
 overallStdDevFormScore            // wie stark schwanken die Meinungen insgesamt in dieser Frage? (std aller formmulareintragsfelder)
-
 overall_max / overall_min         // in welchem Intervall liegen die Ergebnisse für dies Frage?
 possible_max / possible_min       // was ist das mögliche Interval? (muss nicht immer 0-x sein)
-*/
+
 
 /*
 ALGORITHM
@@ -210,17 +213,113 @@ ALGORITHM
 1) split up current data in
 
 {
-  overall: {
-    [formId]: {
-      [formFieldId]: [all values for this formField]
-    }
-  },
-  specific: {
-    [applicantId]: {
-      [formId]: {
-        [formFieldId]: [all values for this formField and this applicant] 
-      }
-    }
-  }
+  // general informations about the formField to get intent and calc min/max
+  formData: [formId].[formFieldId]: {intent, options},
+  data: [applicantId].[formSubmissionId].[formId].[formFieldId]: [all values for this applicant and field]
+
+  // - after calculating formFieldScores
+  formFieldScores: [applicantId].[formId].[formFieldId]: score}
+  stdDevFormFieldScores: [applicantId].[formId].[formFieldId]: stdev;
+
+  // helper for stdDevFormScore
+  formSubmissionScore: [applicantId][formSubmissionsId][formId];
+  formScores: [applicantId][formId]: score
+  formScoreStdevs: [applicantId][formId]: stdev
 }
+
+2) calculate formField -realted scores
+
+formFieldScore(applicantId, formId, formFieldId) {
+  const submissions = Object.values(data[applicandId])
+  const values = submissions.map((sub) => {
+    if(!sub[formID]) return null; // form is not part of this submission
+    return sub[formId][formFieldId];
+  }).filterOutNull();
+  // values: array of all submissionvalues for 1 applciant for 1 formField;
+
+  return avg(values);
+}
+
+stdDevFormFieldScore(applicantId, formId, formFieldId) {
+  const submissions = Object.values(data[applicandId])
+  const values = submissions.map((sub) => {
+    if(!sub[formID]) return null; // form is not part of this submission
+    return sub[formId][formFieldId];
+  }).filterOutNull();
+  // values: array of all submissionvalues for 1 applciant for 1 formField;
+
+  return std(values);
+}
+
+overallAvgFormFieldScore(formId, formFieldId) {
+  const applScores = Object.values(formFieldScores);
+  const scores = scores.map(applScores => applScores[formId][formFieldId]);
+  // array of specific score of all applicants
+  return avg(scores);
+}
+
+overallAvgStdDevFormScore() {
+ const applStds = Object.values(stdDevFormFieldScores);
+ const stds = scores.map(applStds => applStds[formId][formFieldId]);
+  // array of specific stds of all applicants
+  return avg(stds);
+};
+
+overallStdDevFormScore() {
+  const applScores = Object.values(formFieldScores);
+  const scores = scores.map(applScores => applScores[formId][formFieldId]);
+  // array of specific score of all applicants
+  return std(scores);
+}
+
+overall_max / overall_min(){
+  const applScores = Object.values(formFieldScores);
+  const scores = scores.map(applScores => applScores[formId][formFieldId]);
+
+  return max/min(scores);
+}
+
+possible_max / possible_min() {
+    return max/min(Object.values(formData[formId][formFieldId].options).map(({value}) => value)));
+}
+
+
+3) calculate form related
+
+formScore(applicanId, formId) {
+  // all formFieldScores for one form of one applicant
+  const scores = Object.values(formFieldScores[applicantId][formId]);
+  return sum(scores);
+}
+
+stdDevFormScore(applicantId, formId) {
+  // ACHTUNG: formSubmissions have to stay together, since stdDevFormScore is std between submitters for on appl.
+  const submissions = Object.values(data[applicantId]);
+  const scores = submissions.map(sub => {
+    if(!sub[formId]) return null;
+    const fields = Object.values(sub[formId]);
+    return sum(fields); // specific formSubmissionScore
+  }).filterNull();
+
+  return std(scores);
+}
+
+overallAvgFormScore(formId) {
+  const applicantFormScores = Object.values(formScores);
+  const vals = applicantFormScores.map(scores => scores[formId]);
+  return avg(vals);
+}
+
+overallAvgStdDevFormScore(formId) {
+  const applicantFormStds = Object.values(formScoreStdevs);
+  const vals = formScoreStdevs.map(stds => stds[formId]);
+  return avg(vals);
+}
+
+overallStdDevFormScore            // wie stark schwanken die Ergebnisse in dieser Übung? (std' aller formScores)
+overall_max / overall_min         // in welchem Intervall liegen die Ergebnisse für dies Übung?
+possible_max / possible_min       // was ist das mögliche Interval? (muss nicht immer 0-x sein)
+
+
+
 */
