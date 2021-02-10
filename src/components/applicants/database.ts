@@ -2,6 +2,7 @@ import db from '../../db';
 import {selectAll, selectReport} from './sql';
 import {decamelizeKeys} from 'humps';
 import {EFormCategory} from 'db/repos/forms';
+import {FormFieldIntent} from './report/types';
 
 const mergeRequirementResults = (
   array: {
@@ -62,7 +63,9 @@ export const dbSelectReport = (params: {
 export type Row = {
   submissionValue: string;
   formFieldId: string;
-  intent: 'sum_up' | 'aggregate' | 'count_distinct';
+  applicantId: string;
+  submitterId: string;
+  intent: FormFieldIntent;
   rowIndex: number;
   label: string;
   options?: {label: string; value: string}[];

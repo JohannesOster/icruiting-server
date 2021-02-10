@@ -5,6 +5,8 @@ import {BaseError, catchAsync} from 'errorHandling';
 import {dbSelectReport, dbSelectAll} from './database';
 import {getApplicantFileURLs} from './utils';
 import db from 'db';
+import {calcReport} from './report/report';
+import {result} from 'lodash';
 
 export const retrieve = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
@@ -151,13 +153,13 @@ export const getReport = catchAsync(async (req, res) => {
   type QueryType = {formCategory: 'screening' | 'assessment'};
   const {formCategory} = req.query as QueryType;
 
-  const params = {applicantId, tenantId, formCategory};
-  const data = await dbSelectReport(params);
-  if (!data) throw new BaseError(404, 'Not Found');
+  // const params = {applicantId, tenantId, formCategory};
+  // const data = await dbSelectReport(params);
+  // if (!data) throw new BaseError(404, 'Not Found');
 
-  // const data = await dbSelectAll(tenantId, formCategory);
-
-  res.status(200).json(data);
+  const data = await dbSelectAll(tenantId, formCategory);
+  const report = calcReport(data, applicantId);
+  res.status(200).json(report);
 });
 
 export const del = catchAsync(async (req, res) => {
