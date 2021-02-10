@@ -7,3 +7,8 @@ export const selectReport = new QueryFile(
   join(__dirname, 'selectReport.sql'),
   options,
 );
+
+export const selectAll = new QueryFile(
+  join(__dirname, 'selectAll.sql'),
+  options,
+);

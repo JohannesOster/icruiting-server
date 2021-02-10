@@ -1,6 +1,7 @@
 import db from '../../db';
-import {selectReport} from './sql';
+import {selectAll, selectReport} from './sql';
 import {decamelizeKeys} from 'humps';
+import {EFormCategory} from 'db/repos/forms';
 
 const mergeRequirementResults = (
   array: {
@@ -56,4 +57,26 @@ export const dbSelectReport = (params: {
       formCategoryJobRequirementsResult: mergeRequirementResults(flattened),
     };
   });
+};
+
+export type Row = {
+  submissionValue: string;
+  formFieldId: string;
+  intent: 'sum_up' | 'aggregate' | 'count_distinct';
+  rowIndex: number;
+  label: string;
+  options?: {label: string; value: string}[];
+  formId: string;
+  formTitle: string;
+  formCategory: EFormCategory;
+  jobTitle: string;
+  requirementLabel: string;
+  jobRequirementId: string;
+};
+
+export const dbSelectAll = (
+  tenantId: string,
+  formCategory: 'screening' | 'assessment',
+): Promise<Row[]> => {
+  return db.any(selectAll, decamelizeKeys({tenantId, formCategory}));
 };

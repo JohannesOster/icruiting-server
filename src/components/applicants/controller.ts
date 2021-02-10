@@ -2,7 +2,7 @@ import fs from 'fs';
 import {S3} from 'aws-sdk';
 import {IncomingForm} from 'formidable';
 import {BaseError, catchAsync} from 'errorHandling';
-import {dbSelectReport} from './database';
+import {dbSelectReport, dbSelectAll} from './database';
 import {getApplicantFileURLs} from './utils';
 import db from 'db';
 
@@ -154,6 +154,8 @@ export const getReport = catchAsync(async (req, res) => {
   const params = {applicantId, tenantId, formCategory};
   const data = await dbSelectReport(params);
   if (!data) throw new BaseError(404, 'Not Found');
+
+  // const data = await dbSelectAll(tenantId, formCategory);
 
   res.status(200).json(data);
 });
