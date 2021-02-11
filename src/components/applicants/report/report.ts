@@ -1,3 +1,4 @@
+import app from 'app';
 import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
 import _ from 'lodash';
 import {Math, filterFormData, reduceSubmissions} from './math';
@@ -61,13 +62,23 @@ export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
     formCategoryScore: scores.formCategoryScores[applicantId],
     overallAvgFormCategoryScore: scores.overallAvgFormCategoryScore,
     overallStdDevFormCategoryScore: scores.overallStdDevFormCategoryScore,
+    overallFormCategoryMax: scores.overallFormCategoryMax,
+    overallFormCategoryMin: scores.overallFormCategoryMin,
+    possibleFormCategoryMax: scores.possibleFormCategoryMax,
+    possibleFormCategoryMin: scores.possibleFormCategoryMin,
     formResults: Object.entries(scores.formScores[applicantId]).map(
       ([formId, formScore]) => ({
         formId,
         formTitle: forms[formId].formTitle,
         formScore,
-        avgFormScore: scores.overallAvgFormScore[formId],
+        stdDevFormScores: scores.stdDevFormScores[applicantId][formId],
+        overallAvgFormScore: scores.overallAvgFormScore[formId],
+        overallStdDevFormScore: scores.overallStdDevFormScore[formId],
+        overallAvgStdDevFormScore: scores.overallAvgStdDevFormScore[formId],
+        overallFormMin: scores.overallFormMin[formId],
+        overallFormMax: scores.overallFormMax[formId],
         possibleFormMax: scores.possibleFormMax[formId],
+        possibleFormMin: scores.possibleFormMin[formId],
         formFieldScores: Object.entries(
           scores.formFieldScores[applicantId][formId],
         ).map(([formFieldId, formFieldScore]) => {
@@ -82,8 +93,14 @@ export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
             label,
             aggregatedValues: [], // TODO
             formFieldScore,
-            avgFormFieldScore:
+            stdDevFormFieldScores:
+              scores.stdDevFormFieldScores[applicantId][formId][formFieldId],
+            overallAvgFormFieldScore:
               scores.overallAvgFormFieldScore[formId][formFieldId],
+            overallStdDevFormFieldScore:
+              scores.overallStdDevFormFieldScore[formId][formFieldId],
+            overallAvgStdDevFormFieldScore:
+              scores.overallAvgStdDevFormFieldScore[formId][formFieldId],
             overallFormFieldMax:
               scores.overallAvgFormFieldScore[formId][formFieldId],
             overallFormFieldMin:

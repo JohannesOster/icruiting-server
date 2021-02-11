@@ -28,11 +28,21 @@ export type BaseReport = {
   formCategoryScore: number;
   overallAvgFormCategoryScore: number;
   overallStdDevFormCategoryScore: number;
+  overallFormCategoryMax: number;
+  overallFormCategoryMin: number;
+  possibleFormCategoryMax: number;
+  possibleFormCategoryMin: number;
   formResults: {
     formId: string;
     formTitle: string;
     formScore: number;
-    avgFormScore: number;
+    stdDevFormScores: number;
+    overallAvgFormScore: number;
+    overallStdDevFormScore: number;
+    overallAvgStdDevFormScore: number;
+    overallFormMin: number;
+    overallFormMax: number;
+    possibleFormMin: number;
     possibleFormMax: number;
     formFieldScores: {
       formFieldId: string;
@@ -42,7 +52,10 @@ export type BaseReport = {
       label: string;
       aggregatedValues: string[];
       formFieldScore: number;
-      avgFormFieldScore: number;
+      stdDevFormFieldScores: number;
+      overallAvgFormFieldScore: number;
+      overallStdDevFormFieldScore: number;
+      overallAvgStdDevFormFieldScore: number;
       overallFormFieldMax: number;
       overallFormFieldMin: number;
       possibleFormFieldMax: number;
