@@ -56,6 +56,7 @@ export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
   const rank =
     sorted.findIndex((item) => Object.keys(item)[0] === applicantId) + 1;
 
+  console.log(scores.overallAvgStdDevFormFieldScore);
   const result: BaseReport = {
     rank,
     formCategory: rows[0].formCategory,
@@ -71,7 +72,7 @@ export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
         formId,
         formTitle: forms[formId].formTitle,
         formScore,
-        stdDevFormScores: scores.stdDevFormScores[applicantId][formId],
+        stdDevFormScore: scores.stdDevFormScores[applicantId][formId],
         overallAvgFormScore: scores.overallAvgFormScore[formId],
         overallStdDevFormScore: scores.overallStdDevFormScore[formId],
         overallAvgStdDevFormScore: scores.overallAvgStdDevFormScore[formId],
@@ -100,9 +101,9 @@ export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
             overallStdDevFormFieldScore:
               scores.overallStdDevFormFieldScore[formId][formFieldId],
             overallAvgStdDevFormFieldScore:
-              scores.overallAvgStdDevFormFieldScore[formId][formFieldId],
+              scores.overallAvgStdDevFormFieldScore[formId]?.[formFieldId],
             overallFormFieldMax:
-              scores.overallAvgFormFieldScore[formId][formFieldId],
+              scores.overallFormFieldMax[formId][formFieldId],
             overallFormFieldMin:
               scores.overallFormFieldMin[formId][formFieldId],
             possibleFormFieldMax:

@@ -36,7 +36,7 @@ export type BaseReport = {
     formId: string;
     formTitle: string;
     formScore: number;
-    stdDevFormScores: number;
+    stdDevFormScore: number;
     overallAvgFormScore: number;
     overallStdDevFormScore: number;
     overallAvgStdDevFormScore: number;
