@@ -19,6 +19,8 @@ export const upload = catchAsync(async (req, res, next) => {
       if (error) throw new BaseError(500, error);
 
       const file = files.theme;
+      if (Array.isArray(file))
+        throw new BaseError(422, 'Multifile no supported.');
       const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
       if (extension !== 'css')
         throw new BaseError(422, `Invalid fileformat ${extension}`);
