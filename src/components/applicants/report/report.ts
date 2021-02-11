@@ -1,9 +1,9 @@
+import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
 import _ from 'lodash';
-import {Row} from '../database';
 import {Math, filterFormData, reduceSubmissions} from './math';
 import {BaseReport} from './types';
 
-export const calcReport = (rows: Row[], applicantId: string) => {
+export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
   const [forms, formFields] = filterFormData(rows);
   const submissions = reduceSubmissions(rows);
   const math = Math(formFields, submissions);

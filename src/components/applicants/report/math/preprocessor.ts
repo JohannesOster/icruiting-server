@@ -1,9 +1,9 @@
 import _ from 'lodash';
-import {Row} from '../../database';
+import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
 import {FormData, FormSubmissionData} from './types';
 
 // Separate informations about formfields from submission data
-export const filterFormData = (rows: Row[]) => {
+export const filterFormData = (rows: ReportPrepareRow[]) => {
   const formFields = rows.reduce((acc, curr) => {
     if (!!acc[curr.formId]?.[curr.formFieldId]) return acc;
     const {intent, options, rowIndex, label, jobRequirementId} = curr;
@@ -22,7 +22,7 @@ export const filterFormData = (rows: Row[]) => {
 };
 
 // transform submission rows into nested object
-export const reduceSubmissions = (rows: Row[]) => {
+export const reduceSubmissions = (rows: ReportPrepareRow[]) => {
   return rows.reduce((acc, curr) => {
     const {applicantId, submitterId, formId, formFieldId} = curr;
     const path = `${applicantId}.${submitterId}.${formId}.${formFieldId}`;

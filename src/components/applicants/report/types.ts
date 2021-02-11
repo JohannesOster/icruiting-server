@@ -1,27 +1,4 @@
-import {Row} from '../database';
 import {EFormCategory} from 'db/repos/forms';
-
-export type FormData = {
-  [formId: string]: {
-    [formFieldId: string]: {
-      intent: FormFieldIntent;
-      options?: {label: string; value: string}[];
-      rowIndex: number;
-      label: string;
-      jobRequirementId: string;
-    };
-  };
-};
-
-export type Data = {
-  [applicantId: string]: {
-    [formSubmissionId: string]: {
-      [formId: string]: {
-        [formFieldId: string]: Row;
-      };
-    };
-  };
-};
 
 export type FormFieldScores = {
   [applicantId: string]: {
