@@ -53,19 +53,19 @@ export const Math = (formFields: FormData, submissions: FormSubmissionData) => {
   const possibleFormFieldMin: OverallAvgFormFieldScore = {};
 
   // formScores results
+  type OverallFormScore = {[formId: string]: number};
   const formScores: FormScores = {};
   const stdDevFormScores: FormScores = {};
-  const overallAvgFormScore: OverallAvgFormFieldScore = {};
-  const overallStdDevFormScore: OverallAvgFormFieldScore = {};
-  const overallAvgStdDevFormScore: OverallAvgFormFieldScore = {};
-  const overallFormMax: OverallAvgFormFieldScore = {};
-  const overallFormMin: OverallAvgFormFieldScore = {};
-  const possibleFormMax: FormScores = {};
-  const possibleFormMin: FormScores = {};
+  const overallAvgFormScore: OverallFormScore = {};
+  const overallStdDevFormScore: OverallFormScore = {};
+  const overallAvgStdDevFormScore: OverallFormScore = {};
+  const overallFormMax: OverallFormScore = {};
+  const overallFormMin: OverallFormScore = {};
+  const possibleFormMax: OverallFormScore = {};
+  const possibleFormMin: OverallFormScore = {};
 
   // formCategoryScores, default 0 to be able to return them
-  type FCategory = {[applicantId: string]: number};
-  const formCategoryScores: FCategory = {};
+  const formCategoryScores: {[applicantId: string]: number} = {};
   let overallAvgFormCategoryScore: number = 0;
   let overallStdDevFormCategoryScore: number = 0;
   let overallFormCategoryMax: number = 0;
@@ -78,28 +78,37 @@ export const Math = (formFields: FormData, submissions: FormSubmissionData) => {
       score: (applicantId: string, formId: string, formFieldId: string) => {
         const values = Object.values(submissions[applicantId])
           .map((sub) => {
-            if (!sub[formId]) return; // form (and therfore formField) is not part of this submission
+            if (!sub[formId]) return null;
             return sub[formId][formFieldId];
           })
-          .filter((val) => !!val);
+          .filter((val) => val !== null);
         return [jstat.mean(values), jstat.stdev(values)];
       },
       overallScore: (formId: string, formFieldId: string) => {
-        const scores = Object.values(formFieldScores).map(
-          (applScores) => applScores[formId][formFieldId],
-        );
+        const scores = Object.values(formFieldScores)
+          .map((applScores) => {
+            if (!applScores[formId]) return null;
+            return applScores[formId][formFieldId];
+          })
+          .filter((val) => val !== null);
         return [jstat.mean(scores), jstat.stdev(scores)];
       },
       overallAvgStdDev: (formId: string, formFieldId: string) => {
-        const values = Object.values(stdDevFormFieldScores).map(
-          (applStds) => applStds[formId][formFieldId],
-        );
+        const values = Object.values(stdDevFormFieldScores)
+          .map((applStds) => {
+            if (!applStds[formId]) return null;
+            return applStds[formId][formFieldId];
+          })
+          .filter((val) => val !== null);
         return jstat.mean(values);
       },
       overallExtrema: (formId: string, formFieldId: string) => {
-        const scores = Object.values(formFieldScores).map(
-          (applScores) => applScores[formId][formFieldId],
-        );
+        const scores = Object.values(formFieldScores)
+          .map((applScores) => {
+            if (!applScores[formId]) return null;
+            return applScores[formId][formFieldId];
+          })
+          .filter((val) => val !== null);
         return [jstat.min(scores), jstat.max(scores)];
       },
       possibleExtrema: (formId: string, formFieldId: string) => {
@@ -114,10 +123,13 @@ export const Math = (formFields: FormData, submissions: FormSubmissionData) => {
         const scores = Object.values(submissions[applicantId])
           .map((sub) => {
             if (!sub[formId]) return;
-            const fields = Object.values(sub[formId]);
+            const fields = Object.values(sub[formId]).map((val) => +val);
             return jstat.sum(fields); // = specific formSubmissionScore
           })
           .filter((val) => !!val);
+
+        if (scores.length <= 0) return;
+
         return [jstat.mean(scores), jstat.stdev(scores)];
       },
       overallScore: (formId: string) => {
@@ -145,7 +157,7 @@ export const Math = (formFields: FormData, submissions: FormSubmissionData) => {
     formCategory: {
       score: (applicantId: string) => {
         const values = Object.values(formScores[applicantId]);
-        return jstat.sum(values);
+        return jstat.mean(values);
       },
       overallScore: () => {
         const values = Object.values(formCategoryScores);
@@ -166,8 +178,13 @@ export const Math = (formFields: FormData, submissions: FormSubmissionData) => {
   const calculate = () => {
     Object.entries(formFields).forEach(([formId, form]) => {
       Object.keys(form).forEach((formFieldId) => {
+        if (formFields[formId][formFieldId].intent !== 'sum_up') return;
         const applicantIds = Object.keys(submissions);
         applicantIds.forEach((applId) => {
+          const sub = Object.values(submissions[applId]).find((value) =>
+            value[formId] ? value : undefined,
+          );
+          if (!sub) return;
           const path = `${applId}.${formId}.${formFieldId}`;
           const [score, stdev] = calculator.formFields.score(
             applId,
@@ -211,7 +228,9 @@ export const Math = (formFields: FormData, submissions: FormSubmissionData) => {
       const applicantIds = Object.keys(submissions);
       applicantIds.forEach((applId) => {
         const path = `${applId}.${formId}`;
-        const [score, stdev] = calculator.forms.score(applId, formId);
+        const res = calculator.forms.score(applId, formId);
+        if (!res) return; // no submission exist for this form
+        const [score, stdev] = res;
         _.set(formScores, path, score);
         _.set(stdDevFormScores, path, stdev);
       });

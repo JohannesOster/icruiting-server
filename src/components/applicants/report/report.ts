@@ -1,9 +1,12 @@
+import _ from 'lodash';
 import {Row} from '../database';
 import {Math, filterFormData, reduceSubmissions} from './math';
-import _ from 'lodash';
+import {BaseReport} from './types';
 
 export const calcReport = (rows: Row[], applicantId: string) => {
-  const math = Math(filterFormData(rows), reduceSubmissions(rows));
+  const [forms, formFields] = filterFormData(rows);
+  const submissions = reduceSubmissions(rows);
+  const math = Math(formFields, submissions);
   const scores = math.calculate();
 
   // // form fields
@@ -40,27 +43,64 @@ export const calcReport = (rows: Row[], applicantId: string) => {
   // console.log(util.inspect(possibleFormCategoryMax, {depth: null}));
   // console.log(util.inspect(possibleFormCategoryMin, {depth: null}));
 
-  Object.entries(scores.formCategoryScores)
+  const sorted = Object.entries(scores.formCategoryScores)
     .map(([id, score]) => ({[id]: score}))
     .sort((a, b) => {
       const first = Object.values(a)[0];
       const sec = Object.values(b)[0];
-      return first < sec ? -1 : 1;
-    })
-    .forEach((e, i) => {
-      console.log(e);
-      console.log(Object.keys(e)[0] === applicantId, i);
+      return first > sec ? -1 : 1;
     });
 
-  const result = {
-    rank: Object.entries(scores.formCategoryScores)
-      .map(([id, score]) => ({[id]: score}))
-      .sort((a, b) => {
-        const first = Object.values(a)[0];
-        const sec = Object.values(b)[0];
-        return first > sec ? -1 : 1;
-      })
-      .findIndex((item) => Object.keys(item)[0] === applicantId),
+  const rank =
+    sorted.findIndex((item) => Object.keys(item)[0] === applicantId) + 1;
+
+  const result: BaseReport = {
+    rank,
+    formCategory: rows[0].formCategory,
+    formCategoryScore: scores.formCategoryScores[applicantId],
+    overallAvgFormCategoryScore: scores.overallAvgFormCategoryScore,
+    overallStdDevFormCategoryScore: scores.overallStdDevFormCategoryScore,
+    formResults: Object.entries(scores.formScores[applicantId]).map(
+      ([formId, formScore]) => ({
+        formId,
+        formTitle: forms[formId].formTitle,
+        formScore,
+        avgFormScore: scores.overallAvgFormScore[formId],
+        formFieldScores: Object.entries(
+          scores.formFieldScores[applicantId][formId],
+        ).map(([formFieldId, formFieldScore]) => {
+          const {jobRequirementId, rowIndex, intent, label} = formFields[
+            formId
+          ][formFieldId];
+          return {
+            formFieldId,
+            jobRequirementId,
+            rowIndex,
+            intent,
+            label,
+            aggregatedValues: [], // TODO
+            formFieldScore,
+            avgFormFieldScore:
+              scores.overallAvgFormFieldScore[formId][formFieldId],
+            overallFormFieldMax:
+              scores.overallAvgFormFieldScore[formId][formFieldId],
+            overallFormFieldMin:
+              scores.overallFormFieldMin[formId][formFieldId],
+            possibleFormFieldMax:
+              scores.possibleFormFieldMax[formId][formFieldId],
+            possibleFormFieldMin:
+              scores.possibleFormFieldMin[formId][formFieldId],
+          };
+        }),
+      }),
+    ),
+    // jobRequirementResults: {
+    //     jobRequirementId: string;
+    //     jobRequirementScore: number;
+    //     avgJobRequirementScore: number;
+    //     requirementLabel: string;
+    //     minValue: number;
+    // }[];
   };
 
   return result;

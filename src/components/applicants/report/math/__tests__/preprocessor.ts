@@ -29,13 +29,15 @@ describe('preprocessor', () => {
         jobRequirementId: random.uuid(),
       };
 
-      const res = filterFormData([mockRow]);
-      const field = res[mockRow.formId][mockRow.formFieldId];
+      const [form, formFields] = filterFormData([mockRow]);
+      const field = formFields[mockRow.formId][mockRow.formFieldId];
       expect(field.intent).toEqual(mockRow.intent);
       expect(field.jobRequirementId).toEqual(mockRow.jobRequirementId);
       expect(field.label).toEqual(mockRow.label);
       expect(field.options).toStrictEqual(mockRow.options);
       expect(field.rowIndex).toEqual(mockRow.rowIndex);
+
+      expect(form[mockRow.formId].formTitle).toEqual(mockRow.formTitle);
     });
   });
   describe('reduceSubmissions', () => {

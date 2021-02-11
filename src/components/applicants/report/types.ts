@@ -49,8 +49,8 @@ export type BaseReport = {
   rank: number;
   formCategory: EFormCategory;
   formCategoryScore: number;
-  avgFormCategoryScore: number;
-  // TODO: difference overall and average std_dev
+  overallAvgFormCategoryScore: number;
+  overallStdDevFormCategoryScore: number;
   formResults: {
     formId: string;
     formTitle: string;
@@ -63,29 +63,24 @@ export type BaseReport = {
       intent: FormFieldIntent;
       label: string;
       aggregatedValues: string[];
-      /** avg value for applicant for form_field */
       formFieldScore: number;
-      /** Overall avg of all submissions for this field */
       avgFormFieldScore: number;
-      /** Possible max for this field */
-      formFieldMax: number;
-      /** Possible min for this field */
-      formFieldMin: number;
+      overallFormFieldMax: number;
+      overallFormFieldMin: number;
+      possibleFormFieldMax: number;
+      possibleFormFieldMin: number;
       /** Achieved max for this field */
-      formSubmissionFieldMax: number;
-      /** Achieved min for this field */
-      formSubmissionFieldMin: number;
-      /** Achieved max overall for this field */
-      overallFormSubmissionFieldMax: number;
-      /** Achieved min overall for this field */
-      overallFormSubmissionFieldMin: number;
+      // formSubmissionFieldMax: number;
+      // /** Achieved min for this field */
+      // formSubmissionFieldMin: number;
     }[];
   }[];
-  jobRequirementResults: {
-    jobRequirementId: string;
-    jobRequirementScore: number;
-    avgJobRequirementScore: number;
-    requirementLabel: string;
-    minValue: number;
-  }[];
+  // submissionsCount
+  // jobRequirementResults: {
+  //   jobRequirementId: string;
+  //   jobRequirementScore: number;
+  //   avgJobRequirementScore: number;
+  //   requirementLabel: string;
+  //   minValue: number;
+  // }[];
 };
