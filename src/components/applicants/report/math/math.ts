@@ -207,7 +207,7 @@ export const Math = (formFields: FormData, submissions: FormSubmissionData) => {
           formId,
           formFieldId,
         );
-        _.set(overallAvgStdDevFormScore, path, avgStdDev);
+        _.set(overallAvgStdDevFormFieldScore, path, avgStdDev);
 
         const [overallMin, overallMax] = calculator.formFields.overallExtrema(
           formId,
