@@ -2,9 +2,9 @@ import fs from 'fs';
 import {S3} from 'aws-sdk';
 import {IncomingForm} from 'formidable';
 import {BaseError, catchAsync} from 'errorHandling';
-import {dbSelectReport} from './database';
 import {getApplicantFileURLs} from './utils';
 import db from 'db';
+import {calcReport} from './report/report';
 
 export const retrieve = catchAsync(async (req, res) => {
   const {applicantId} = req.params;
@@ -151,11 +151,10 @@ export const getReport = catchAsync(async (req, res) => {
   type QueryType = {formCategory: 'screening' | 'assessment'};
   const {formCategory} = req.query as QueryType;
 
-  const params = {applicantId, tenantId, formCategory};
-  const data = await dbSelectReport(params);
-  if (!data) throw new BaseError(404, 'Not Found');
+  const data = await db.formSubmissions.prepareReport(tenantId, formCategory);
+  const report = calcReport(data, applicantId);
 
-  res.status(200).json(data);
+  res.status(200).json(report);
 });
 
 export const del = catchAsync(async (req, res) => {
