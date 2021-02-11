@@ -56,6 +56,7 @@ export type BaseReport = {
     formTitle: string;
     formScore: number;
     avgFormScore: number;
+    possibleFormMax: number;
     formFieldScores: {
       formFieldId: string;
       jobRequirementId: string;

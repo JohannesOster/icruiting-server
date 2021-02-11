@@ -79,7 +79,7 @@ export const Math = (formFields: FormData, submissions: FormSubmissionData) => {
         const values = Object.values(submissions[applicantId])
           .map((sub) => {
             if (!sub[formId]) return null;
-            return sub[formId][formFieldId];
+            return +sub[formId][formFieldId];
           })
           .filter((val) => val !== null);
         return [jstat.mean(values), jstat.stdev(values)];

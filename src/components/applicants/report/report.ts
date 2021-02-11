@@ -9,6 +9,7 @@ export const calcReport = (rows: Row[], applicantId: string) => {
   const math = Math(formFields, submissions);
   const scores = math.calculate();
 
+  // console.log(scores.formFieldScores);
   // // form fields
   // console.log('formFields');
   // console.log(util.inspect(formFieldScores, {depth: null}));
@@ -66,6 +67,7 @@ export const calcReport = (rows: Row[], applicantId: string) => {
         formTitle: forms[formId].formTitle,
         formScore,
         avgFormScore: scores.overallAvgFormScore[formId],
+        possibleFormMax: scores.possibleFormMax[formId],
         formFieldScores: Object.entries(
           scores.formFieldScores[applicantId][formId],
         ).map(([formFieldId, formFieldScore]) => {

@@ -29,7 +29,6 @@
     "faker": "^4.1.0",
     "formidable": "2.0.0-canary.20200504.1",
     "humps": "^2.0.1",
-    "jStat": "^1.8.6",
     "jstat": "^1.9.4",
     "lodash": "^4.17.20",
     "pg-promise": "^10.9.2",
