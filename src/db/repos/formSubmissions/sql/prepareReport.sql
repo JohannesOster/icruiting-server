@@ -7,7 +7,7 @@ SELECT
 	form_field.row_index,
 	form_field.label,
 	form_field.options,
-  form_field.job_requirement_label,
+  form_field.job_requirement_id,
 	form.form_id,
 	form.form_title,
 	form.form_category

@@ -9,7 +9,7 @@ export type Submissions = {
 export type Forms = {
   [formId: string]: {
     [formFieldId: string]: {
-      intent: string; //'sum_up' | 'aggegrate' | 'count_distinct';
+      intent: FormFieldIntent;
       options?: {label: string; value: string}[];
       rowIndex: number;
       label: string;
@@ -48,7 +48,7 @@ export type BaseReport = {
     stdDevFormScore: number;
     formFieldScores: {
       formFieldId: string;
-      jobRequirementId: string;
+      jobRequirementId?: string;
       rowIndex: number;
       intent: FormFieldIntent;
       label: string;

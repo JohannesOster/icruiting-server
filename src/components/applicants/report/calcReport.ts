@@ -61,8 +61,11 @@ export const calcReport = (
     jobRequirementResults: jobRequiremnts.map(
       ({jobRequirementId, requirementLabel, minValue}) => ({
         jobRequirementId,
-        jobRequirementScore:
-          report.jobRequirements[applicantId][jobRequirementId],
+        jobRequirementScore: _.get(
+          report.jobRequirements,
+          `${applicantId}.${jobRequirementId}`,
+          0,
+        ) as number,
         requirementLabel,
         minValue: minValue ? +minValue : undefined,
       }),

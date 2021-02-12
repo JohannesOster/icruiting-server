@@ -56,7 +56,11 @@ describe('jobs', () => {
         .expect(200);
 
       expect(resp.body.jobTitle).toBe(updateValues.jobTitle);
-      expect(resp.body.jobRequirements).toEqual(updateValues.jobRequirements);
+      const sort = (a: any, b: any) =>
+        a.requirementLabel > b.requirementLabel ? 1 : -1;
+      expect(resp.body.jobRequirements.sort(sort)).toEqual(
+        updateValues.jobRequirements.sort(sort),
+      );
     });
 
     it('adds new requirement', async () => {
