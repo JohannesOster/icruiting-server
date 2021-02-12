@@ -30,6 +30,16 @@ type Result = {
       [formId: string]: {[formFieldId: string]: string[]};
     };
   };
+  jobRequirements: {
+    [applicantId: string]: {
+      [jobRequirementId: string]: {
+        jobRequirementScore: number;
+        requirementLabel: string;
+        minValue?: number;
+        avgJobRequirementScore: number;
+      };
+    };
+  };
 };
 export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
   const calc = Calculator();
@@ -67,44 +77,47 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
         path = `${applicantId}.${path}`;
         _.set(acc, `formFieldScores.${path}`, {mean, stdDev});
       });
-
-      applicantIds.forEach((applicantId) => {
-        counter++;
-        const submission = Object.values(submissions[applicantId]).find(
-          (val) => !!val[formId],
-        );
-        if (!submission) return;
-
-        const formSubmissionScores = Object.values(submissions[applicantId])
-          .map((submissions) => {
-            if (!submissions[formId]) return;
-            const submissionValues = Object.values(submissions[formId])
-              .map((val) => +val)
-              .filter((val) => !isNaN(val));
-            if (!submissionValues.length) return;
-
-            return calc.sum(submissionValues);
-          })
-          .filter((val) => !!val) as number[];
-        if (formSubmissionScores.length) {
-          const [formMean, formStdDev] = calc.score(formSubmissionScores);
-
-          _.set(acc, `formScores.${applicantId}.${formId}`, {
-            mean: formMean,
-            stdDev: formStdDev,
-          });
-        }
-      });
-
-      applicantIds.forEach((applicantId) => {
-        counter++;
-        const formScores = Object.values(acc.formScores[applicantId]) as any;
-        const [formCategoryMean] = calc.deepScore(formScores, 'mean');
-        _.set(acc, `formCategoryScores.${applicantId}`, formCategoryMean);
-      });
     });
+
+    applicantIds.forEach((applicantId) => {
+      counter++;
+      const submission = Object.values(submissions[applicantId]).find(
+        (val) => !!val[formId],
+      );
+      if (!submission) return;
+
+      const formSubmissionScores = Object.values(submissions[applicantId])
+        .map((submissions) => {
+          if (!submissions[formId]) return;
+          const submissionValues = Object.values(submissions[formId])
+            .map((val) => +val)
+            .filter((val) => !isNaN(val));
+          if (!submissionValues.length) return;
+
+          return calc.sum(submissionValues);
+        })
+        .filter((val) => !!val) as number[];
+      if (formSubmissionScores.length) {
+        const [formMean, formStdDev] = calc.score(formSubmissionScores);
+
+        _.set(acc, `formScores.${applicantId}.${formId}`, {
+          mean: formMean,
+          stdDev: formStdDev,
+        });
+      }
+    });
+
     return acc;
   }, {} as Result);
+
+  applicantIds.forEach((applicantId) => {
+    counter++;
+    if (!result.formScores) return;
+    if (!result.formScores[applicantId]) return;
+    const formScores = Object.values(result.formScores[applicantId]) as any;
+    const [formCategoryMean] = calc.deepScore(formScores, 'mean');
+    _.set(result, `formCategoryScores.${applicantId}`, formCategoryMean);
+  });
 
   // console.log('Schleifendurchgänge', counter);
 
