@@ -37,7 +37,6 @@ type Result = {
 export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
   const calc = Calculator();
   const applicantIds = Object.keys(submissions);
-  let counter = 0;
 
   const jobRequirements: {
     [jobRequirementId: string]: {[formId: string]: string}[];
@@ -47,7 +46,6 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
     Object.entries(formFields).forEach(([formFieldId, formField]) => {
       if (formField.intent !== 'sum_up') {
         applicantIds.forEach((applicantId) => {
-          counter++;
           const submission = Object.values(submissions[applicantId]).find(
             (val) => !!val[formId],
           );
@@ -76,7 +74,6 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
         }
       }
       applicantIds.forEach((applicantId) => {
-        counter++;
         const submission = Object.values(submissions[applicantId]).find(
           (val) => !!val[formId],
         );
@@ -89,7 +86,6 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
     });
 
     applicantIds.forEach((applicantId) => {
-      counter++;
       const submission = Object.values(submissions[applicantId]).find(
         (val) => !!val[formId],
       );
@@ -120,7 +116,6 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
   }, {} as Result);
 
   applicantIds.forEach((applicantId) => {
-    counter++;
     if (!result.formScores) return;
     if (!result.formScores[applicantId]) return;
     const formScores = Object.values(result.formScores[applicantId]) as any;
@@ -130,7 +125,6 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
 
   Object.entries(jobRequirements).forEach(([jobRequirementId, formFields]) => {
     applicantIds.reduce((acc, applicantId) => {
-      counter++;
       const scores = formFields
         .map((formFieldKV) => {
           const formId = Object.keys(formFieldKV)[0];
@@ -152,8 +146,6 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
       return acc;
     }, {} as any);
   });
-
-  // console.log('Schleifendurchgänge', counter);
 
   return result;
 };
