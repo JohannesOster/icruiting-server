@@ -1,4 +1,4 @@
-SELECT job.*, json_agg(jr) job_requirements
+SELECT job.*, json_agg(jr ORDER BY requirement_label) job_requirements
 FROM job
 JOIN job_requirement jr
 ON jr.job_id = job.job_id

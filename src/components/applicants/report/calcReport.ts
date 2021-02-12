@@ -58,15 +58,15 @@ export const calcReport = (
         }),
       }),
     ),
-    jobRequirementResults: jobRequiremnts
-      .map(({jobRequirementId, requirementLabel, minValue}) => ({
+    jobRequirementResults: jobRequiremnts.map(
+      ({jobRequirementId, requirementLabel, minValue}) => ({
         jobRequirementId,
         jobRequirementScore:
           report.jobRequirements[applicantId][jobRequirementId],
         requirementLabel,
         minValue: minValue ? +minValue : undefined,
-      }))
-      .sort((a, b) => (a.requirementLabel > b.requirementLabel ? 1 : -1)),
+      }),
+    ),
   };
 
   return result;
