@@ -1,105 +1,152 @@
+import {FormFieldIntent} from 'components/applicants/report/types';
 import {EFormCategory} from 'db/repos/forms';
+import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
 
-export default [
+/**
+ * NOTE: I did not find a better way to test the mathematical report building process.
+ * The following code provides a data mock with a reasonable size, so that the solution
+ * can be inferred (by manual calculations).
+ *
+ */
+
+const submitterIds = ['jx3Rxd', 'g82zTb'];
+const applicantIds = ['uhfzsE', 'v5eRBV'];
+const jobRequirements = [
   {
-    submitterId: 'ba6106d7-ce69-4b22-9aee-c281cc189b1b',
-    applicantId: 'd4a59539-5418-488b-8028-1e60e9f6a637',
-    submissionValue: '5',
-    formFieldId: 'f4d2f93b-0f11-47ab-9d8d-c6a062c77e4b',
-    intent: 'sum_up' as 'sum_up',
-    rowIndex: 5,
-    label:
-      'Der*die Bewerber*in kann fragen zum Thema seiner Präsentation ganzheitlich beantworten.',
-    options: [
-      {label: '0', value: '0'},
-      {label: '1', value: '1'},
-      {label: '2', value: '2'},
-      {label: '3', value: '3'},
-      {label: '4', value: '4'},
-    ],
-    formId: '72d804f7-ed75-4b2e-81ef-77fbeba2b60e',
-    formTitle: '1 - Präsentation',
-    formCategory: 'assessment' as EFormCategory,
-    jobTitle: 'Fellow WS20/21',
-    requirementLabel: 'Ganzheitliches Denken',
-    jobRequirementId: 'cd480bb2-da5f-40e4-b0d6-9676638e9613',
+    requirementLabel: 'Kreativität',
+    jobRequirementId: 'KJ4kd4',
   },
   {
-    submitterId: '35ec20ff-0175-4f2f-8801-769a49e78165',
-    applicantId: 'd4a59539-5418-488b-8028-1e60e9f6a637',
-    submissionValue: '2',
-    formFieldId: 'f4d2f93b-0f11-47ab-9d8d-c6a062c77e4b',
-    intent: 'sum_up' as 'sum_up',
-    rowIndex: 5,
-    label:
-      'Der*die Bewerber*in kann fragen zum Thema seiner Präsentation ganzheitlich beantworten.',
-    options: [
-      {label: '0', value: '0'},
-      {label: '1', value: '1'},
-      {label: '2', value: '2'},
-      {label: '3', value: '3'},
-      {label: '4', value: '4'},
-    ],
-    formId: '72d804f7-ed75-4b2e-81ef-77fbeba2b60e',
-    formTitle: '1 - Präsentation',
-    formCategory: 'assessment' as EFormCategory,
-    jobTitle: 'Fellow WS20/21',
-    requirementLabel: 'Ganzheitliches Denken',
-    jobRequirementId: 'cd480bb2-da5f-40e4-b0d6-9676638e9613',
+    requirementLabel: 'Empathie',
+    jobRequirementId: 'r9TQtu',
   },
-  {
-    submitterId: '35ec20ff-0175-4f2f-8801-769a49e78165',
-    applicantId: 'aaaaaaaa-5418-488b-8028-1e60e9f6a637',
-    submissionValue: '3',
-    formFieldId: 'f4d2f93b-0f11-47ab-9d8d-c6a062c77e4b',
-    intent: 'sum_up' as 'sum_up',
-    rowIndex: 5,
-    label:
-      'Der*die Bewerber*in kann fragen zum Thema seiner Präsentation ganzheitlich beantworten.',
-    options: [
-      {label: '0', value: '0'},
-      {label: '1', value: '1'},
-      {label: '2', value: '2'},
-      {label: '3', value: '3'},
-      {label: '4', value: '4'},
-    ],
-    formId: '72d804f7-ed75-4b2e-81ef-77fbeba2b60e',
-    formTitle: '1 - Präsentation',
-    formCategory: 'assessment' as EFormCategory,
-    jobTitle: 'Fellow WS20/21',
-    requirementLabel: 'Ganzheitliches Denken',
-    jobRequirementId: 'cd480bb2-da5f-40e4-b0d6-9676638e9613',
-  },
-  // {
-  //   submitterId: '35ec20ff-0175-4f2f-8801-769a49e78165',
-  //   applicantId: 'aaaaaaaa-5418-488b-8028-1e60e9f6a637',
-  //   submissionValue: 'Please aggregate me',
-  //   formFieldId: 'asdf4d2f93b-0f11-47ab-9d8d-c6a062c77e4b',
-  //   intent: 'aggregate' as 'aggregate',
-  //   rowIndex: 5,
-  //   label:
-  //     'Der*die Bewerber*in kann fragen zum Thema seiner Präsentation ganzheitlich beantworten.',
-  //   formId: '72d804f7-ed75-4b2e-81ef-77fbeba2b60e',
-  //   formTitle: '1 - Präsentation',
-  //   formCategory: 'assessment' as EFormCategory,
-  //   jobTitle: 'Fellow WS20/21',
-  //   requirementLabel: 'Ganzheitliches Denken',
-  //   jobRequirementId: 'cd480bb2-da5f-40e4-b0d6-9676638e9613',
-  // },
-  // {
-  //   submitterId: '35ec20ff-0175-4f2f-8801-769a49e78165',
-  //   applicantId: 'd4a59539-5418-488b-8028-1e60e9f6a637',
-  //   submissionValue: '#Me too',
-  //   formFieldId: 'asdf4d2f93b-0f11-47ab-9d8d-c6a062c77e4b',
-  //   intent: 'aggregate' as 'aggregate',
-  //   rowIndex: 5,
-  //   label:
-  //     'Der*die Bewerber*in kann fragen zum Thema seiner Präsentation ganzheitlich beantworten.',
-  //   formId: '72d804f7-ed75-4b2e-81ef-77fbeba2b60e',
-  //   formTitle: '1 - Präsentation',
-  //   formCategory: 'assessment' as EFormCategory,
-  //   jobTitle: 'Fellow WS20/21',
-  //   requirementLabel: 'Ganzheitliches Denken',
-  //   jobRequirementId: 'cd480bb2-da5f-40e4-b0d6-9676638e9613',
-  // },
 ];
+
+const forms = [
+  {
+    formId: 'fGp0zM',
+    formCategory: 'assessment' as EFormCategory,
+    formTitle: 'Einzelinterview',
+    formFields: [
+      {
+        formFieldId: 'uFeGwm',
+        intent: 'sum_up' as FormFieldIntent,
+        rowIndex: 0,
+        label: 'Der*die Bewerber*in ist kreativ',
+        options: ['0', '1', '2', '3', '4'].map((s) => ({label: s, value: s})),
+        ...jobRequirements[0],
+      },
+      {
+        formFieldId: 'YMzJOz',
+        intent: 'sum_up' as FormFieldIntent,
+        rowIndex: 1,
+        label: 'Der*die Bewerber*in bringt neue Ideen ein',
+        options: ['0', '1', '2', '3', '4'].map((s) => ({label: s, value: s})),
+        ...jobRequirements[1],
+      },
+      {
+        formFieldId: 'KLeeEw',
+        intent: 'aggregate' as FormFieldIntent,
+        rowIndex: 2,
+        label: 'Anmerkungen',
+      },
+    ],
+  },
+  {
+    formId: 'JxcpXy',
+    formCategory: 'assessment' as EFormCategory,
+    formTitle: 'Gruppenübung',
+    formFields: [
+      {
+        formFieldId: 'vDHnhB',
+        intent: 'sum_up' as FormFieldIntent,
+        rowIndex: 0,
+        label: 'Der*die Bewerber*in ist kreativ',
+        options: ['0', '1', '2', '3', '4'].map((s) => ({label: s, value: s})),
+        ...jobRequirements[0],
+      },
+      {
+        formFieldId: 'eU3ZML',
+        intent: 'sum_up' as FormFieldIntent,
+        rowIndex: 1,
+        label: 'Der*die Bewerber*in versucht Kritik zu verstehen',
+        options: ['0', '1', '2', '3', '4'].map((s) => ({label: s, value: s})),
+        ...jobRequirements[0],
+      },
+      {
+        formFieldId: 'h9PojA',
+        intent: 'sum_up' as FormFieldIntent,
+        rowIndex: 2,
+        label: 'Der*die Bewerber*in bemüht sich die Ideen anderer aufzugreifen',
+        options: ['0', '1', '2', '3', '4'].map((s) => ({label: s, value: s})),
+        ...jobRequirements[1],
+      },
+    ],
+  },
+];
+
+const submissions = [
+  {
+    submitterId: submitterIds[0],
+    applicantId: applicantIds[0],
+    formId: forms[0].formId,
+    formCategory: forms[0].formCategory,
+    formTitle: forms[0].formTitle,
+  },
+  {
+    submitterId: submitterIds[0],
+    applicantId: applicantIds[0],
+    formId: forms[1].formId,
+    formCategory: forms[1].formCategory,
+    formTitle: forms[1].formTitle,
+  },
+  {
+    submitterId: submitterIds[1],
+    applicantId: applicantIds[0],
+    formId: forms[0].formId,
+    formCategory: forms[0].formCategory,
+    formTitle: forms[0].formTitle,
+  },
+  {
+    submitterId: submitterIds[1],
+    applicantId: applicantIds[0],
+    formId: forms[1].formId,
+    formCategory: forms[1].formCategory,
+    formTitle: forms[1].formTitle,
+  },
+  {
+    submitterId: submitterIds[0],
+    applicantId: applicantIds[1],
+    formId: forms[0].formId,
+    formCategory: forms[0].formCategory,
+    formTitle: forms[0].formTitle,
+  },
+];
+
+const data: ReportPrepareRow[] = [
+  // submitter 1 - applicant 1 - form 1
+  {...submissions[0], submissionValue: '4', ...forms[0].formFields[0]},
+  {...submissions[0], submissionValue: '3', ...forms[0].formFields[1]},
+  {...submissions[0], submissionValue: 'Anmerk. 1', ...forms[0].formFields[2]},
+  // submitter 1 - applicant 1 - form 2
+  {...submissions[1], submissionValue: '2', ...forms[1].formFields[0]},
+  {...submissions[1], submissionValue: '3', ...forms[1].formFields[1]},
+  {...submissions[1], submissionValue: '4', ...forms[1].formFields[2]},
+  // submitter 2 - applicant 1 - form 1
+  {...submissions[2], submissionValue: '2', ...forms[0].formFields[0]},
+  {...submissions[2], submissionValue: '1', ...forms[0].formFields[1]},
+  {...submissions[2], submissionValue: 'Anmerk. 2', ...forms[0].formFields[2]},
+  // submitter 1 - applicant 1 - form 2
+  {...submissions[3], submissionValue: '3', ...forms[1].formFields[0]},
+  {...submissions[3], submissionValue: '3', ...forms[1].formFields[1]},
+  {...submissions[3], submissionValue: '3', ...forms[1].formFields[2]},
+  // submitter 1 - applicant 2 - form 1
+  {...submissions[3], submissionValue: '4', ...forms[0].formFields[0]},
+  {...submissions[3], submissionValue: '3', ...forms[0].formFields[1]},
+  {...submissions[3], submissionValue: 'Anmerk. 3', ...forms[0].formFields[2]},
+  // missing on purpose:
+  // submitter 1 - applicant 2 - form 2
+  // submitter 2 - applicant 2 - form 1 and 2
+];
+
+export default data;

@@ -13,7 +13,6 @@ export type ReportPrepareRow = {
   formId: string;
   formTitle: string;
   formCategory: EFormCategory;
-  jobTitle: string;
-  requirementLabel: string;
-  jobRequirementId: string;
+  requirementLabel?: string;
+  jobRequirementId?: string;
 };

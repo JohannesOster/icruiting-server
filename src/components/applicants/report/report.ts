@@ -1,6 +1,5 @@
-import app from 'app';
-import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
 import _ from 'lodash';
+import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
 import {Math, filterFormData, reduceSubmissions} from './math';
 import {BaseReport} from './types';
 
@@ -9,41 +8,6 @@ export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
   const submissions = reduceSubmissions(rows);
   const math = Math(formFields, submissions);
   const scores = math.calculate();
-
-  // console.log(scores.formFieldScores);
-  // // form fields
-  // console.log('formFields');
-  // console.log(util.inspect(formFieldScores, {depth: null}));
-  // console.log(util.inspect(stdDevFormFieldScores, {depth: null}));
-  // console.log(util.inspect(overallAvgFormFieldScore, {depth: null}));
-  // console.log(util.inspect(overallStdDevFormFieldScore, {depth: null}));
-  // console.log(util.inspect(overallAvgStdDevFormFieldScore, {depth: null}));
-  // console.log(util.inspect(overallFormFieldMax, {depth: null}));
-  // console.log(util.inspect(overallFormFieldMin, {depth: null}));
-  // console.log(util.inspect(possibleFormFieldMin, {depth: null}));
-  // console.log(util.inspect(possibleFormFieldMax, {depth: null}));
-
-  // // forms
-  // console.log('forms');
-  // console.log(util.inspect(formScores, {depth: null}));
-  // console.log(util.inspect(stdDevFormScores, {depth: null}));
-  // console.log(util.inspect(overallAvgFormScore, {depth: null}));
-  // console.log(util.inspect(overallStdDevFormScore, {depth: null}));
-  // console.log(util.inspect(overallAvgStdDevFormScore, {depth: null}));
-  // console.log(util.inspect(overallFormMax, {depth: null}));
-  // console.log(util.inspect(overallFormMin, {depth: null}));
-  // console.log(util.inspect(possibleFormMin, {depth: null}));
-  // console.log(util.inspect(possibleFormMax, {depth: null}));
-
-  // // formsCategory
-  // console.log('formsCategory');
-  // console.log(util.inspect(formCategoryScores, {depth: null}));
-  // console.log(util.inspect(overallAvgFormCategoryScore, {depth: null}));
-  // console.log(util.inspect(overallStdDevFormCategoryScore, {depth: null}));
-  // console.log(util.inspect(overallFormCategoryMax, {depth: null}));
-  // console.log(util.inspect(overallFormCategoryMin, {depth: null}));
-  // console.log(util.inspect(possibleFormCategoryMax, {depth: null}));
-  // console.log(util.inspect(possibleFormCategoryMin, {depth: null}));
 
   const sorted = Object.entries(scores.formCategoryScores)
     .map(([id, score]) => ({[id]: score}))
@@ -56,7 +20,6 @@ export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
   const rank =
     sorted.findIndex((item) => Object.keys(item)[0] === applicantId) + 1;
 
-  console.log(scores.overallAvgStdDevFormFieldScore);
   const result: BaseReport = {
     rank,
     formCategory: rows[0].formCategory,
@@ -114,13 +77,6 @@ export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
         }),
       }),
     ),
-    // jobRequirementResults: {
-    //     jobRequirementId: string;
-    //     jobRequirementScore: number;
-    //     avgJobRequirementScore: number;
-    //     requirementLabel: string;
-    //     minValue: number;
-    // }[];
   };
 
   return result;
