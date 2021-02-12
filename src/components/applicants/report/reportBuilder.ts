@@ -31,20 +31,17 @@ type Result = {
     };
   };
   jobRequirements: {
-    [applicantId: string]: {
-      [jobRequirementId: string]: {
-        jobRequirementScore: number;
-        requirementLabel: string;
-        minValue?: number;
-        avgJobRequirementScore: number;
-      };
-    };
+    [applicantId: string]: {[jobRequirementId: string]: number};
   };
 };
 export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
   const calc = Calculator();
   const applicantIds = Object.keys(submissions);
   let counter = 0;
+
+  const jobRequirements: {
+    [jobRequirementId: string]: {[formId: string]: string}[];
+  } = {};
 
   const result = Object.entries(forms).reduce((acc, [formId, formFields]) => {
     Object.entries(formFields).forEach(([formFieldId, formField]) => {
@@ -66,6 +63,18 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
         return;
       }
 
+      // join jobRequirement specific fields
+      if (formField.jobRequirementId) {
+        if (!jobRequirements[formField.jobRequirementId]) {
+          jobRequirements[formField.jobRequirementId] = [
+            {[formId]: formFieldId},
+          ];
+        } else {
+          jobRequirements[formField.jobRequirementId].push({
+            [formId]: formFieldId,
+          });
+        }
+      }
       applicantIds.forEach((applicantId) => {
         counter++;
         const submission = Object.values(submissions[applicantId]).find(
@@ -117,6 +126,31 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
     const formScores = Object.values(result.formScores[applicantId]) as any;
     const [formCategoryMean] = calc.deepScore(formScores, 'mean');
     _.set(result, `formCategoryScores.${applicantId}`, formCategoryMean);
+  });
+
+  Object.entries(jobRequirements).forEach(([jobRequirementId, formFields]) => {
+    applicantIds.reduce((acc, applicantId) => {
+      counter++;
+      const scores = formFields
+        .map((formFieldKV) => {
+          const formId = Object.keys(formFieldKV)[0];
+          const formFieldId = formFieldKV[formId];
+
+          return _.get(
+            result,
+            `formFieldScores.${applicantId}.${formId}.${formFieldId}.mean`,
+          );
+        })
+        .filter((val) => val !== undefined);
+
+      let score = 0; // score defaults to zero
+      if (scores.length) score = calc.mean(scores);
+
+      const path = `jobRequirements.${applicantId}.${jobRequirementId}`;
+      _.set(result, path, score);
+
+      return acc;
+    }, {} as any);
   });
 
   // console.log('Schleifendurchgänge', counter);

@@ -3,8 +3,13 @@ import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
 import {filterFormData, reduceSubmissions} from './preprocessor';
 import {BaseReport} from './types';
 import {ReportBuilder} from './reportBuilder';
+import {JobRequirement} from 'db/repos/jobs';
 
-export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
+export const calcReport = (
+  rows: ReportPrepareRow[],
+  applicantId: string,
+  jobRequiremnts: JobRequirement[],
+) => {
   const [forms, formFields] = filterFormData(rows);
   const submissions = reduceSubmissions(rows);
   const report = ReportBuilder(formFields, submissions);
@@ -42,14 +47,26 @@ export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {
             rowIndex,
             intent,
             label,
-            aggregatedValues:
-              report.aggregates[applicantId][formId][formFieldId],
+            aggregatedValues: _.get(
+              report.aggregates,
+              `${applicantId}.${formId}.${formFieldId}`,
+              [],
+            ) as string[],
             formFieldScore: formFieldScore.mean,
             stdDevFormFieldScores: formFieldScore.stdDev,
           };
         }),
       }),
     ),
+    jobRequirementResults: jobRequiremnts
+      .map(({jobRequirementId, requirementLabel, minValue}) => ({
+        jobRequirementId,
+        jobRequirementScore:
+          report.jobRequirements[applicantId][jobRequirementId],
+        requirementLabel,
+        minValue: minValue ? +minValue : undefined,
+      }))
+      .sort((a, b) => (a.requirementLabel > b.requirementLabel ? 1 : -1)),
   };
 
   return result;

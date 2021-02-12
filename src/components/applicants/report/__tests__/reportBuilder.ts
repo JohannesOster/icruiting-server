@@ -1,12 +1,11 @@
 import {ReportBuilder} from '../reportBuilder';
 
 describe('ReportBuilder', () => {
+  const options = ['0', '1', '2', '3', '4'].map((s) => ({
+    label: s,
+    value: s,
+  }));
   describe('score', () => {
-    const options = ['0', '1', '2', '3', '4'].map((s) => ({
-      label: s,
-      value: s,
-    }));
-
     const forms = {
       form1: {
         formField1: {
@@ -134,6 +133,61 @@ describe('ReportBuilder', () => {
         },
       };
       expect(report.aggregates).toEqual(expected);
+    });
+  });
+  describe('jobRequirementResults', () => {
+    const forms = {
+      form1: {
+        formField1: {
+          intent: 'sum_up' as 'sum_up',
+          options: options,
+          rowIndex: 0,
+          label: '',
+          jobRequirementId: 'DdUJWo',
+        },
+        formField2: {
+          intent: 'sum_up' as 'sum_up',
+          rowIndex: 1,
+          options: options,
+          label: '',
+          jobRequirementId: 'DKBfVT',
+        },
+      },
+      form2: {
+        formField1: {
+          intent: 'sum_up' as 'sum_up',
+          rowIndex: 0,
+          options: options,
+          label: '',
+          jobRequirementId: 'DdUJWo',
+        },
+        formField2: {
+          intent: 'aggregate' as 'aggregate',
+          rowIndex: 1,
+          label: '',
+        },
+      },
+    };
+    const submissions = {
+      applicant1: {
+        submitter1: {
+          form1: {formField1: '0', formField2: '4'},
+          form2: {formField1: '1', formField2: 'Anmerkung 1'},
+        },
+        submitter2: {form1: {formField1: '2', formField2: '3'}},
+      },
+      applicant2: {
+        submitter1: {form2: {formField1: '3', formField2: 'Anmerkung 2'}},
+      },
+    };
+
+    it('scores jobRequirement correctly', () => {
+      const report = ReportBuilder(forms, submissions);
+      const expected = {
+        applicant1: {DdUJWo: 1, DKBfVT: 3.5},
+        applicant2: {DdUJWo: 3, DKBfVT: 0},
+      };
+      expect(report.jobRequirements).toEqual(expected);
     });
   });
 });

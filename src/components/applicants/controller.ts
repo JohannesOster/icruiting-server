@@ -151,8 +151,11 @@ export const getReport = catchAsync(async (req, res) => {
   type QueryType = {formCategory: 'screening' | 'assessment'};
   const {formCategory} = req.query as QueryType;
 
+  const {jobId} = (await db.applicants.retrieve(tenantId, applicantId))!;
+  const {jobRequirements} = (await db.jobs.retrieve(tenantId, jobId))!;
+
   const data = await db.formSubmissions.prepareReport(tenantId, formCategory);
-  const report = calcReport(data, applicantId);
+  const report = calcReport(data, applicantId, jobRequirements);
 
   res.status(200).json(report);
 });
