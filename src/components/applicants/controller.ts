@@ -4,7 +4,7 @@ import {IncomingForm} from 'formidable';
 import {BaseError, catchAsync} from 'errorHandling';
 import {getApplicantFileURLs} from './utils';
 import db from 'db';
-import {calcReport} from './report/report';
+import {calcReport} from './report';
 
 export const retrieve = catchAsync(async (req, res) => {
   const {applicantId} = req.params;

@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
-import {Math, filterFormData, reduceSubmissions} from './math';
+import {filterFormData, reduceSubmissions} from './preprocessor';
+import {Math} from './math';
 import {BaseReport} from './types';
 
 export const calcReport = (rows: ReportPrepareRow[], applicantId: string) => {

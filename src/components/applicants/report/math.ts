@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import jstat from 'jstat';
-import {FormFieldScores, OverallAvgFormFieldScore, FormScores} from '../types';
+import {FormFieldScores, OverallAvgFormFieldScore, FormScores} from './types';
 import {FormData, FormSubmissionData} from './types';
 
 /*

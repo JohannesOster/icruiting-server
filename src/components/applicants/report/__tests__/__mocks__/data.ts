@@ -1,3 +1,4 @@
+import jstat from 'jstat';
 import {FormFieldIntent} from 'components/applicants/report/types';
 import {EFormCategory} from 'db/repos/forms';
 import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
@@ -6,7 +7,6 @@ import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
  * NOTE: I did not find a better way to test the mathematical report building process.
  * The following code provides a data mock with a reasonable size, so that the solution
  * can be inferred (by manual calculations).
- *
  */
 
 const submitterIds = ['jx3Rxd', 'g82zTb'];
@@ -123,7 +123,7 @@ const submissions = [
   },
 ];
 
-const data: ReportPrepareRow[] = [
+export const data: ReportPrepareRow[] = [
   // submitter 1 - applicant 1 - form 1
   {...submissions[0], submissionValue: '4', ...forms[0].formFields[0]},
   {...submissions[0], submissionValue: '3', ...forms[0].formFields[1]},
@@ -136,7 +136,7 @@ const data: ReportPrepareRow[] = [
   {...submissions[2], submissionValue: '2', ...forms[0].formFields[0]},
   {...submissions[2], submissionValue: '1', ...forms[0].formFields[1]},
   {...submissions[2], submissionValue: 'Anmerk. 2', ...forms[0].formFields[2]},
-  // submitter 1 - applicant 1 - form 2
+  // submitter 2 - applicant 1 - form 2
   {...submissions[3], submissionValue: '3', ...forms[1].formFields[0]},
   {...submissions[3], submissionValue: '3', ...forms[1].formFields[1]},
   {...submissions[3], submissionValue: '3', ...forms[1].formFields[2]},
@@ -149,4 +149,37 @@ const data: ReportPrepareRow[] = [
   // submitter 2 - applicant 2 - form 1 and 2
 ];
 
-export default data;
+const formFieldScores = {
+  [applicantIds[0]]: {
+    [forms[0].formFields[0].formFieldId]: jstat.mean(4, 2),
+    [forms[0].formFields[1].formFieldId]: jstat.mean(3, 1),
+    [forms[1].formFields[0].formFieldId]: jstat.mean(2, 3),
+    [forms[1].formFields[1].formFieldId]: jstat.mean(3, 3),
+    [forms[1].formFields[2].formFieldId]: jstat.mean(4, 3),
+  },
+  [applicantIds[1]]: {
+    [forms[0].formFields[0].formFieldId]: 4,
+    [forms[0].formFields[1].formFieldId]: 3,
+  },
+};
+
+const stdDevFormFieldScores = {
+  [applicantIds[0]]: {
+    [forms[0].formFields[0].formFieldId]: jstat.stdev(4, 2),
+    [forms[0].formFields[1].formFieldId]: jstat.stdev(3, 1),
+    [forms[1].formFields[0].formFieldId]: jstat.stdev(2, 3),
+    [forms[1].formFields[1].formFieldId]: jstat.stdev(3, 3),
+    [forms[1].formFields[2].formFieldId]: jstat.stdev(4, 3),
+  },
+  [applicantIds[1]]: {
+    [forms[0].formFields[0].formFieldId]: 0,
+    [forms[0].formFields[1].formFieldId]: 0,
+  },
+};
+// const overallAvgFormFieldScore: OverallAvgFormFieldScore = {};
+// const overallStdDevFormFieldScore: OverallAvgFormFieldScore = {};
+// const overallAvgStdDevFormFieldScore: OverallAvgFormFieldScore = {};
+// const overallFormFieldMax: OverallAvgFormFieldScore = {};
+// const overallFormFieldMin: OverallAvgFormFieldScore = {};
+// const possibleFormFieldMax: OverallAvgFormFieldScore = {};
+// const possibleFormFieldMin: OverallAvgFormFieldScore = {};
