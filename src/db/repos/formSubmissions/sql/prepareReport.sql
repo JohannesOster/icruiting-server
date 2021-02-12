@@ -10,7 +10,7 @@ SELECT
   form_field.job_requirement_label,
 	form.form_id,
 	form.form_title,
-	form.form_category,
+	form.form_category
 FROM form_submission_field
 INNER JOIN form_field ON form_field.form_field_id = form_submission_field.form_field_id
 INNER JOIN form_submission ON form_submission.form_submission_id = form_submission_field.form_submission_id

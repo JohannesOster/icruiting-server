@@ -64,7 +64,7 @@ describe('applicants', () => {
         )
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(500, {asdf: 'asdf'}, done);
     });
 
     it('requires formCategory query', (done) => {

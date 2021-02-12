@@ -29,18 +29,6 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
         return;
       }
 
-      // join jobRequirement specific fields
-      if (formField.jobRequirementId) {
-        if (!jobRequirements[formField.jobRequirementId]) {
-          jobRequirements[formField.jobRequirementId] = [
-            {[formId]: formFieldId},
-          ];
-        } else {
-          jobRequirements[formField.jobRequirementId].push({
-            [formId]: formFieldId,
-          });
-        }
-      }
       applicantIds.forEach((applicantId) => {
         const submission = Object.values(submissions[applicantId]).find(
           (val) => !!val[formId],
@@ -51,6 +39,13 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
         path = `${applicantId}.${path}`;
         _.set(acc, `formFieldScores.${path}`, {mean, stdDev});
       });
+
+      if (!formField.jobRequirementId) return;
+      if (!jobRequirements[formField.jobRequirementId]) {
+        jobRequirements[formField.jobRequirementId] = [];
+      }
+      const kv = {[formId]: formFieldId};
+      jobRequirements[formField.jobRequirementId].push(kv);
     });
 
     applicantIds.forEach((applicantId) => {
