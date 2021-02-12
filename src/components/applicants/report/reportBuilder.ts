@@ -1,22 +1,6 @@
 import _ from 'lodash';
 import {Calculator} from './calculator';
-
-type Submissions = {
-  [submitterId: string]: {
-    [applicantId: string]: {[formId: string]: {[formFieldId: string]: string}};
-  };
-};
-type Forms = {
-  [formId: string]: {
-    [formFieldId: string]: {
-      intent: string; //'sum_up' | 'aggegrate' | 'count_distinct';
-      options?: {label: string; value: string}[];
-      rowIndex: number;
-      label: string;
-      jobRequirementId?: string;
-    };
-  };
-};
+import {Forms, Submissions} from './types';
 
 type Score = {mean: number; stdDev: number};
 type Result = {

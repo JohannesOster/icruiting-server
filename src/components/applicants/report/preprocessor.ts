@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
-import {FormData, FormSubmissionData} from './types';
+import {Forms, Submissions} from './types';
 
 // Separate informations about formfields from submission data
 export const filterFormData = (rows: ReportPrepareRow[]) => {
@@ -10,7 +10,7 @@ export const filterFormData = (rows: ReportPrepareRow[]) => {
     const entry = {intent, options, rowIndex, label, jobRequirementId};
     _.set(acc, `${curr.formId}.${curr.formFieldId}`, entry);
     return acc;
-  }, {} as FormData);
+  }, {} as Forms);
 
   const forms = rows.reduce((acc, {formId, formTitle}) => {
     if (!!acc[formId]) return acc;
@@ -28,5 +28,5 @@ export const reduceSubmissions = (rows: ReportPrepareRow[]) => {
     const path = `${applicantId}.${submitterId}.${formId}.${formFieldId}`;
     _.set(acc, path, curr.submissionValue);
     return acc;
-  }, {} as FormSubmissionData);
+  }, {} as Submissions);
 };

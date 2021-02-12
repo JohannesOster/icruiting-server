@@ -1,23 +1,19 @@
 import {EFormCategory} from 'db/repos/forms';
 
-export type FormData = {
-  [formId: string]: {
-    [formFieldId: string]: {
-      intent: FormFieldIntent;
-      options?: {label: string; value: string}[];
-      rowIndex: number;
-      label: string;
-      jobRequirementId: string;
-    };
+export type Submissions = {
+  [submitterId: string]: {
+    [applicantId: string]: {[formId: string]: {[formFieldId: string]: string}};
   };
 };
 
-export type FormSubmissionData = {
-  [applicantId: string]: {
-    [submitterId: string]: {
-      [formId: string]: {
-        [formFieldId: string]: string;
-      };
+export type Forms = {
+  [formId: string]: {
+    [formFieldId: string]: {
+      intent: string; //'sum_up' | 'aggegrate' | 'count_distinct';
+      options?: {label: string; value: string}[];
+      rowIndex: number;
+      label: string;
+      jobRequirementId?: string;
     };
   };
 };
