@@ -151,11 +151,13 @@ export const getReport = catchAsync(async (req, res) => {
   type QueryType = {formCategory: 'screening' | 'assessment'};
   const {formCategory} = req.query as QueryType;
 
-  const {jobId} = (await db.applicants.retrieve(tenantId, applicantId))!;
-  const {jobRequirements} = (await db.jobs.retrieve(tenantId, jobId))!;
+  const applicant = await db.applicants.retrieve(tenantId, applicantId);
+  if (!applicant) throw new BaseError(404, 'Applicant Not Found');
+  const job = await db.jobs.retrieve(tenantId, applicant.jobId);
+  if (!job) throw new BaseError(404, 'Job Not Found');
 
   const data = await db.formSubmissions.prepareReport(tenantId, formCategory);
-  const report = calcReport(data, applicantId, jobRequirements);
+  const report = calcReport(data, applicantId, job.jobRequirements);
 
   res.status(200).json(report);
 });
