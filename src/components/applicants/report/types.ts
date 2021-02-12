@@ -18,6 +18,23 @@ export type Forms = {
   };
 };
 
+type Score = {mean: number; stdDev: number};
+export type ReportBuilderReturnType = {
+  formFieldScores: {
+    [applicantId: string]: {[formId: string]: {[formFieldId: string]: Score}};
+  };
+  formScores: {[applicantId: string]: {[formId: string]: Score}};
+  formCategoryScores: {[applicantId: string]: number};
+  aggregates: {
+    [applicantId: string]: {
+      [formId: string]: {[formFieldId: string]: string[]};
+    };
+  };
+  jobRequirements: {
+    [applicantId: string]: {[jobRequirementId: string]: number};
+  };
+};
+
 export type FormFieldIntent = 'sum_up' | 'counst_distinct' | 'aggregate';
 
 export type BaseReport = {

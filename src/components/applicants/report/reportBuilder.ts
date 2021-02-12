@@ -1,23 +1,7 @@
 import _ from 'lodash';
 import {Calculator} from './calculator';
-import {Forms, Submissions} from './types';
+import {Forms, Submissions, ReportBuilderReturnType} from './types';
 
-type Score = {mean: number; stdDev: number};
-type Result = {
-  formFieldScores: {
-    [applicantId: string]: {[formId: string]: {[formFieldId: string]: Score}};
-  };
-  formScores: {[applicantId: string]: {[formId: string]: Score}};
-  formCategoryScores: {[applicantId: string]: number};
-  aggregates: {
-    [applicantId: string]: {
-      [formId: string]: {[formFieldId: string]: string[]};
-    };
-  };
-  jobRequirements: {
-    [applicantId: string]: {[jobRequirementId: string]: number};
-  };
-};
 export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
   const calc = Calculator();
   const applicantIds = Object.keys(submissions);
@@ -97,7 +81,7 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
     });
 
     return acc;
-  }, {} as Result);
+  }, {} as ReportBuilderReturnType);
 
   applicantIds.forEach((applicantId) => {
     if (!result.formScores) return;
