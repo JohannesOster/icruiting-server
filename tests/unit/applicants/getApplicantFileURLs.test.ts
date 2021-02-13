@@ -1,5 +1,5 @@
 import {random, image} from 'faker';
-import {getApplicantFileURLs} from '../utils';
+import {getApplicantFileURLs} from 'components/applicants/utils';
 
 const mockURL = image.imageUrl();
 jest.mock('aws-sdk', () => ({

@@ -6,7 +6,9 @@ jest.mock('stripe', () =>
       create: () => Promise.resolve({id: faker.random.uuid()}),
       del: () => Promise.resolve({}),
     },
-    subscriptions: {create: () => Promise.resolve({})},
+    subscriptions: {
+      create: () => Promise.resolve({}),
+    },
   })),
 );
 
