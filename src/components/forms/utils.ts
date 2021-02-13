@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import db from 'db';
+import db from 'infrastructure/db';
 import {BaseError} from 'errorHandling';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {

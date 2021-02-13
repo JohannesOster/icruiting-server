@@ -1,8 +1,8 @@
 import request from 'supertest';
 import app from 'app';
-import db from 'db';
+import db from 'infrastructure/db';
 import fake from '../testUtils/fake';
-import {endConnection, truncateAllTables} from 'db/setup';
+import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
 
 const mockUser = fake.user();

@@ -1,6 +1,6 @@
 import {S3} from 'aws-sdk';
 import {BaseError, catchAsync} from 'errorHandling';
-import db from 'db';
+import db from 'infrastructure/db';
 
 export const retrieve = catchAsync(async (req, res) => {
   const {jobId} = req.params;

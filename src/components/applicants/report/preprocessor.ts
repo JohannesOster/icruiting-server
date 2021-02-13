@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
+import {ReportPrepareRow} from 'infrastructure/db/repos/formSubmissions/types';
 import {Forms, Submissions} from './types';
 
 // Separate informations about formfields from submission data

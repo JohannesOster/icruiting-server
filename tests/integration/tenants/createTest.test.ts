@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from 'app';
 import faker from 'faker';
-import {endConnection, truncateAllTables} from 'db/setup';
+import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import {CognitoUserAttribute} from 'amazon-cognito-identity-js';
 

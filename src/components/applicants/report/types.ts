@@ -1,4 +1,4 @@
-import {EFormCategory} from 'db/repos/forms';
+import {EFormCategory} from 'infrastructure/db/repos/forms';
 
 export type Submissions = {
   [submitterId: string]: {

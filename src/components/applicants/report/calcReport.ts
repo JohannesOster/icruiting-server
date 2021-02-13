@@ -1,9 +1,9 @@
 import _ from 'lodash';
-import {ReportPrepareRow} from 'db/repos/formSubmissions/types';
+import {ReportPrepareRow} from 'infrastructure/db/repos/formSubmissions/types';
 import {filterFormData, reduceSubmissions} from './preprocessor';
 import {BaseReport} from './types';
 import {ReportBuilder} from './reportBuilder';
-import {JobRequirement} from 'db/repos/jobs';
+import {JobRequirement} from 'infrastructure/db/repos/jobs';
 
 export const calcReport = (
   rows: ReportPrepareRow[],

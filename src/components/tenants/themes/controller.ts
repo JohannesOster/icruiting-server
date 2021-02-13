@@ -1,7 +1,7 @@
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
-import db from 'db';
+import db from 'infrastructure/db';
 import {BaseError, catchAsync} from 'errorHandling';
 
 export const upload = catchAsync(async (req, res, next) => {

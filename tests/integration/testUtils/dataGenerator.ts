@@ -1,7 +1,7 @@
-import db from 'db';
+import db from 'infrastructure/db';
 import fake from './fake';
 import {random} from 'faker';
-import {EFormCategory} from 'db/repos/forms';
+import {EFormCategory} from 'infrastructure/db/repos/forms';
 
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {

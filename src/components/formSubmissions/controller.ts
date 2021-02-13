@@ -1,5 +1,5 @@
 import {BaseError, catchAsync} from 'errorHandling';
-import db from 'db';
+import db from 'infrastructure/db';
 
 export const create = catchAsync(async (req, res) => {
   const {userId, tenantId} = req.user;

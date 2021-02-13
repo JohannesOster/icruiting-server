@@ -2,9 +2,9 @@ import faker from 'faker';
 import request from 'supertest';
 import app from 'app';
 import fake from '../testUtils/fake';
-import {endConnection, truncateAllTables} from 'db/setup';
+import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Job} from 'db/repos/jobs';
+import {Job} from 'infrastructure/db/repos/jobs';
 
 const mockUser = fake.user();
 jest.mock('middlewares/auth', () => ({

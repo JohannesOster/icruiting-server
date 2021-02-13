@@ -1,4 +1,4 @@
-import db from 'db';
+import db from 'infrastructure/db';
 
 const handler = {
   'customer.subscription.created': (object: any) => console.log(object),

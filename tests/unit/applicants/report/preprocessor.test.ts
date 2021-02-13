@@ -3,7 +3,7 @@ import {
   reduceSubmissions,
 } from 'components/applicants/report/preprocessor';
 import {random} from 'faker';
-import {EFormCategory} from 'db/repos/forms';
+import {EFormCategory} from 'infrastructure/db/repos/forms';
 import {FormFieldIntent} from 'components/applicants/report/types';
 
 describe('preprocessor', () => {

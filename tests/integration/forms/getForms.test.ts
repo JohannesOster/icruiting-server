@@ -1,7 +1,7 @@
 import request from 'supertest';
 import app from 'app';
-import db from 'db';
-import {endConnection, truncateAllTables} from 'db/setup';
+import db from 'infrastructure/db';
+import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
 

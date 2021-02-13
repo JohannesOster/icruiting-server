@@ -1,6 +1,6 @@
 import {RequestHandler} from 'express';
 import {BaseError, catchAsync} from 'errorHandling';
-import db from 'db';
+import db from 'infrastructure/db';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
