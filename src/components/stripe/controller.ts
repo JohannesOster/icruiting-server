@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import {catchAsync} from 'errorHandling';
+import {catchAsync} from 'infrastructure/http/errors';
 import webhookHandler from './webhookHandler';
 import config from 'config';
 

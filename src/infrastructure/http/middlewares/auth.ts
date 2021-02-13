@@ -1,7 +1,7 @@
 import {RequestHandler} from 'express';
 import CognitoExpress from 'cognito-express';
 import dotenv from 'dotenv';
-import {BaseError, catchAsync} from 'errorHandling';
+import {BaseError, catchAsync} from 'infrastructure/http/errors';
 
 dotenv.config();
 

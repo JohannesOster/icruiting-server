@@ -6,7 +6,7 @@ import {
   requireAdmin,
   requireSubscription,
   validate,
-} from 'middlewares';
+} from 'infrastructure/http/middlewares';
 import {routes as themes} from './themes';
 import {routes as subscriptions} from './subscriptions';
 import {routes as paymentMethods} from './paymentMethods';

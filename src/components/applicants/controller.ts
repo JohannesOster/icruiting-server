@@ -1,7 +1,7 @@
 import fs from 'fs';
 import {S3} from 'aws-sdk';
 import {IncomingForm} from 'formidable';
-import {BaseError, catchAsync} from 'errorHandling';
+import {BaseError, catchAsync} from 'infrastructure/http/errors';
 import {getApplicantFileURLs} from './utils';
 import db from 'infrastructure/db';
 import {calcReport} from './report';

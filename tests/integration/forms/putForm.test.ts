@@ -7,7 +7,7 @@ import dataGenerator from '../testUtils/dataGenerator';
 import {Form} from 'infrastructure/db/repos/forms';
 
 const mockUser = fake.user();
-jest.mock('middlewares/auth', () => ({
+jest.mock('infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;

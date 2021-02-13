@@ -1,7 +1,7 @@
 import express from 'express';
 import * as controller from './controller';
 import {createRules} from './validation';
-import {validate} from 'middlewares';
+import {validate} from 'infrastructure/http/middlewares';
 
 const router = express.Router();
 

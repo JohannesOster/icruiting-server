@@ -1,6 +1,6 @@
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
 import {mapCognitoUser, removePrefix} from '../utils';
-import {catchAsync} from 'errorHandling';
+import {catchAsync} from 'infrastructure/http/errors';
 
 export const create = catchAsync(async (req, res) => {
   const cIdp = new CognitoIdentityServiceProvider();

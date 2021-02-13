@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
 import db from 'infrastructure/db';
-import {BaseError, catchAsync} from 'errorHandling';
+import {BaseError, catchAsync} from 'infrastructure/http/errors';
 import {mapCognitoUser} from '../utils';
 import {signUp} from './signUp';
 

@@ -5,7 +5,7 @@ import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
 
 const mockUser = fake.user();
-jest.mock('middlewares/auth', () => ({
+jest.mock('infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;

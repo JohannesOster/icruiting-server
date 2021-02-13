@@ -1,9 +1,9 @@
 import express from 'express';
 import * as controller from './controller';
 import {createRules, updateRules} from './validation';
-import {validate} from 'middlewares/common';
-import {requireAdmin, requireAuth} from 'middlewares';
-import {requireSubscription} from 'middlewares/stripe';
+import {validate} from 'infrastructure/http/middlewares/common';
+import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';
+import {requireSubscription} from 'infrastructure/http/middlewares/stripe';
 
 const router = express.Router();
 

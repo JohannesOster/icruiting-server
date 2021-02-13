@@ -1,5 +1,5 @@
 import {S3} from 'aws-sdk';
-import {BaseError, catchAsync} from 'errorHandling';
+import {BaseError, catchAsync} from 'infrastructure/http/errors';
 import db from 'infrastructure/db';
 
 export const retrieve = catchAsync(async (req, res) => {

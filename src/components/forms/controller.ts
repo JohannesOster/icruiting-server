@@ -1,7 +1,7 @@
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
-import {catchAsync, BaseError} from 'errorHandling';
+import {catchAsync, BaseError} from 'infrastructure/http/errors';
 import db from 'infrastructure/db';
 import config from 'config';
 import {validateSubscription} from './utils';
