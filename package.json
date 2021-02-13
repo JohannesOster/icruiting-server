@@ -10,13 +10,20 @@
     "copy-files": "npx copyfiles \"src/**/*/*.sql\" \"src/**/*/*.pug\" \"src/**/*/*.css\" dist/",
     "db-migrate": "npx ts-node ./src/db/flyway.ts flyway migrate",
     "db-drop": "npx ts-node ./src/db/flyway.ts flyway clean",
-    "test": "npx jest --runInBand --detectOpenHandles",
+    "test:unit": "npx jest --projects tests/unit/jest.config.js",
+    "test:integration": "npx jest --projects tests/integration/jest.config.js --runInBand --detectOpenHandles",
     "heroku-prebuild": "npm install --dev",
     "lint": "tslint --project ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "jest": {
+    "projects": [
+      "<rootDir>/tests/unit/jest.config.js",
+      "<rootDir>/tests/integration/jest.config.js"
+    ]
+  },
   "dependencies": {
     "amazon-cognito-identity-js": "^4.5.10",
     "aws-sdk": "^2.841.0",
