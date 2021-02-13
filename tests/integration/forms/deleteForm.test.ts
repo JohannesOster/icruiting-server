@@ -2,8 +2,8 @@ import request from 'supertest';
 import app from 'app';
 import db from 'db';
 import {endConnection, truncateAllTables} from 'db/setup';
-import fake from 'testUtils/fake';
-import dataGenerator from 'testUtils/dataGenerator';
+import fake from '../testUtils/fake';
+import dataGenerator from '../testUtils/dataGenerator';
 import {random} from 'faker';
 import {Form} from 'db/repos/forms';
 
