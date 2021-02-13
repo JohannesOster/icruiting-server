@@ -1,31 +1,25 @@
-import Stripe from 'stripe';
 import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
 import db from 'infrastructure/db';
 import {BaseError} from 'adapters/errorHandling';
 import {mapCognitoUser} from 'adapters/utils';
 import {signUp} from './signUp';
+import payment from 'infrastructure/payment';
 
 export const TenantService = () => {
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
-  const stripe = new Stripe(stripeKey, {apiVersion: '2020-08-27'});
-
   const create = async (
     tenantName: string,
     email: string,
     password: string,
-    stripePriceId: string,
+    subscriptionsId: string,
   ) => {
-    const {id} = await stripe.customers.create({email});
-    const subscription = await stripe.subscriptions.create({
-      customer: id,
-      items: [{price: stripePriceId}],
-      trial_period_days: 14,
+    const {customerId} = await payment.customers.create(email, subscriptionsId);
+    const tenant = await db.tenants.create({
+      tenantName,
+      stripeCustomerId: customerId,
     });
-    const tenant = await db.tenants.create({tenantName, stripeCustomerId: id});
     const {User} = await signUp({tenantId: tenant.tenantId, email, password});
 
-    return {user: User, tenant, subscription};
+    return {user: User, tenant};
   };
 
   const retrieve = async (tenantId: string) => {
@@ -47,7 +41,7 @@ export const TenantService = () => {
     const tenant = await db.tenants.retrieve(tenantId);
     if (!tenant) throw new BaseError(404, 'Tenant Not Found');
     if (tenant.stripeCustomerId) {
-      await stripe.customers.del(tenant.stripeCustomerId);
+      await payment.customers.del(tenant.stripeCustomerId);
     }
 
     deleteTenantFiles(tenantId);

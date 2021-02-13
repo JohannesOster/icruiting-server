@@ -1,18 +1,14 @@
-import Stripe from 'stripe';
 import {BaseError, catchAsync} from 'adapters/errorHandling';
+import payment from 'infrastructure/payment';
 
 export const PaymentMethodsAdapter = () => {
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
-  const stripe = new Stripe(stripeKey, {apiVersion: '2020-08-27'});
-
   const getSetupIntent = catchAsync(async (req, res) => {
     const {stripeCustomerId} = req.user;
 
-    const setupIntent = await stripe.setupIntents.create({
-      payment_method_types: ['sepa_debit'],
-      customer: stripeCustomerId,
-    });
+    if (!stripeCustomerId)
+      throw new BaseError(422, 'Missing Stripe customer id');
+
+    const setupIntent = await payment.payment.initialize(stripeCustomerId);
 
     res.status(200).json(setupIntent.client_secret);
   });
@@ -20,24 +16,10 @@ export const PaymentMethodsAdapter = () => {
   const list = catchAsync(async (req, res) => {
     const {stripeCustomerId} = req.user;
 
-    const customer = (await stripe.customers.retrieve(
-      stripeCustomerId!,
-    )) as any;
-    if (!customer) throw new BaseError(404, 'Stripe customer Not Found');
+    if (!stripeCustomerId)
+      throw new BaseError(422, 'Missing Stripe customer id');
 
-    const {data} = await stripe.paymentMethods.list({
-      customer: stripeCustomerId!,
-      type: 'sepa_debit',
-    });
-
-    if (!data) throw new BaseError(404, 'Payment Methods Not Found');
-
-    const paymentMethods = data.map((paymentMethod) => {
-      if (paymentMethod.id !== customer.invoice_settings.default_payment_method)
-        return paymentMethod;
-      return {is_default: true, ...paymentMethod};
-    });
-
+    const paymentMethods = await payment.paymentMethods.list(stripeCustomerId);
     res.status(200).json(paymentMethods);
   });
 
@@ -45,35 +27,24 @@ export const PaymentMethodsAdapter = () => {
     const {stripeCustomerId} = req.user;
     const {paymentMethodId} = req.params;
 
-    const paymentMethod = await stripe.paymentMethods.detach(paymentMethodId);
+    if (!stripeCustomerId)
+      throw new BaseError(422, 'Missing Stripe customer id');
 
-    const {data} = await stripe.paymentMethods.list({
-      customer: stripeCustomerId!,
-      type: 'sepa_debit',
-    });
+    await payment.paymentMethods.del(stripeCustomerId, paymentMethodId);
 
-    if (data.length) {
-      const customer: any = await stripe.customers.retrieve(stripeCustomerId!);
-
-      if (!customer.invoice_settings.default_payment_method) {
-        await stripe.customers.update(stripeCustomerId!, {
-          invoice_settings: {default_payment_method: data[0].id},
-        });
-      }
-    }
-
-    res.status(201).json(paymentMethod);
+    res.status(201).json();
   });
 
   const setDefaultPaymentMethod = catchAsync(async (req, res) => {
     const {stripeCustomerId} = req.user;
     const {paymentMethodId} = req.body;
 
-    const resp = await stripe.customers.update(stripeCustomerId!, {
-      invoice_settings: {default_payment_method: paymentMethodId},
-    });
+    if (!stripeCustomerId)
+      throw new BaseError(422, 'Missing Stripe customer id');
 
-    res.status(200).json(resp);
+    await payment.paymentMethods.setDefault(stripeCustomerId, paymentMethodId);
+
+    res.status(200).json();
   });
 
   return {getSetupIntent, list, del, setDefaultPaymentMethod};

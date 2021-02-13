@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import {catchAsync} from 'adapters/errorHandling';
 import webhookHandler from './webhookHandler';
-import config from 'config';
+import payment from 'infrastructure/payment';
 
 export const StripeAdapter = () => {
   const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -9,18 +9,8 @@ export const StripeAdapter = () => {
   const stripe = new Stripe(stripeKey, {apiVersion: '2020-08-27'});
 
   const getPrices = catchAsync(async (req, res) => {
-    const {data} = await stripe.prices.list({
-      limit: 3,
-      expand: ['data.product'],
-    });
-    const filterd = data.filter((price) => {
-      const isFriendsAndFamiliy =
-        (price.product as any).id === config.freeStripeProducId;
-      const isActive = price.active;
-      return isActive && !isFriendsAndFamiliy;
-    });
-
-    res.status(201).json(filterd);
+    const resp = payment.subscriptions.list();
+    res.status(201).json(resp);
   });
 
   const webhook = catchAsync(async (req, res) => {

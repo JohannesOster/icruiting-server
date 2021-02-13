@@ -1,37 +1,36 @@
-import Stripe from 'stripe';
-import {catchAsync} from 'adapters/errorHandling';
+import {BaseError, catchAsync} from 'adapters/errorHandling';
+import payment from 'infrastructure/payment';
 
 export const SubscriptionsAdapter = () => {
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
-  const stripe = new Stripe(stripeKey, {apiVersion: '2020-08-27'});
-
   const create = catchAsync(async (req, res) => {
     const {stripeCustomerId} = req.user;
     const {priceId} = req.body;
+    if (!stripeCustomerId)
+      throw new BaseError(422, 'Missing Stripe customer id');
 
-    const subscription = await stripe.subscriptions.create({
-      customer: stripeCustomerId!,
-      items: [{price: priceId}],
-    });
+    const subscription = await payment.subscriptions.create(
+      stripeCustomerId,
+      priceId,
+    );
 
     res.status(200).json(subscription);
   });
 
   const retrieve = catchAsync(async (req, res) => {
     const {stripeCustomerId} = req.user;
+    if (!stripeCustomerId)
+      throw new BaseError(422, 'Missing Stripe customer id');
 
-    const subscriptions = await stripe.subscriptions.list({
-      customer: stripeCustomerId,
-      expand: ['data.plan.product'],
-    });
+    const subscriptions = await payment.subscriptions.listActive(
+      stripeCustomerId,
+    );
 
-    res.status(200).json(subscriptions.data);
+    res.status(200).json(subscriptions);
   });
 
   const del = catchAsync(async (req, res) => {
     const {subscriptionId} = req.params;
-    await stripe.subscriptions.del(subscriptionId);
+    await payment.subscriptions.cancel(subscriptionId);
     res.status(200).json({});
   });
 
