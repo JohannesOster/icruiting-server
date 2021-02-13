@@ -1,11 +1,12 @@
 import express from 'express';
-import * as controller from 'adapters/tenants/paymentMethods/controller';
+import {PaymentMethodsAdapter} from 'adapters/tenants/paymentMethods';
 
+const adapter = PaymentMethodsAdapter();
 const router = express.Router();
 
-router.get('/', controller.list);
-router.get('/setupIntent', controller.getSetupIntent);
-router.post('/default', controller.setDefaultPaymentMethod);
-router.delete('/:paymentMethodId', controller.del);
+router.get('/', adapter.list);
+router.get('/setupIntent', adapter.getSetupIntent);
+router.post('/default', adapter.setDefaultPaymentMethod);
+router.delete('/:paymentMethodId', adapter.del);
 
 export {router as routes};

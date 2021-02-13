@@ -1,9 +1,10 @@
 import express from 'express';
-import * as controller from 'adapters/tenants/themes/controller';
+import {ThemesAdapter} from 'adapters/tenants/themes';
 
+const adapter = ThemesAdapter();
 const router = express.Router();
 
-router.post('/', controller.upload);
-router.delete('/', controller.del);
+router.post('/', adapter.upload);
+router.delete('/', adapter.del);
 
 export {router as routes};

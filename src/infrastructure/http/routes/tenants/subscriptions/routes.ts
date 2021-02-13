@@ -1,12 +1,13 @@
 import express from 'express';
-import * as controller from 'adapters/tenants/subscriptions/controller';
+import {SubscriptionsAdapter} from 'adapters/tenants/subscriptions';
 import {createRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares';
 
+const adapter = SubscriptionsAdapter();
 const router = express.Router();
 
-router.post('/', createRules, validate, controller.create);
-router.get('/', controller.retrieve);
-router.delete('/:subscriptionId', controller.del);
+router.post('/', createRules, validate, adapter.create);
+router.get('/', adapter.retrieve);
+router.delete('/:subscriptionId', adapter.del);
 
 export {router as routes};
