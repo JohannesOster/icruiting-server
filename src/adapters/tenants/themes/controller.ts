@@ -2,7 +2,7 @@ import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {S3} from 'aws-sdk';
 import db from 'infrastructure/db';
-import {BaseError, catchAsync} from 'infrastructure/http/errors';
+import {BaseError, catchAsync} from 'adapters/errorHandling';
 
 export const upload = catchAsync(async (req, res, next) => {
   const {tenantId} = req.user;

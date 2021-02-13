@@ -1,4 +1,4 @@
-import {catchAsync} from 'infrastructure/http/errors';
+import {catchAsync} from 'adapters/errorHandling';
 import db from 'infrastructure/db';
 
 export const retrieve = catchAsync(async (req, res) => {

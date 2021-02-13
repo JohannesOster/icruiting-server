@@ -1,4 +1,4 @@
-import {BaseError, catchAsync} from 'infrastructure/http/errors';
+import {BaseError, catchAsync} from 'adapters/errorHandling';
 import db from 'infrastructure/db';
 
 export const create = catchAsync(async (req, res) => {

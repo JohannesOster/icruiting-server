@@ -1,5 +1,5 @@
 import {RequestHandler} from 'express';
-import {BaseError, catchAsync} from 'infrastructure/http/errors';
+import {BaseError, catchAsync} from 'adapters/errorHandling';
 import db from 'infrastructure/db';
 import Stripe from 'stripe';
 

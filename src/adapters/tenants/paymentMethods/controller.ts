@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import {BaseError, catchAsync} from 'infrastructure/http/errors';
+import {BaseError, catchAsync} from 'adapters/errorHandling';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2020-08-27',

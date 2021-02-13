@@ -1,4 +1,4 @@
-import {catchAsync} from 'infrastructure/http/errors';
+import {catchAsync} from 'adapters/errorHandling';
 
 export const requireSubscription = catchAsync(async (req, res, next) => {
   next();
