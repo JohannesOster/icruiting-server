@@ -1,11 +1,3 @@
-export type Tenant = {
-  tenantId: string;
-  tenantName: string;
-  stripeCustomerId?: string;
-  theme?: string;
-  createdAt: string;
-};
-
 export type User = {
   tenantId: string;
   userId: string;
