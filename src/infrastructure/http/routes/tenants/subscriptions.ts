@@ -1,6 +1,6 @@
 import express from 'express';
-import * as controller from './controller';
-import {createRules} from './validation';
+import * as controller from 'components/tenants/subscriptions/controller';
+import {createRules} from 'components/tenants/subscriptions/validation';
 import {validate} from 'infrastructure/http/middlewares';
 
 const router = express.Router();

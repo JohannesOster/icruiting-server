@@ -1,6 +1,6 @@
 import express from 'express';
-import * as controller from './controller';
-import {createRules} from './validation';
+import * as controller from 'components/tenants/controller';
+import {createRules} from 'components/tenants/validation';
 import {
   requireAuth,
   requireAdmin,

@@ -1,7 +1,7 @@
 import express from 'express';
-import * as controller from './controller';
+import * as controller from 'components/applicants/controller';
 import {validate} from 'infrastructure/http/middlewares/common';
-import {getReportRules, listRules} from './validation';
+import {getReportRules, listRules} from 'components/applicants/validation';
 import {requireAuth, requireAdmin} from 'infrastructure/http/middlewares';
 import {requireSubscription} from 'infrastructure/http/middlewares/stripe';
 

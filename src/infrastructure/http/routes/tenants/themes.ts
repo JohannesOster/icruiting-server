@@ -1,5 +1,5 @@
 import express from 'express';
-import * as controller from './controller';
+import * as controller from 'components/tenants/themes/controller';
 
 const router = express.Router();
 
