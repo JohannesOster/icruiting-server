@@ -9,7 +9,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 
 export const requireSubscription: RequestHandler = catchAsync(
   async (req, res, next) => {
-    console.log('gets called');
     let tenantId;
     if (req.user) tenantId = req.user.tenantId;
     if (!tenantId) tenantId = req.params.tenantId;

@@ -1,5 +1,5 @@
 import express from 'express';
-import * as controller from 'adapters/tenants/controller';
+import {TenantsAdapter} from 'adapters/tenants';
 import {createRules} from './validation';
 import {
   requireAuth,
@@ -11,14 +11,15 @@ import {routes as themes} from './themes';
 import {routes as subscriptions} from './subscriptions';
 import {routes as paymentMethods} from './paymentMethods';
 
+const adapter = TenantsAdapter();
 const router = express.Router();
 
-router.post('/', createRules, validate, controller.create);
+router.post('/', createRules, validate, adapter.create);
 
 router.use(requireAuth);
 router.use(requireAdmin);
-router.delete('/:tenantId', controller.del);
-router.get('/:tenantId', controller.retrieve);
+router.delete('/:tenantId', adapter.del);
+router.get('/:tenantId', adapter.retrieve);
 
 router.use(requireSubscription);
 router.use('/:tenantId/themes', themes);
