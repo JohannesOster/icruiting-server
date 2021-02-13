@@ -1,7 +1,10 @@
-import {filterFormData, reduceSubmissions} from '../preprocessor';
+import {
+  filterFormData,
+  reduceSubmissions,
+} from 'components/applicants/report/preprocessor';
 import {random} from 'faker';
 import {EFormCategory} from 'db/repos/forms';
-import {FormFieldIntent} from '../types';
+import {FormFieldIntent} from 'components/applicants/report/types';
 
 describe('preprocessor', () => {
   describe('filterFormData', () => {
