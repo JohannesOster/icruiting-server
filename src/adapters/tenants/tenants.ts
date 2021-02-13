@@ -1,9 +1,9 @@
-import {catchAsync} from 'adapters/errorHandling';
+import {httpReqHandler} from 'adapters/errorHandling';
 import {TenantService} from 'domain/services';
 
 export const TenantsAdapter = () => {
   const tenants = TenantService();
-  const create = catchAsync(async (req, res) => {
+  const create = httpReqHandler(async (req) => {
     const {tenantName, email, password, stripePriceId} = req.body;
     const response = await tenants.create(
       tenantName,
@@ -12,19 +12,19 @@ export const TenantsAdapter = () => {
       stripePriceId,
     );
 
-    res.status(201).json(response);
+    return {status: 201, body: response};
   });
 
-  const retrieve = catchAsync(async (req, res) => {
+  const retrieve = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const response = await tenants.retrieve(tenantId);
-    res.status(200).json(response);
+    return {body: response};
   });
 
-  const del = catchAsync(async (req, res) => {
+  const del = httpReqHandler(async (req) => {
     const {userPoolID, tenantId} = req.user;
     await tenants.del(tenantId, userPoolID);
-    res.status(200).json();
+    return {};
   });
 
   return {create, retrieve, del};

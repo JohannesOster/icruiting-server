@@ -1,8 +1,8 @@
-import {BaseError, catchAsync} from 'adapters/errorHandling';
+import {BaseError, httpReqHandler} from 'adapters/errorHandling';
 import payment from 'infrastructure/payment';
 
 export const SubscriptionsAdapter = () => {
-  const create = catchAsync(async (req, res) => {
+  const create = httpReqHandler(async (req) => {
     const {stripeCustomerId} = req.user;
     const {priceId} = req.body;
     if (!stripeCustomerId)
@@ -13,10 +13,10 @@ export const SubscriptionsAdapter = () => {
       priceId,
     );
 
-    res.status(200).json(subscription);
+    return {body: subscription};
   });
 
-  const retrieve = catchAsync(async (req, res) => {
+  const retrieve = httpReqHandler(async (req) => {
     const {stripeCustomerId} = req.user;
     if (!stripeCustomerId)
       throw new BaseError(422, 'Missing Stripe customer id');
@@ -25,13 +25,13 @@ export const SubscriptionsAdapter = () => {
       stripeCustomerId,
     );
 
-    res.status(200).json(subscriptions);
+    return {body: subscriptions};
   });
 
-  const del = catchAsync(async (req, res) => {
+  const del = httpReqHandler(async (req) => {
     const {subscriptionId} = req.params;
     await payment.subscriptions.cancel(subscriptionId);
-    res.status(200).json({});
+    return {};
   });
 
   return {create, retrieve, del};

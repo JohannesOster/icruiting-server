@@ -1,13 +1,13 @@
-import {catchAsync} from 'adapters/errorHandling';
+import {httpReqHandler} from 'adapters/errorHandling';
 import db from 'infrastructure/db';
 
 export const RankingsAdapter = () => {
-  const retrieve = catchAsync(async (req, res) => {
+  const retrieve = httpReqHandler(async (req) => {
     const jobId = req.params.jobId;
     const {tenantId} = req.user;
     const formCategory = req.query.formCategory as string;
     const data = await db.rankings.retrieve(tenantId, jobId, formCategory);
-    res.status(200).json(data);
+    return {body: data};
   });
 
   return {retrieve};

@@ -30,7 +30,7 @@ afterAll(async () => {
 
 describe('tenants', () => {
   describe('POST /tenants/:tenantId/themes', () => {
-    it('returns 201 json response', async (done) => {
+    it('returns 201 json response', (done) => {
       request(app)
         .post(`/tenants/${mockUser.tenantId}/themes`)
         .attach('theme', `${__dirname}/files/theme.css`)

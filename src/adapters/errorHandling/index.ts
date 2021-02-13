@@ -1,2 +1,2 @@
 export * from './BaseError';
-export * from './catchAsync';
+export * from '../../infrastructure/http/httpReqHandler';

@@ -1,13 +1,13 @@
 import fs from 'fs';
 import {S3} from 'aws-sdk';
 import {IncomingForm} from 'formidable';
-import {BaseError, catchAsync} from 'adapters/errorHandling';
+import {BaseError, httpReqHandler} from 'adapters/errorHandling';
 import {getApplicantFileURLs} from './utils';
 import db from 'infrastructure/db';
 import {calcReport} from './report';
 
 export const ApplicantsAdapter = () => {
-  const retrieve = catchAsync(async (req, res) => {
+  const retrieve = httpReqHandler(async (req) => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
 
@@ -19,10 +19,10 @@ export const ApplicantsAdapter = () => {
       files,
     }));
 
-    res.status(200).json(resp);
+    return {body: resp};
   });
 
-  const list = catchAsync(async (req, res) => {
+  const list = httpReqHandler(async (req) => {
     const {jobId, offset, limit, orderBy, filter} = req.query as any;
     const {tenantId, userId} = req.user;
     const params = {tenantId, jobId, userId, offset, limit, orderBy, filter};
@@ -34,29 +34,29 @@ export const ApplicantsAdapter = () => {
     );
 
     const applicants = await Promise.all(promises);
-    res.status(200).json({applicants, totalCount: data.totalCount});
+    return {body: {applicants, totalCount: data.totalCount}};
   });
 
-  const update = catchAsync(async (req, res, next) => {
+  const update = httpReqHandler((req) => {
     const {tenantId} = req.user;
     const {applicantId} = req.params;
     const formidable = new IncomingForm({multiples: true} as any);
 
     let applicant;
-    formidable.parse(req, async (err: Error, fields: any, files: any) => {
-      if (err) throw err;
-      const s3 = new S3();
-      const bucket = process.env.S3_BUCKET || '';
-      const {formId} = fields;
+    return new Promise((resolve, reject) => {
+      formidable.parse(req, async (err: Error, fields: any, files: any) => {
+        if (err) return reject(err);
+        const s3 = new S3();
+        const bucket = process.env.S3_BUCKET || '';
+        const {formId} = fields;
 
-      try {
-        if (!formId) throw new BaseError(422, 'Missing formId field');
+        if (!formId) return reject(new BaseError(422, 'Missing formId field'));
 
         const form = await db.forms.retrieve(null, formId);
-        if (!form) throw new BaseError(404, 'Form Not Found');
+        if (!form) return reject(new BaseError(404, 'Form Not Found'));
 
         applicant = await db.applicants.retrieve(tenantId, applicantId);
-        if (!applicant) throw new BaseError(404, 'Not Found');
+        if (!applicant) return reject(new BaseError(404, 'Not Found'));
         const oldFiles = applicant?.files;
 
         const map = await form.formFields.reduce(
@@ -67,9 +67,8 @@ export const ApplicantsAdapter = () => {
             const isFile = item.component === 'file_upload';
             if (!fields[item.formFieldId] && !isFile) {
               if (item.required) {
-                throw new BaseError(
-                  422,
-                  `Missing required field: ${item.label}`,
+                return reject(
+                  new BaseError(422, `Missing required field: ${item.label}`),
                 );
               }
               return acc;
@@ -114,8 +113,11 @@ export const ApplicantsAdapter = () => {
                 Body: fileStream,
               };
 
-              fs.unlink(file.path, (error) => {
-                if (error) throw new BaseError(500, error.message);
+              await new Promise((resolve, reject) => {
+                fs.unlink(file.path, (error) => {
+                  if (error) return reject(new BaseError(500, error.message));
+                  resolve({});
+                });
               });
 
               await s3.upload(params).promise();
@@ -146,14 +148,15 @@ export const ApplicantsAdapter = () => {
         };
         const appl = await db.applicants.update(params);
 
-        res.status(200).json(appl);
-      } catch (error) {
-        next(error);
-      }
+        resolve({
+          status: 200,
+          body: appl,
+        });
+      });
     });
   });
 
-  const getReport = catchAsync(async (req, res) => {
+  const getReport = httpReqHandler(async (req) => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
     type QueryType = {formCategory: 'screening' | 'assessment'};
@@ -167,10 +170,10 @@ export const ApplicantsAdapter = () => {
     const data = await db.formSubmissions.prepareReport(tenantId, formCategory);
     const report = calcReport(data, applicantId, job.jobRequirements);
 
-    res.status(200).json(report);
+    return {body: report};
   });
 
-  const del = catchAsync(async (req, res) => {
+  const del = httpReqHandler(async (req) => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
 
@@ -187,7 +190,7 @@ export const ApplicantsAdapter = () => {
     }
 
     await db.applicants.del(tenantId, applicantId);
-    res.status(200).json({});
+    return {};
   });
 
   return {retrieve, list, update, getReport, del};

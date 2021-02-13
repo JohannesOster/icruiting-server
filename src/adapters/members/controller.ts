@@ -1,9 +1,9 @@
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
 import {mapCognitoUser, removePrefix} from '../utils';
-import {catchAsync} from 'adapters/errorHandling';
+import {httpReqHandler} from 'adapters/errorHandling';
 
 export const MembersAdapter = () => {
-  const create = catchAsync(async (req, res) => {
+  const create = httpReqHandler(async (req) => {
     const cIdp = new CognitoIdentityServiceProvider();
     const {emails} = req.body;
     const {userPoolID, tenantId} = req.user;
@@ -24,10 +24,10 @@ export const MembersAdapter = () => {
     });
 
     const resp = await Promise.all(promises);
-    res.status(201).json(resp);
+    return {status: 201, body: resp};
   });
 
-  const retrieve = catchAsync(async (req, res) => {
+  const retrieve = httpReqHandler(async (req) => {
     const cIdp = new CognitoIdentityServiceProvider();
     const {userPoolID, tenantId, email} = req.user;
     const params = {
@@ -37,7 +37,7 @@ export const MembersAdapter = () => {
     };
 
     const {Users} = await cIdp.listUsers(params).promise();
-    if (!Users) return res.status(200).json([]);
+    if (!Users) return {body: []};
 
     const keyModifier = (key: string) => removePrefix(key, 'custom:');
     const userMaps = Users.map((user) => mapCognitoUser(user, keyModifier));
@@ -48,10 +48,10 @@ export const MembersAdapter = () => {
     // filter out requesting user
     const withoutMe = filtered?.filter((user) => user.email !== email);
 
-    res.status(200).json(withoutMe);
+    return {body: withoutMe};
   });
 
-  const update = catchAsync(async (req, res) => {
+  const update = httpReqHandler(async (req) => {
     const cIdp = new CognitoIdentityServiceProvider();
     const {userPoolID} = req.user;
     const {user_role} = req.body;
@@ -64,7 +64,7 @@ export const MembersAdapter = () => {
     };
     const resp = await cIdp.adminUpdateUserAttributes(params).promise();
 
-    res.status(200).json(resp);
+    return {body: resp};
   });
 
   return {create, retrieve, update};

@@ -1,10 +1,10 @@
-import {catchAsync} from 'adapters/errorHandling';
+import {httpReqHandler} from 'adapters/errorHandling';
 import payment from 'infrastructure/payment';
 
 export const SubscriptionsAdapter = () => {
-  const getSubscriptions = catchAsync(async (req, res) => {
+  const getSubscriptions = httpReqHandler(async (req) => {
     const resp = payment.subscriptions.list();
-    res.status(201).json(resp);
+    return {status: 201, body: resp};
   });
 
   return {getSubscriptions};
