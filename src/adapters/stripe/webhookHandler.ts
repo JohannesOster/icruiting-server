@@ -1,5 +1,3 @@
-import db from 'infrastructure/db';
-
 const handler = {
   'customer.subscription.created': (object: any) => console.log(object),
   'customer.subscription.deleted': (object: any) => console.log(object),

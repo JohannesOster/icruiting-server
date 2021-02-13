@@ -1,24 +1,25 @@
 import express from 'express';
-import * as controller from 'adapters/forms/controller';
+import {FormsAdapter} from 'adapters/forms/controller';
 import {createRules, updateRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';
 import {requireSubscription} from 'infrastructure/http/middlewares/stripe';
 
+const adatper = FormsAdapter();
 const router = express.Router();
 
-router.get('/:formId/html', controller.renderHTMLForm);
-router.post('/:formId/html', controller.submitHTMLForm);
+router.get('/:formId/html', adatper.renderHTMLForm);
+router.post('/:formId/html', adatper.submitHTMLForm);
 
 router.use(requireAuth);
 router.use(requireSubscription);
-router.get('/', controller.list);
-router.get('/:formId', controller.retrieve);
+router.get('/', adatper.list);
+router.get('/:formId', adatper.retrieve);
 
 router.use(requireAdmin);
-router.post('/', createRules, validate, controller.create);
-router.get('/:formId/export', controller.exportForm);
-router.delete('/:formId', controller.del);
-router.put('/:formId', updateRules, validate, controller.update);
+router.post('/', createRules, validate, adatper.create);
+router.get('/:formId/export', adatper.exportForm);
+router.delete('/:formId', adatper.del);
+router.put('/:formId', updateRules, validate, adatper.update);
 
 export {router as routes};

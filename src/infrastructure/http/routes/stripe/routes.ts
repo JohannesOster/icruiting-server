@@ -1,9 +1,10 @@
 import express from 'express';
-import {getPrices, webhook} from 'adapters/stripe/controller';
+import {StripeAdapter} from 'adapters/stripe/controller';
 
+const adapter = StripeAdapter();
 const router = express.Router();
 
-router.get('/prices', getPrices);
-router.post('/webhook', webhook);
+router.get('/prices', adapter.getPrices);
+router.post('/webhook', adapter.webhook);
 
 export {router as routes};
