@@ -1,6 +1,6 @@
 import request from 'supertest';
 import faker from 'faker';
-import app from 'app';
+import app from 'infrastructure/http';
 import db from 'infrastructure/db';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';

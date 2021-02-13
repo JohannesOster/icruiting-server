@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import {notFound, errorHandler, monitor} from './middlewares';
+import {notFound, errorHandler, monitor} from '../../middlewares';
 import {routes} from './routes';
 
 const app = express();
@@ -24,4 +24,4 @@ app.use('/', routes);
 app.use(notFound);
 app.use(errorHandler);
 
-export default app;
+export {app};

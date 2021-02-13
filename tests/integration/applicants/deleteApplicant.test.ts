@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from 'app';
+import app from 'infrastructure/http';
 import db from 'infrastructure/db';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
