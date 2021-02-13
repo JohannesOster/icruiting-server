@@ -6,13 +6,13 @@ import {routes as jobs} from './jobs';
 import {routes as members} from './members';
 import {routes as formSubmissions} from './formSubmissions';
 import {routes as rankings} from './rankings';
-import {routes as stripe} from './stripe';
+import {routes as subscriptions} from './subscriptions';
 
 const router = express.Router();
 
 router.use('/tenants', tenants);
 router.use('/members', members);
-router.use('/stripe', stripe);
+router.use('/subscriptions', subscriptions);
 router.use('/jobs', jobs);
 router.use('/forms', forms);
 router.use('/form-submissions', formSubmissions);
