@@ -1,6 +1,6 @@
 import express from 'express';
 import * as controller from 'components/forms/controller';
-import {createRules, updateRules} from 'components/forms/validation';
+import {createRules, updateRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';
 import {requireSubscription} from 'infrastructure/http/middlewares/stripe';

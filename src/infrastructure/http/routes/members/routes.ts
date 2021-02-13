@@ -1,6 +1,6 @@
 import express from 'express';
 import * as controller from 'components/members/controller';
-import {retrieveRules, updateRules} from 'components/members/validation';
+import {retrieveRules, updateRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';
 import {requireSubscription} from 'infrastructure/http/middlewares/stripe';
