@@ -1,5 +1,5 @@
 import express from 'express';
-import {getPrices, webhook} from 'components/stripe/controller';
+import {getPrices, webhook} from 'adapters/stripe/controller';
 
 const router = express.Router();
 

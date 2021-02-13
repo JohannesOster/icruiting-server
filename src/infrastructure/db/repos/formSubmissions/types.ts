@@ -1,4 +1,4 @@
-import {FormFieldIntent} from 'components/applicants/report/types';
+import {FormFieldIntent} from 'adapters/applicants/report/types';
 import {EFormCategory} from '../forms';
 
 export type ReportPrepareRow = {

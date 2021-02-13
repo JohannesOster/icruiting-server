@@ -1,4 +1,4 @@
-import {Calculator} from '../../../../src/components/applicants/report/calculator';
+import {Calculator} from '../../../../src/adapters/applicants/report/calculator';
 
 describe('Calculator', () => {
   describe('score', () => {

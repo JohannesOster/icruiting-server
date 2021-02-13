@@ -1,5 +1,5 @@
 import express from 'express';
-import * as controller from 'components/tenants/subscriptions/controller';
+import * as controller from 'adapters/tenants/subscriptions/controller';
 import {createRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares';
 

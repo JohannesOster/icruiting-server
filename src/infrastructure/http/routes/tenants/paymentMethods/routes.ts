@@ -1,5 +1,5 @@
 import express from 'express';
-import * as controller from 'components/tenants/paymentMethods/controller';
+import * as controller from 'adapters/tenants/paymentMethods/controller';
 
 const router = express.Router();
 
