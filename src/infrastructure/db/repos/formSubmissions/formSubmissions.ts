@@ -2,16 +2,7 @@ import {IDatabase, IMain} from 'pg-promise';
 import {decamelizeKeys} from 'humps';
 import sql from './sql';
 import {ReportPrepareRow} from './types';
-import {FormCategory} from 'domain/entities';
-
-export type FormSubmission = {
-  formSubmissionId: string;
-  tenantId: string;
-  applicantId: string;
-  submitterId: string;
-  formId: string;
-  submission: {[formFieldId: string]: string};
-};
+import {FormCategory, FormSubmission} from 'domain/entities';
 
 export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const reduceSubmission = (
@@ -28,13 +19,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     {table: 'form_submission_field'},
   );
 
-  const create = async (params: {
-    tenantId: string;
-    applicantId: string;
-    submitterId: string;
-    formId: string;
-    submission: {[formFieldId: string]: string};
-  }): Promise<FormSubmission> => {
+  const create = async (params: FormSubmission): Promise<FormSubmission> => {
     const {insert, ColumnSet} = db.$config.pgp.helpers;
 
     const subCS = new ColumnSet(
@@ -75,11 +60,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     });
   };
 
-  const update = async (params: {
-    tenantId: string;
-    formSubmissionId: string;
-    submission: {[key: string]: string | number};
-  }): Promise<FormSubmission> => {
+  const update = async (params: FormSubmission): Promise<FormSubmission> => {
     const selCond =
       ' WHERE form_submission_id=${form_submission_id} AND tenant_id=${tenant_id}';
     const sub = await db.one(

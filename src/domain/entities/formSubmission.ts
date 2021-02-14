@@ -1,4 +1,6 @@
-export type FormSubmission = {
+import {v4 as uuidv4} from 'uuid';
+
+type BaseFormSubmission = {
   tenantId: string;
   formId: string;
   submitterId: string;
@@ -6,8 +8,10 @@ export type FormSubmission = {
   submission: {[formFieldId: string]: string};
 };
 
+export type FormSubmission = {formSubmissionId: string} & BaseFormSubmission;
+
 export const createFormSubmission = (
-  formSubmisson: FormSubmission,
+  formSubmisson: BaseFormSubmission,
 ): FormSubmission => {
-  return Object.freeze(formSubmisson);
+  return Object.freeze({formSubmissionId: uuidv4(), ...formSubmisson});
 };

@@ -1,20 +1,9 @@
 import {IDatabase, IMain} from 'pg-promise';
 import {decamelizeKeys} from 'humps';
-
-type Tenant = {
-  tenantId: string;
-  tenantName: string;
-  stripeCustomerId?: string;
-  theme?: string;
-  createdAt: string;
-};
+import {Tenant} from 'domain/entities';
 
 export const TenantsRepository = (db: IDatabase<any>, pgp: IMain) => {
-  const create = (params: {
-    tenantId?: string;
-    tenantName: string;
-    stripeCustomerId?: string;
-  }): Promise<Tenant> => {
+  const create = (params: Tenant): Promise<Tenant> => {
     const values = decamelizeKeys(params);
     const stmt = pgp.helpers.insert(values, null, 'tenant') + ' RETURNING *';
     return db.one(stmt);

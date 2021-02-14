@@ -28,15 +28,8 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     return db.oneOrNone(sql.retrieve, {tenant_id: tenantId, job_id: jobId});
   };
 
-  const create = async (values: {
-    jobTitle: string;
-    tenantId: string;
-    jobRequirements: {
-      requirementLabel: string;
-      minValue?: number;
-    }[];
-  }): Promise<Job> => {
-    const {jobRequirements, ...job} = values;
+  const create = async (params: Job): Promise<Job> => {
+    const {jobRequirements, ...job} = params;
     const {insert} = pgp.helpers;
     const jobVals = decamelizeKeys(job);
     const stmt = insert(jobVals, null, 'job') + 'RETURNING *';
@@ -53,17 +46,8 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       .then((jobRequirements) => ({...insertedJob, jobRequirements}));
   };
 
-  const update = async (
-    tenantId: string,
-    job: {
-      jobId: string;
-      jobTitle: string;
-      jobRequirements: {
-        requirementLabel: string;
-        minValue?: number;
-      }[];
-    },
-  ): Promise<Job> => {
+  const update = async (params: Job): Promise<Job> => {
+    const {tenantId, ...job} = params;
     await db.tx(async (t) => {
       const {insert, update} = db.$config.pgp.helpers;
       const vals = {job_title: job.jobTitle};

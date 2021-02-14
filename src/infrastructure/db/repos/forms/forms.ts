@@ -1,7 +1,7 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
-import {Form, FormCategory} from 'domain/entities';
+import {Form} from 'domain/entities';
 
 export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const list = (tenantId: string, jobId: string): Promise<Form[]> => {
@@ -15,25 +15,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
     return db.oneOrNone(sql.retrieve, {tenant_id: tenantId, form_id: formId});
   };
 
-  const create = async (params: {
-    tenantId: string;
-    formCategory: FormCategory;
-    formTitle?: string;
-    jobId: string;
-    formFields: {
-      formFieldId: string;
-      rowIndex: number;
-      component: string;
-      label: string;
-      placeholder?: string;
-      defaultValue?: string;
-      required?: boolean;
-      options?: {label: string; value: string}[];
-      editable?: boolean;
-      deletable?: boolean;
-      jobRequirementId?: string;
-    }[];
-  }): Promise<Form> => {
+  const create = async (params: Form): Promise<Form> => {
     const {formFields, ...form} = params;
 
     const helpers = db.$config.pgp.helpers;
@@ -81,25 +63,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
     }));
   };
 
-  const update = async (params: {
-    tenantId: string;
-    formId: string;
-    formTitle?: string;
-    formFields: {
-      formId?: string;
-      formFieldId?: string;
-      rowIndex: number;
-      component: string;
-      label: string;
-      placeholder?: string;
-      defaultValue?: string;
-      required?: boolean;
-      options?: {label: string; value: string}[];
-      editable?: boolean;
-      deletable?: boolean;
-      jobRequirementId?: string;
-    }[];
-  }): Promise<Form> => {
+  const update = async (params: Form): Promise<Form> => {
     const orgignialForm = await retrieve(params.tenantId, params.formId);
     if (!orgignialForm) throw new Error('Di not find form to update');
     const {update, insert, ColumnSet} = pgp.helpers;
