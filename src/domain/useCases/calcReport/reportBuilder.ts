@@ -1,9 +1,8 @@
 import _ from 'lodash';
-import {Calculator} from './calculator';
+import * as calc from './calculator';
 import {Forms, Submissions, ReportBuilderReturnType} from './types';
 
 export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
-  const calc = Calculator();
   const applicantIds = Object.keys(submissions);
 
   const jobRequirements: {
