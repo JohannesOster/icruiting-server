@@ -35,7 +35,7 @@ export type ReportBuilderReturnType = {
   };
 };
 
-export type BaseReport = {
+export type Report = {
   rank: number;
   formCategory: FormCategory;
   formCategoryScore: number;

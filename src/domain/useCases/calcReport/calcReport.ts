@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import {ReportPrepareRow} from 'infrastructure/db/repos/formSubmissions/types';
 import {filterFormData, reduceSubmissions} from './preprocessor';
-import {BaseReport} from './types';
+import {Report} from './types';
 import {ReportBuilder} from './reportBuilder';
 import {JobRequirement} from 'domain/entities';
 
@@ -25,7 +25,7 @@ export const calcReport = (
   const rank =
     sorted.findIndex((item) => Object.keys(item)[0] === applicantId) + 1;
 
-  const result: BaseReport = {
+  const result: Report = {
     rank,
     formCategory: rows[0].formCategory,
     formCategoryScore: report.formCategoryScores[applicantId],
