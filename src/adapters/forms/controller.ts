@@ -5,6 +5,7 @@ import {httpReqHandler, BaseError} from 'adapters/errorHandling';
 import db from 'infrastructure/db';
 import config from 'config';
 import {validateSubscription} from './utils';
+import nodemailer from 'nodemailer';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -188,6 +189,41 @@ export const FormsAdapter = () => {
         const resp = await Promise.all(promises)
           .then(() => ({view: 'form-submission'}))
           .catch((error) => ({view: 'form-submission', body: {error}}));
+
+        const emailId = form.formFields.find(
+          ({label}) => label === 'E-Mail-Adresse',
+        )?.formFieldId;
+        if (!emailId)
+          throw new BaseError(500, 'E-Mail-Adresse field not found');
+        const email = map.attributes.find(
+          ({formFieldId}) => formFieldId === emailId,
+        )?.attributeValue;
+
+        if (!email) throw new BaseError(500, 'Applicant has no email-adress');
+
+        const smtpConfig = {
+          host: 'smtp.zoho.eu',
+          port: 465,
+          secure: true, // use SSL
+          auth: {
+            user: process.env.EMAIL_ADRESS!,
+            pass: process.env.EMAIL_PASSWORD!,
+          },
+        };
+        const transporter = nodemailer.createTransport(smtpConfig);
+
+        const mailOptions = {
+          from: process.env.EMAIL_ADRESS!,
+          to: email,
+          subject: 'Bewerbungsbestätigung',
+          text: 'Ihre Bewerbung ist erfolgreich eingegangen.',
+        };
+
+        transporter.sendMail(mailOptions, function (error, info) {
+          if (error) return console.log(error);
+          console.log('Email sent: ' + info.response);
+        });
+
         resolve(resp);
       });
     });
