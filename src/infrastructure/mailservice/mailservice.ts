@@ -5,7 +5,7 @@ export const sendMail = (options: Mail.Options): Promise<any> => {
   const user = process.env.EMAIL_ADRESS;
   const pass = process.env.EMAIL_PASSWORD;
 
-  if (!user || pass) throw new Error('Missing email credentials');
+  if (!(user && pass)) throw new Error('Missing email credentials');
 
   const smtpConfig = {
     host: 'smtp.zoho.eu',
