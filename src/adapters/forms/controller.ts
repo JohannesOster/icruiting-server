@@ -8,6 +8,7 @@ import {validateSubscription} from './utils';
 import {sendMail} from 'infrastructure/mailservice';
 import pug from 'pug';
 import {isArray} from 'lodash';
+import templates, {Template} from 'infrastructure/mailservice/templates';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -231,15 +232,10 @@ export const FormsAdapter = () => {
         if (!fullName)
           throw new BaseError(500, 'Applicant has no email-adress');
 
-        const mailTemplate = pug.compileFile(
-          __dirname +
-            '/../../infrastructure/http/views/application-confirmation-email.pug',
-        );
-
         const mailOptions = {
           to: email,
           subject: 'Bewerbungsbestätigung',
-          html: mailTemplate({
+          html: templates(Template.EmailConfirmation, {
             tenantName: (await db.tenants.retrieve(form.tenantId))?.tenantName,
             fullName,
           }),
