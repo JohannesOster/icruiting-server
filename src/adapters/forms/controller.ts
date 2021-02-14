@@ -7,6 +7,7 @@ import config from 'config';
 import {validateSubscription} from './utils';
 import {sendMail} from 'infrastructure/mailservice';
 import pug from 'pug';
+import {isArray} from 'lodash';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -116,7 +117,7 @@ export const FormsAdapter = () => {
     const formidable = new IncomingForm();
     formidable.maxFileSize = 500 * 1024 * 1024;
     return new Promise((resolve) => {
-      formidable.parse(req, async (error: Error, fields: any, files: any) => {
+      formidable.parse(req, async (error, fields, files) => {
         if (error) resolve({view: 'form-submission', body: {error}});
 
         const s3 = new S3();
@@ -131,7 +132,8 @@ export const FormsAdapter = () => {
             (acc, item) => {
               // !> filter out non submitted values
               const fieldExists = fields[item.formFieldId];
-              const file = files[item.formFieldId];
+              let file = files[item.formFieldId];
+              if (Array.isArray(file)) file = file[0];
               const fileExists = file && file.size;
               if (!fieldExists && !fileExists) {
                 if (item.required) {
@@ -151,19 +153,18 @@ export const FormsAdapter = () => {
               ) {
                 acc.attributes.push({
                   formFieldId: item.formFieldId,
-                  attributeValue: fields[item.formFieldId],
+                  attributeValue: fields[item.formFieldId] as string,
                 });
               } else if (item.component === 'checkbox') {
                 const value = Array.isArray(fields[item.formFieldId])
-                  ? fields[item.formFieldId].join(', ')
-                  : fields[item.formFieldId];
+                  ? (fields[item.formFieldId] as string[]).join(', ')
+                  : (fields[item.formFieldId] as string);
 
                 acc.attributes.push({
                   formFieldId: item.formFieldId,
                   attributeValue: value,
                 });
               } else if (item.component === 'file_upload') {
-                const file = files[item.formFieldId];
                 const extension = file.name.substr(
                   file.name.lastIndexOf('.') + 1,
                 );
