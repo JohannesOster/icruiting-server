@@ -1,8 +1,8 @@
 import {IDatabase, IMain} from 'pg-promise';
 import {decamelizeKeys} from 'humps';
 import sql from './sql';
-import {EFormCategory} from '../forms';
 import {ReportPrepareRow} from './types';
+import {FormCategory} from 'domain/entities';
 
 export type FormSubmission = {
   formSubmissionId: string;
@@ -115,7 +115,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
 
   const prepareReport = (
     tenantId: string,
-    formCategory: EFormCategory,
+    formCategory: FormCategory,
   ): Promise<ReportPrepareRow[]> => {
     return db.any(sql.prepareReport, decamelizeKeys({tenantId, formCategory}));
   };

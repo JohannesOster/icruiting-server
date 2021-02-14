@@ -1,7 +1,7 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
-import {EFormCategory, Form} from './types';
+import {Form, FormCategory} from 'domain/entities';
 
 export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const list = (tenantId: string, jobId: string): Promise<Form[]> => {
@@ -17,7 +17,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
 
   const create = async (params: {
     tenantId: string;
-    formCategory: EFormCategory;
+    formCategory: FormCategory;
     formTitle?: string;
     jobId: string;
     formFields: {

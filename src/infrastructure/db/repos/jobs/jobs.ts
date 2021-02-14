@@ -2,21 +2,7 @@ import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {rawText} from '../../utils';
 import {decamelizeKeys} from 'humps';
-
-export type JobRequirement = {
-  jobRequirementId: string;
-  jobId: string;
-  requirementLabel: string;
-  minValue?: string;
-};
-
-export type Job = {
-  tenantId: string;
-  jobId: string;
-  jobTitle: string;
-  createdAt: string;
-  jobRequirements: JobRequirement[];
-};
+import {Job} from 'domain/entities';
 
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const {ColumnSet} = pgp.helpers;

@@ -1,4 +1,4 @@
-import {EFormCategory} from 'infrastructure/db/repos/forms';
+import {FormCategory} from 'domain/entities';
 
 export type Submissions = {
   [submitterId: string]: {
@@ -39,7 +39,7 @@ export type FormFieldIntent = 'sum_up' | 'counst_distinct' | 'aggregate';
 
 export type BaseReport = {
   rank: number;
-  formCategory: EFormCategory;
+  formCategory: FormCategory;
   formCategoryScore: number;
   formResults: {
     formId: string;

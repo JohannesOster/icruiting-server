@@ -1,15 +1,7 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
-
-export type Applicant = {
-  tenantId: string;
-  applicantId: string;
-  jobId: string;
-  createdAt: string;
-  attributes: {key: string; value: string}[];
-  files: {key: string; value: string}[];
-};
+import {Applicant} from 'domain/entities';
 
 export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const list = (params: {

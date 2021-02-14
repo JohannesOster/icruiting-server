@@ -1,5 +1,5 @@
 import {FormFieldIntent} from 'adapters/applicants/report/types';
-import {EFormCategory} from '../forms';
+import {FormCategory} from 'domain/entities';
 
 export type ReportPrepareRow = {
   submissionValue: string;
@@ -12,6 +12,6 @@ export type ReportPrepareRow = {
   options?: {label: string; value: string}[];
   formId: string;
   formTitle: string;
-  formCategory: EFormCategory;
+  formCategory: FormCategory;
   jobRequirementId?: string;
 };
