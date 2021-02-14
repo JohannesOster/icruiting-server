@@ -1,10 +1,10 @@
 import {
   filterFormData,
   reduceSubmissions,
-} from 'components/applicants/report/preprocessor';
+} from 'adapters/applicants/report/preprocessor';
 import {random} from 'faker';
-import {EFormCategory} from 'db/repos/forms';
-import {FormFieldIntent} from 'components/applicants/report/types';
+import {FormFieldIntent} from 'adapters/applicants/report/types';
+import {FormCategory} from 'domain/entities';
 
 describe('preprocessor', () => {
   describe('filterFormData', () => {
@@ -26,7 +26,7 @@ describe('preprocessor', () => {
         ],
         formId: random.uuid(),
         formTitle: random.word(),
-        formCategory: 'assessment' as EFormCategory,
+        formCategory: 'assessment' as FormCategory,
         jobTitle: random.word(),
         requirementLabel: random.word(),
         jobRequirementId: random.uuid(),
@@ -62,7 +62,7 @@ describe('preprocessor', () => {
         ],
         formId: random.uuid(),
         formTitle: random.word(),
-        formCategory: 'assessment' as EFormCategory,
+        formCategory: 'assessment' as FormCategory,
         jobTitle: random.word(),
         requirementLabel: random.word(),
         jobRequirementId: random.uuid(),

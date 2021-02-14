@@ -1,11 +1,11 @@
 import request from 'supertest';
-import app from 'app';
-import {endConnection, truncateAllTables} from 'db/setup';
+import app from 'infrastructure/http';
+import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../../testUtils/fake';
 import dataGenerator from '../../testUtils/dataGenerator';
 
 const mockUser = fake.user();
-jest.mock('middlewares/auth', () => ({
+jest.mock('infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -30,7 +30,7 @@ afterAll(async () => {
 
 describe('tenants', () => {
   describe('POST /tenants/:tenantId/themes', () => {
-    it('returns 201 json response', async (done) => {
+    it('returns 201 json response', (done) => {
       request(app)
         .post(`/tenants/${mockUser.tenantId}/themes`)
         .attach('theme', `${__dirname}/files/theme.css`)

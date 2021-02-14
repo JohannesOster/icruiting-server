@@ -1,15 +1,14 @@
 import request from 'supertest';
 import faker from 'faker';
-import app from 'app';
-import db from 'db';
+import app from 'infrastructure/http';
+import db from 'infrastructure/db';
 import fake from '../testUtils/fake';
-import {endConnection, truncateAllTables} from 'db/setup';
+import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Form} from 'db/repos/forms';
-import {Applicant} from 'db/repos/applicants';
+import {Applicant, createFormSubmission, Form} from 'domain/entities';
 
 const mockUser = fake.user();
-jest.mock('middlewares/auth', () => ({
+jest.mock('infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -64,7 +63,7 @@ describe('rankings', () => {
         const [form, ...applicants] = data as [Form, ...Applicant[]];
 
         applicants.forEach((appl) => {
-          const screening = {
+          const screening = createFormSubmission({
             applicantId: appl.applicantId!,
             submitterId: mockUser.userId,
             tenantId: mockUser.tenantId,
@@ -78,7 +77,7 @@ describe('rankings', () => {
               },
               {},
             ),
-          };
+          });
 
           promises.push(db.formSubmissions.create(screening));
         });
@@ -153,7 +152,7 @@ describe('rankings', () => {
         const [form, ...applicants] = data as [Form, ...Applicant[]];
 
         applicants.forEach((appl) => {
-          const assessment = {
+          const assessment = createFormSubmission({
             applicantId: appl.applicantId!,
             submitterId: mockUser.userId,
             tenantId: mockUser.tenantId,
@@ -167,7 +166,7 @@ describe('rankings', () => {
               },
               {},
             ),
-          };
+          });
 
           promises.push(db.formSubmissions.create(assessment));
         });

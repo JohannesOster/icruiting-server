@@ -1,4 +1,4 @@
-import {ReportBuilder} from 'components/applicants/report/reportBuilder';
+import {ReportBuilder} from 'adapters/applicants/report/reportBuilder';
 
 describe('ReportBuilder', () => {
   const options = ['0', '1', '2', '3', '4'].map((s) => ({

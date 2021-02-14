@@ -1,7 +1,7 @@
-import db from 'db';
+import db from 'infrastructure/db';
 import fake from './fake';
 import {random} from 'faker';
-import {EFormCategory} from 'db/repos/forms';
+import {FormCategory} from 'domain/entities';
 
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {
@@ -12,11 +12,7 @@ const dataGenerator = {
     const job = fake.job(tenantId);
     return db.jobs.create(job);
   },
-  insertForm: (
-    tenantId: string,
-    jobId: string,
-    formCategory: EFormCategory,
-  ) => {
+  insertForm: (tenantId: string, jobId: string, formCategory: FormCategory) => {
     let form: any;
     if (formCategory === 'application') {
       form = fake.applicationForm(tenantId, jobId);
