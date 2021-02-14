@@ -19,14 +19,17 @@ export type Job = {
 } & BaseJob;
 
 export const createJob = (
-  job: BaseJob & {jobRequirements: BaseJobRequirement[]},
+  job: BaseJob & {
+    jobId?: string;
+    jobRequirements: (BaseJobRequirement & {jobRequirementId?: string})[];
+  },
 ): Job => {
   return Object.freeze({
-    jobId: uuidv4(),
     ...job,
+    jobId: job.jobId || uuidv4(),
     jobRequirements: job.jobRequirements.map((requirement) => ({
-      jobRequirementId: uuidv4(),
       ...requirement,
+      jobRequirementId: requirement.jobRequirementId || uuidv4(),
     })),
   });
 };

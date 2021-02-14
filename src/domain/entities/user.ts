@@ -12,9 +12,9 @@ export type User = {
   userId: string;
 } & BaseUser;
 
-export const createUser = (user: BaseUser): User => {
+export const createUser = (user: BaseUser & {userId?: string}): User => {
   return Object.freeze({
-    userId: uuidv4(),
     ...user,
+    userId: user.userId || uuidv4(),
   });
 };

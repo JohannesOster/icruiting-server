@@ -5,15 +5,18 @@ import {BaseError} from 'adapters/errorHandling';
 import {mapCognitoUser} from 'adapters/utils';
 import {signUp} from './signUp';
 import payment from 'infrastructure/payment';
+import {createTenant} from 'domain/entities';
 
 export const TenantsAdapter = () => {
   const create = httpReqHandler(async (req) => {
     const {tenantName, email, password, stripePriceId} = req.body;
     const {customerId} = await payment.customers.create(email, stripePriceId);
-    const tenant = await db.tenants.create({
-      tenantName,
-      stripeCustomerId: customerId,
-    });
+    const tenant = await db.tenants.create(
+      createTenant({
+        tenantName,
+        stripeCustomerId: customerId,
+      }),
+    );
     const {User} = await signUp({tenantId: tenant.tenantId, email, password});
 
     return {status: 201, body: {tenant, user: User}};

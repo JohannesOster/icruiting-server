@@ -11,7 +11,10 @@ type BaseFormSubmission = {
 export type FormSubmission = {formSubmissionId: string} & BaseFormSubmission;
 
 export const createFormSubmission = (
-  formSubmisson: BaseFormSubmission,
+  formSubmisson: BaseFormSubmission & {formSubmissionId?: string},
 ): FormSubmission => {
-  return Object.freeze({formSubmissionId: uuidv4(), ...formSubmisson});
+  return Object.freeze({
+    ...formSubmisson,
+    formSubmissionId: formSubmisson.formSubmissionId || uuidv4(),
+  });
 };

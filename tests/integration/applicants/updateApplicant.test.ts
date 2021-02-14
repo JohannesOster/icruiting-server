@@ -5,8 +5,7 @@ import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
 import db from 'infrastructure/db';
-import {Applicant} from 'infrastructure/db/repos/applicants';
-import {Form} from 'infrastructure/db/repos/forms';
+import {Applicant, Form} from 'domain/entities';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({

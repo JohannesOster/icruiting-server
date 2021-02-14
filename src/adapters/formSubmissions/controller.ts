@@ -1,4 +1,5 @@
 import {BaseError, httpReqHandler} from 'adapters/errorHandling';
+import {createFormSubmission} from 'domain/entities';
 import db from 'infrastructure/db';
 
 export const FormSubmissionsAdapter = () => {
@@ -19,11 +20,19 @@ export const FormSubmissionsAdapter = () => {
   });
 
   const update = httpReqHandler(async (req) => {
-    const {tenantId} = req.user;
+    const {tenantId, userId} = req.user;
     const {formSubmissionId} = req.params;
-    const {submission} = req.body;
-    const params = {submission, formSubmissionId, tenantId};
-    const resp = await db.formSubmissions.update(params);
+    const {submission, applicantId, formId} = req.body;
+    const resp = await db.formSubmissions.update(
+      createFormSubmission({
+        tenantId,
+        formId,
+        applicantId,
+        formSubmissionId,
+        submission,
+        submitterId: userId,
+      }),
+    );
     return {body: resp};
   });
 

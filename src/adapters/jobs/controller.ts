@@ -1,6 +1,7 @@
 import {S3} from 'aws-sdk';
 import {BaseError, httpReqHandler} from 'adapters/errorHandling';
 import db from 'infrastructure/db';
+import {createJob} from 'domain/entities';
 
 export const JobsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {
@@ -15,14 +16,16 @@ export const JobsAdapter = () => {
     const {jobTitle, jobRequirements} = req.body;
     const {tenantId} = req.user;
     const params = {jobTitle, tenantId, jobRequirements};
-    const resp = await db.jobs.create(params);
+    const resp = await db.jobs.create(createJob(params));
     return {status: 201, body: resp};
   });
 
   const update = httpReqHandler(async (req) => {
     const {jobId} = req.params;
     const {tenantId} = req.user;
-    const resp = await db.jobs.update(tenantId, {...req.body, jobId});
+    const resp = await db.jobs.update(
+      createJob({...req.body, jobId, tenantId}),
+    );
     return {body: resp};
   });
 

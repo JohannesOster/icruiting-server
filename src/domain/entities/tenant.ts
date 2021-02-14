@@ -10,6 +10,11 @@ export type Tenant = {
   tenantId: string;
 } & BaseTenant;
 
-export const createTenant = (tenant: BaseTenant): Tenant => {
-  return Object.freeze({tenantId: uuidv4(), ...tenant});
+export const createTenant = (
+  tenant: BaseTenant & {tenantId?: string},
+): Tenant => {
+  return Object.freeze({
+    ...tenant,
+    tenantId: tenant.tenantId || uuidv4(),
+  });
 };

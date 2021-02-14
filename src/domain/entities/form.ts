@@ -31,14 +31,17 @@ export type Form = {
 } & BaseForm;
 
 export const createForm = (
-  form: BaseForm & {formFields: BaseFormField[]},
+  form: BaseForm & {
+    formId?: string;
+    formFields: (BaseFormField & {formFieldId?: string})[];
+  },
 ): Form => {
   return Object.freeze({
-    formId: uuidv4(),
     ...form,
+    formId: form.formId || uuidv4(),
     formFields: form.formFields.map((field) => ({
-      formFieldId: uuidv4(),
       ...field,
+      formFieldId: field.formFieldId || uuidv4(),
     })),
   });
 };

@@ -10,9 +10,11 @@ export type Applicant = {
   applicantId: string;
 } & BaseApplicant;
 
-export const createApplicant = (applcant: BaseApplicant): Applicant => {
+export const createApplicant = (
+  applicant: BaseApplicant & {applicantId: string},
+): Applicant => {
   return Object.freeze({
-    applicantId: uuidv4(),
-    ...applcant,
+    ...applicant,
+    applicantId: applicant.applicantId || uuidv4(),
   });
 };
