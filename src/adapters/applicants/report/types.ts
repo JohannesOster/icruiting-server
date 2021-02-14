@@ -1,4 +1,4 @@
-import {FormCategory} from 'domain/entities';
+import {FormCategory, FormFieldIntent} from 'domain/entities';
 
 export type Submissions = {
   [submitterId: string]: {
@@ -34,8 +34,6 @@ export type ReportBuilderReturnType = {
     [applicantId: string]: {[jobRequirementId: string]: number};
   };
 };
-
-export type FormFieldIntent = 'sum_up' | 'counst_distinct' | 'aggregate';
 
 export type BaseReport = {
   rank: number;

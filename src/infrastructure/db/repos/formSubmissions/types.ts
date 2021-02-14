@@ -1,5 +1,4 @@
-import {FormFieldIntent} from 'adapters/applicants/report/types';
-import {FormCategory} from 'domain/entities';
+import {FormCategory, FormFieldIntent} from 'domain/entities';
 
 export type ReportPrepareRow = {
   submissionValue: string;
