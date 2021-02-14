@@ -6,8 +6,6 @@ import db from 'infrastructure/db';
 import config from 'config';
 import {validateSubscription} from './utils';
 import {sendMail} from 'infrastructure/mailservice';
-import pug from 'pug';
-import {isArray} from 'lodash';
 import templates, {Template} from 'infrastructure/mailservice/templates';
 
 export const FormsAdapter = () => {
