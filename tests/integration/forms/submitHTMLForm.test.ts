@@ -5,7 +5,6 @@ import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
 import {Form} from 'domain/entities';
 
-jest.mock('adapters/forms/utils');
 jest.mock('infrastructure/mailservice/mailservice');
 
 let tenantId: string;

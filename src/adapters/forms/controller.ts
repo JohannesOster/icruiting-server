@@ -203,38 +203,42 @@ export const FormsAdapter = () => {
           .then(() => ({view: 'form-submission'}))
           .catch((error) => ({view: 'form-submission', body: {error}}));
 
-        const emailId = form.formFields.find(
-          ({label}) => label === 'E-Mail-Adresse',
-        )?.formFieldId;
-        if (!emailId)
+        const {emailFieldId, fullNameFieldId} = form.formFields.reduce(
+          (acc, curr) => {
+            if (curr.label === 'E-Mail-Adresse')
+              acc.emailFieldId = curr.formFieldId;
+            if (curr.label === 'Vollständiger Name')
+              acc.fullNameFieldId = curr.formFieldId;
+            return acc;
+          },
+          {} as any,
+        );
+        if (!emailFieldId)
           throw new BaseError(500, 'E-Mail-Adresse field not found');
-
-        const email = map.attributes.find(
-          ({formFieldId}) => formFieldId === emailId,
-        )?.attributeValue;
-
-        if (!email) throw new BaseError(500, 'Applicant has no email-adress');
-
-        const fullNameId = form.formFields.find(
-          ({label}) => label === 'Vollständiger Name',
-        )?.formFieldId;
-        if (!fullNameId)
+        if (!fullNameFieldId)
           throw new BaseError(500, 'Vollständiger-Name field not found');
 
-        const fullName = map.attributes.find(
-          ({formFieldId}) => formFieldId === fullNameId,
-        )?.attributeValue;
+        const {email, fullName} = map.attributes.reduce((acc, curr) => {
+          if (curr.formFieldId === emailFieldId)
+            acc.email = curr.attributeValue;
+          if (curr.formFieldId === fullNameFieldId)
+            acc.fullName = curr.attributeValue;
+          return acc;
+        }, {} as any);
 
+        if (!email) throw new BaseError(500, 'Applicant has no email-adress');
         if (!fullName)
           throw new BaseError(500, 'Applicant has no email-adress');
+
+        const mailTemplate = pug.compileFile(
+          __dirname +
+            '/../../infrastructure/http/views/application-confirmation-email.pug',
+        );
 
         const mailOptions = {
           to: email,
           subject: 'Bewerbungsbestätigung',
-          html: pug.compileFile(
-            __dirname +
-              '/../../infrastructure/http/views/application-confirmation-email.pug',
-          )({
+          html: mailTemplate({
             tenantName: (await db.tenants.retrieve(form.tenantId))?.tenantName,
             fullName,
           }),

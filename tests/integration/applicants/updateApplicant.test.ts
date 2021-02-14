@@ -61,6 +61,7 @@ describe('applicants', () => {
         .set('Accept', 'application/json')
         .field('formId', form.formId)
         .field(form.formFields[0].formFieldId, random.words())
+        .field(form.formFields[1].formFieldId, random.words())
         .expect('Content-Type', /json/)
         .expect(200, done);
     });

@@ -59,8 +59,16 @@ const fake = {
           description: faker.random.words(),
         },
         {
-          component: 'checkbox',
+          component: 'input',
+          label: 'Vollständiger-Name',
+          placeholder: faker.random.word(),
           rowIndex: 1,
+          required: true,
+          description: faker.random.words(),
+        },
+        {
+          component: 'checkbox',
+          rowIndex: 2,
           label: faker.random.word(),
           description: faker.random.words(),
           options: [
@@ -74,7 +82,7 @@ const fake = {
         {
           component: 'file_upload',
           label: faker.random.word(),
-          rowIndex: 2,
+          rowIndex: 3,
           description: faker.random.words(),
           editable: true,
           deletable: true,
