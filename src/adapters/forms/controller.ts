@@ -72,26 +72,19 @@ export const FormsAdapter = () => {
 
     try {
       await validateSubscription(form.tenantId);
-    } catch (error) {
-      return {
-        view: 'form',
-        body: {error: error.message},
-      };
+    } catch ({message}) {
+      return {view: 'form', body: {error: message}};
     }
-    const submitAction = config.baseURL + req.originalUrl;
-    let params: any = {formId, submitAction, formFields: form.formFields};
-    const tenant = await db.tenants.retrieve(form.tenantId);
 
-    if (tenant?.theme) {
-      const urlParams = {
-        Bucket: process.env.S3_BUCKET,
-        Key: tenant.theme,
-        Expires: 100,
-      };
-      const url = await new S3().getSignedUrlPromise('getObject', urlParams);
-      params = {...params, theme: url};
-    }
-    return {view: 'form', body: params};
+    const submitAction = config.baseURL + req.originalUrl;
+    const params: any = {formId, submitAction, formFields: form.formFields};
+    const tenant = await db.tenants.retrieve(form.tenantId);
+    if (!tenant?.theme) return {view: 'form', body: params};
+
+    const bucket = process.env.S3_BUCKET;
+    const urlParams = {Bucket: bucket, Key: tenant.theme, Expires: 100};
+    const url = await new S3().getSignedUrlPromise('getObject', urlParams);
+    return {view: 'form', body: {...params, theme: url}};
   });
 
   const submitHTMLForm = httpReqHandler(async (req) => {
