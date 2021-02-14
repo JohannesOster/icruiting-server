@@ -1,0 +1,54 @@
+html
+  head
+    meta(http-equiv='Content-Type', content='text/html; charset=UTF-8')
+    meta(
+      name='viewport',
+      content='width=device-width; initial-scale=1.0; maximum-scale=1.0;'
+    )
+    meta(
+      name='viewport',
+      content='width=600,initial-scale = 2.3,user-scalable=no'
+    )
+    title icruiting - Bewerbungsbestätigung
+  body
+    table(
+      border='0',
+      cellpadding='20',
+      cellspacing='0',
+      height='100%',
+      width='100%',
+      style='font-family: system-ui, "Helvetica Neue", Helvetica, Arial; color: #1f1f1f'
+    )
+      tr
+        td(align='center', valign='top')
+          table(border='0', cellpadding='0', cellspacing='0', width='600')
+            tr
+              td(align='left', valign='top')
+                p #{fullName}!
+                p Ihre Bewerbung ist erfolgreich bei #[strong #{tenantName}] eingegangen!
+                p Beste Grüße
+                  br
+                  | icruiting
+            tr
+              td &nbsp;
+            tr
+              td(style='border-top: 1px solid #d0d0d0') &nbsp;
+            tr
+              td
+                table(
+                  border='0',
+                  align='left',
+                  cellpadding='0',
+                  cellspacing='0'
+                )
+                  tr
+                    td(align='left')
+                      a(href='https://icruiting.at', style='color: #808080') https://icruiting.at
+                table(
+                  border='0',
+                  align='right',
+                  cellpadding='0',
+                  cellspacing='0'
+                )
+                  tr
+                    td(align='center', style='font-size: 14px')

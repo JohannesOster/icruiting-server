@@ -6,6 +6,7 @@ import db from 'infrastructure/db';
 import config from 'config';
 import {validateSubscription} from './utils';
 import {sendMail} from 'infrastructure/mailservice';
+import pug from 'pug';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -214,10 +215,29 @@ export const FormsAdapter = () => {
 
         if (!email) throw new BaseError(500, 'Applicant has no email-adress');
 
+        const fullNameId = form.formFields.find(
+          ({label}) => label === 'Vollständiger Name',
+        )?.formFieldId;
+        if (!fullNameId)
+          throw new BaseError(500, 'Vollständiger-Name field not found');
+
+        const fullName = map.attributes.find(
+          ({formFieldId}) => formFieldId === fullNameId,
+        )?.attributeValue;
+
+        if (!fullName)
+          throw new BaseError(500, 'Applicant has no email-adress');
+
         const mailOptions = {
           to: email,
           subject: 'Bewerbungsbestätigung',
-          text: 'Ihre Bewerbung ist erfolgreich eingegangen.',
+          html: pug.compileFile(
+            __dirname +
+              '/../../infrastructure/http/views/application-confirmation-email.pug',
+          )({
+            tenantName: (await db.tenants.retrieve(form.tenantId))?.tenantName,
+            fullName,
+          }),
         };
 
         await sendMail(mailOptions).catch(console.error);
