@@ -3,7 +3,7 @@ type Environment = 'production' | 'development' | 'test';
 const config = {
   production: {
     baseURL: 'https://icruiting.herokuapp.com',
-    freeStripeProducId: 'prod_INnhF3X9Yvijfx', // used to filter free plan
+    freeStripeProducId: 'prod_INnhF3X9Yvijfx', // used to filter free stripe - plan
   },
   development: {
     baseURL: 'http://localhost:5000',
