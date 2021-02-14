@@ -11,6 +11,5 @@ export type Tenant = {
 } & BaseTenant;
 
 export const createTenant = (tenant: BaseTenant): Tenant => {
-  const tenantId = uuidv4();
-  return Object.freeze({tenantId, ...tenant});
+  return Object.freeze({tenantId: uuidv4(), ...tenant});
 };
