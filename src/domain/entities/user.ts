@@ -1,6 +1,6 @@
 import {v4 as uuidv4} from 'uuid';
 
-type UserRole = 'admin' | 'member';
+export type UserRole = 'admin' | 'member';
 
 type BaseUser = {
   tenantId: string;

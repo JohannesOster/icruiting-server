@@ -1,10 +1,13 @@
 import {v4 as uuidv4} from 'uuid';
 
+export type FormFieldIntent = 'sum_up' | 'aggregate' | 'count_distinct';
 type BaseFormField = {
   rowIndex: number;
   component: string;
   label: string;
+  intent?: FormFieldIntent;
   placeholder?: string;
+  description?: string;
   defaultValue?: string;
   required?: boolean;
   options?: {label: string; value: string}[];

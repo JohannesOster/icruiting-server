@@ -57,7 +57,7 @@ describe('tenants', () => {
     });
 
     it('returns 200 json response', (done) => {
-      mockUser.userRole = 'user';
+      mockUser.userRole = 'member';
       request(app)
         .del(`/tenants/${mockUser.tenantId}`)
         .set('Accept', 'application/json')

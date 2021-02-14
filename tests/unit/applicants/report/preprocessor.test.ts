@@ -3,8 +3,7 @@ import {
   reduceSubmissions,
 } from 'adapters/applicants/report/preprocessor';
 import {random} from 'faker';
-import {FormFieldIntent} from 'adapters/applicants/report/types';
-import {FormCategory} from 'domain/entities';
+import {FormCategory, FormFieldIntent} from 'domain/entities';
 
 describe('preprocessor', () => {
   describe('filterFormData', () => {
