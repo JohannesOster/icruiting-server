@@ -1,4 +1,4 @@
-import {Calculator} from '../../../../src/domain/useCases/report/calculator';
+import {Calculator} from '../../../../src/domain/useCases/calcReport/calculator';
 
 describe('Calculator', () => {
   describe('score', () => {

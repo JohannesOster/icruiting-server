@@ -1,4 +1,4 @@
-import {ReportBuilder} from 'domain/useCases/report/reportBuilder';
+import {ReportBuilder} from 'domain/useCases/calcReport/reportBuilder';
 
 describe('ReportBuilder', () => {
   const options = ['0', '1', '2', '3', '4'].map((s) => ({
