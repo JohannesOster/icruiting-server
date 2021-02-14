@@ -4,7 +4,7 @@ import {IncomingForm} from 'formidable';
 import {BaseError, httpReqHandler} from 'adapters/errorHandling';
 import {getApplicantFileURLs} from './utils';
 import db from 'infrastructure/db';
-import {calcReport} from './report';
+import {calcReport} from '../../domain/useCases/report';
 
 export const ApplicantsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {
