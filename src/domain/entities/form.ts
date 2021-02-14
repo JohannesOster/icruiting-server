@@ -16,9 +16,7 @@ type BaseFormField = {
   jobRequirementId?: string;
 };
 
-export type FormField = {
-  formFieldId: string;
-} & BaseFormField;
+export type FormField = {formFieldId: string} & BaseFormField;
 
 export type FormCategory = 'application' | 'screening' | 'assessment';
 type BaseForm = {
@@ -28,10 +26,7 @@ type BaseForm = {
   formTitle?: string;
 };
 
-export type Form = {
-  formId: string;
-  formFields: FormField[];
-} & BaseForm;
+export type Form = {formId: string; formFields: FormField[]} & BaseForm;
 
 export const createForm = (
   form: BaseForm & {

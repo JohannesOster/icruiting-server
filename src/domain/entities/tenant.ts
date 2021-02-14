@@ -6,9 +6,7 @@ type BaseTenant = {
   theme?: string;
 };
 
-export type Tenant = {
-  tenantId: string;
-} & BaseTenant;
+export type Tenant = {tenantId: string} & BaseTenant;
 
 export const createTenant = (
   tenant: BaseTenant & {tenantId?: string},
