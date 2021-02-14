@@ -5,8 +5,9 @@ import faker from 'faker';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
+import {createUser} from 'domain/entities';
 
-const mockUser = fake.user();
+let mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
@@ -57,7 +58,7 @@ describe('tenants', () => {
     });
 
     it('returns 200 json response', (done) => {
-      mockUser.userRole = 'member';
+      mockUser = createUser({...mockUser, userRole: 'member'});
       request(app)
         .del(`/tenants/${mockUser.tenantId}`)
         .set('Accept', 'application/json')
