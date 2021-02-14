@@ -208,7 +208,7 @@ export const FormsAdapter = () => {
         if (!fullNameFieldId)
           throw new BaseError(500, 'Vollständiger-Name field not found');
 
-        const {email, fullName} = map.attributes.reduce((acc, curr) => {
+        const {email, fullName} = attributes.reduce((acc, curr) => {
           if (curr.formFieldId === emailFieldId)
             acc.email = curr.attributeValue;
           if (curr.formFieldId === fullNameFieldId)
