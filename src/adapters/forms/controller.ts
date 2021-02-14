@@ -5,7 +5,7 @@ import {httpReqHandler, BaseError} from 'adapters/errorHandling';
 import db from 'infrastructure/db';
 import config from 'config';
 import {validateSubscription} from './utils';
-import nodemailer from 'nodemailer';
+import {sendMail} from 'infrastructure/mailservice';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -101,7 +101,7 @@ export const FormsAdapter = () => {
     try {
       await validateSubscription(form.tenantId);
     } catch (error) {
-      return {view: 'submission', body: {error}};
+      return {view: 'form-submission', body: {error}};
     }
 
     if (form.formCategory !== 'application') {
@@ -114,74 +114,86 @@ export const FormsAdapter = () => {
 
     const formidable = new IncomingForm();
     formidable.maxFileSize = 500 * 1024 * 1024;
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       formidable.parse(req, async (error: Error, fields: any, files: any) => {
         if (error) resolve({view: 'form-submission', body: {error}});
 
         const s3 = new S3();
         const promises = [];
 
-        const map = form.formFields.reduce(
-          (acc, item) => {
-            // !> filter out non submitted values
-            const fieldExists = fields[item.formFieldId];
-            const file = files[item.formFieldId];
-            const fileExists = file && file.size;
-            if (!fieldExists && !fileExists) {
-              if (item.required)
-                // TODO: I currently don't know weather this ends the reduce loop
-                reject(
-                  new BaseError(402, `Missing required field: ${item.label}`),
-                );
-              return acc;
-            }
-
-            if (
-              ['input', 'textarea', 'select', 'radio'].includes(item.component)
-            ) {
-              acc.attributes.push({
-                formFieldId: item.formFieldId,
-                attributeValue: fields[item.formFieldId],
-              });
-            } else if (item.component === 'checkbox') {
-              const value = Array.isArray(fields[item.formFieldId])
-                ? fields[item.formFieldId].join(', ')
-                : fields[item.formFieldId];
-
-              acc.attributes.push({
-                formFieldId: item.formFieldId,
-                attributeValue: value,
-              });
-            } else if (item.component === 'file_upload') {
+        /* currently there is no other way to get out of a reduce loop */
+        let map = {attributes: []} as {
+          attributes: {formFieldId: string; attributeValue: string}[];
+        };
+        try {
+          map = form.formFields.reduce(
+            (acc, item) => {
+              // !> filter out non submitted values
+              const fieldExists = fields[item.formFieldId];
               const file = files[item.formFieldId];
-              const extension = file.name.substr(
-                file.name.lastIndexOf('.') + 1,
-              );
-              const fileId = (Math.random() * 1e32).toString(36);
-              const fileKey = form.tenantId + '.' + fileId + '.' + extension;
-              const fileStream = fs.createReadStream(file.path);
-              const params = {
-                Key: fileKey,
-                Bucket: process.env.S3_BUCKET || '',
-                ContentType: file.type,
-                Body: fileStream,
-              };
+              const fileExists = file && file.size;
+              if (!fieldExists && !fileExists) {
+                if (item.required) {
+                  throw new BaseError(
+                    402,
+                    `Missing required field: ${item.label}`,
+                  );
+                }
 
-              fs.unlink(file.path, console.error);
+                return acc;
+              }
 
-              promises.push(s3.upload(params).promise());
-              acc.attributes.push({
-                formFieldId: item.formFieldId,
-                attributeValue: fileKey,
-              });
-            }
+              if (
+                ['input', 'textarea', 'select', 'radio'].includes(
+                  item.component,
+                )
+              ) {
+                acc.attributes.push({
+                  formFieldId: item.formFieldId,
+                  attributeValue: fields[item.formFieldId],
+                });
+              } else if (item.component === 'checkbox') {
+                const value = Array.isArray(fields[item.formFieldId])
+                  ? fields[item.formFieldId].join(', ')
+                  : fields[item.formFieldId];
 
-            return acc;
-          },
-          {attributes: []} as {
-            attributes: {formFieldId: string; attributeValue: string}[];
-          },
-        );
+                acc.attributes.push({
+                  formFieldId: item.formFieldId,
+                  attributeValue: value,
+                });
+              } else if (item.component === 'file_upload') {
+                const file = files[item.formFieldId];
+                const extension = file.name.substr(
+                  file.name.lastIndexOf('.') + 1,
+                );
+                const fileId = (Math.random() * 1e32).toString(36);
+                const fileKey = form.tenantId + '.' + fileId + '.' + extension;
+                const fileStream = fs.createReadStream(file.path);
+                const params = {
+                  Key: fileKey,
+                  Bucket: process.env.S3_BUCKET || '',
+                  ContentType: file.type,
+                  Body: fileStream,
+                };
+
+                fs.unlink(file.path, console.error);
+
+                promises.push(s3.upload(params).promise());
+                acc.attributes.push({
+                  formFieldId: item.formFieldId,
+                  attributeValue: fileKey,
+                });
+              }
+
+              return acc;
+            },
+            {attributes: []} as {
+              attributes: {formFieldId: string; attributeValue: string}[];
+            },
+          );
+        } catch (error) {
+          return resolve({view: 'form-submission', body: {error}});
+        }
 
         applicant.attributes = map.attributes;
         promises.push(db.applicants.create(applicant));
@@ -195,34 +207,20 @@ export const FormsAdapter = () => {
         )?.formFieldId;
         if (!emailId)
           throw new BaseError(500, 'E-Mail-Adresse field not found');
+
         const email = map.attributes.find(
           ({formFieldId}) => formFieldId === emailId,
         )?.attributeValue;
 
         if (!email) throw new BaseError(500, 'Applicant has no email-adress');
 
-        const smtpConfig = {
-          host: 'smtp.zoho.eu',
-          port: 465,
-          secure: true, // use SSL
-          auth: {
-            user: process.env.EMAIL_ADRESS!,
-            pass: process.env.EMAIL_PASSWORD!,
-          },
-        };
-        const transporter = nodemailer.createTransport(smtpConfig);
-
         const mailOptions = {
-          from: process.env.EMAIL_ADRESS!,
           to: email,
           subject: 'Bewerbungsbestätigung',
           text: 'Ihre Bewerbung ist erfolgreich eingegangen.',
         };
 
-        transporter.sendMail(mailOptions, function (error, info) {
-          if (error) return console.log(error);
-          console.log('Email sent: ' + info.response);
-        });
+        await sendMail(mailOptions).catch(console.error);
 
         resolve(resp);
       });

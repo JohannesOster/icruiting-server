@@ -52,7 +52,7 @@ const fake = {
       formFields: [
         {
           component: 'input',
-          label: faker.random.word(),
+          label: 'E-Mail-Adresse',
           placeholder: faker.random.word(),
           rowIndex: 0,
           required: true,
