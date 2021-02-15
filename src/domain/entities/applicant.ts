@@ -1,11 +1,12 @@
 import {v4 as uuidv4} from 'uuid';
 
-type Attribute = {key: string; value: string};
+export type Attribute = {formFieldId: string; value: string};
+export type File = {formFieldId: string; uri: string};
 type BaseApplicant = {
   tenantId: string;
   jobId: string;
   attributes: Attribute[];
-  files: Attribute[];
+  files: File[];
 };
 export type Applicant = {applicantId: string} & BaseApplicant;
 

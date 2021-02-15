@@ -114,7 +114,7 @@ describe('applicants', () => {
       expect(res.body.applicants[0].applicantId).toBe(applicant.applicantId);
     });
 
-    it('isloates tenant applicants even if foreign jobId is queried', async () => {
+    it('isloates tenant applicants even if foreign jobId is queried', async (done) => {
       const {tenantId} = await dataGenerator.insertTenant(random.uuid());
       const {jobId} = await dataGenerator.insertJob(tenantId);
       const form = await dataGenerator.insertForm(
@@ -125,12 +125,10 @@ describe('applicants', () => {
       const fieldIds = form.formFields.map(({formFieldId}) => formFieldId);
       await dataGenerator.insertApplicant(tenantId, jobId, fieldIds);
 
-      const res = await request(app)
+      request(app)
         .get('/applicants?jobId=' + jobId)
         .set('Accept', 'application/json')
-        .expect(200);
-
-      expect(res.body.applicants.length).toBe(0);
+        .expect(404, done);
     });
 
     it('limits by limit query', async () => {

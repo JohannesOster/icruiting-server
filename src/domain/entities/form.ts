@@ -1,9 +1,18 @@
 import {v4 as uuidv4} from 'uuid';
 
 export type FormFieldIntent = 'sum_up' | 'aggregate' | 'count_distinct';
+export type FormFieldComponent =
+  | 'input'
+  | 'textarea'
+  | 'select'
+  | 'radio'
+  | 'checkbox'
+  | 'file_upload'
+  | 'rating_group'
+  | 'section_header';
 type BaseFormField = {
   rowIndex: number;
-  component: string;
+  component: FormFieldComponent;
   label: string;
   intent?: FormFieldIntent;
   placeholder?: string;

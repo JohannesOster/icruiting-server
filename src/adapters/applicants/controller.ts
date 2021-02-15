@@ -34,7 +34,27 @@ export const ApplicantsAdapter = () => {
     );
 
     const applicants = await Promise.all(promises);
-    return {body: {applicants, totalCount: data.totalCount}};
+
+    /* MAP formFieldId to lable */
+    const form = (await db.forms.list(tenantId, jobId)).filter(
+      ({formCategory}) => formCategory === 'application',
+    )[0];
+
+    if (!form) throw new BaseError(404, 'Application form Not Found');
+    const formFields = form.formFields.reduce((acc, curr) => {
+      acc[curr.formFieldId] = curr.label;
+      return acc;
+    }, {} as any);
+
+    const appls = applicants.map((appl) => {
+      appl.attributes = appl.attributes.map((attr) => ({
+        ...attr,
+        key: formFields[attr.formFieldId],
+      }));
+      return appl;
+    });
+
+    return {body: {applicants: appls, totalCount: data.totalCount}};
   });
 
   const update = httpReqHandler((req) => {
@@ -86,7 +106,7 @@ export const ApplicantsAdapter = () => {
 
                 const oldFileAttribute = {
                   formFieldId: item.formFieldId,
-                  attributeValue: oldFile.value,
+                  attributeValue: oldFile.uri,
                 };
                 (await acc).attributes.push(oldFileAttribute);
                 return acc;
@@ -100,7 +120,7 @@ export const ApplicantsAdapter = () => {
               let fileKey = form.tenantId + '.' + fileId + '.' + extension;
 
               if (oldFile) {
-                fileKey = oldFile.value;
+                fileKey = oldFile.uri;
                 const params = {Bucket: bucket, Key: fileKey};
                 await s3.deleteObject(params).promise();
               }
@@ -184,7 +204,7 @@ export const ApplicantsAdapter = () => {
       const files = applicant.files;
       const s3 = new S3();
       const bucket = process.env.S3_BUCKET || '';
-      const fileKeys = files.map(({value}) => ({Key: value}));
+      const fileKeys = files.map(({uri}) => ({Key: uri}));
       const delParams = {Bucket: bucket, Delete: {Objects: fileKeys}};
       await s3.deleteObjects(delParams).promise();
     }

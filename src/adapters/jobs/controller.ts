@@ -41,7 +41,7 @@ export const JobsAdapter = () => {
 
     const fileKeys = applicants.reduce((acc, {files}) => {
       if (!files) return acc;
-      const keys = files?.map(({value}) => value);
+      const keys = files?.map(({uri}) => uri);
       return acc.concat(keys);
     }, [] as string[]);
 

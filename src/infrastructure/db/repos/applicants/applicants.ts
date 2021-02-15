@@ -17,6 +17,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
       rawType: true,
       toPostgres: () => val ?? 'ALL',
     });
+
     const vals = decamelizeKeys(params) as any;
 
     return db
