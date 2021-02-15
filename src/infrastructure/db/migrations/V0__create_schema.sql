@@ -4,6 +4,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE IF NOT EXISTS tenant (
   tenant_id UUID DEFAULT uuid_generate_v4(),
   tenant_name TEXT NOT NULL,
+  stripe_customer_id TEXT,
+  theme TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT tenant_id_pk PRIMARY KEY (tenant_id)
 );
@@ -40,7 +42,7 @@ CREATE TABLE IF NOT EXISTS form (
 );
 
 CREATE TYPE form_field_intent AS ENUM ('aggregate', 'count_distinct', 'sum_up');
-CREATE TYPE form_field_component AS ENUM ('input', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group');
+CREATE TYPE form_field_component AS ENUM ('input', 'textarea', 'select', 'radio', 'checkbox', 'file_upload', 'rating_group', 'section_header');
 CREATE TABLE IF NOT EXISTS form_field (
   form_field_id UUID DEFAULT uuid_generate_v4(),
   form_id UUID NOT NULL,
@@ -64,7 +66,8 @@ CREATE TABLE IF NOT EXISTS form_field (
   CONSTRAINT form_id_row_index_unique UNIQUE (form_id, row_index) DEFERRABLE, -- make shure the index inside of the form is unique
   CONSTRAINT options_conditional_not_null CHECK(
     NOT (component='select' OR component='radio' OR component='rating_group' OR component='checkbox')
-    OR options IS NOT NULL)
+    OR options IS NOT NULL),
+  CONSTRAINT section_header_no_intent CHECK(NOT component='section_header' OR intent IS NULL)
 );
 
 CREATE TABLE IF NOT EXISTS applicant (
@@ -149,21 +152,21 @@ $$ LANGUAGE plpgsql;
 
 -- VIEWS
 CREATE OR REPLACE VIEW applicant_view AS
-	SELECT applicant.*,
-	       array_agg(json_build_object(
-	         'key', form_field.label,
-	         'value', applicant_attribute.attribute_value
-	        ) ORDER BY form_field.row_index) FILTER (WHERE form_field.component != 'file_upload') AS attributes,
-	       array_agg(json_build_object(
-	         'key', form_field.label,
-	         'value', applicant_attribute.attribute_value
-	        ) ORDER BY form_field.row_index) FILTER (WHERE form_field.component = 'file_upload') AS files
-	FROM applicant
-	LEFT JOIN applicant_attribute
-	ON applicant_attribute.applicant_id = applicant.applicant_id
-	LEFT JOIN form_field
-	ON applicant_attribute.form_field_id = form_field.form_field_id
-	GROUP BY applicant.applicant_id;
+SELECT applicant.*,
+  array_agg(json_build_object(
+    'form_field_id', form_field.form_field_id,
+    'value', applicant_attribute.attribute_value
+    ) ORDER BY form_field.row_index) FILTER (WHERE form_field.component != 'file_upload') AS attributes,
+  array_agg(json_build_object(
+    'form_field_id', form_field.form_field_id,
+    'uri', applicant_attribute.attribute_value
+    ) ORDER BY form_field.row_index) FILTER (WHERE form_field.component = 'file_upload') AS files
+FROM applicant
+LEFT JOIN applicant_attribute
+ON applicant_attribute.applicant_id = applicant.applicant_id
+LEFT JOIN form_field
+ON applicant_attribute.form_field_id = form_field.form_field_id
+GROUP BY applicant.applicant_id;
 
 CREATE OR REPLACE VIEW ranking AS
 SELECT
@@ -204,3 +207,18 @@ LEFT JOIN
 ON options_field.form_field_id = form_submission_field.form_field_id
 JOIN form_field
 ON form_field.form_field_id = form_submission_field.form_field_id;
+
+CREATE OR REPLACE VIEW assessments_view AS
+SELECT
+	form.form_id,
+	form_title,
+	form_category,
+	applicant_id,
+	submitter_id,
+	SUM(submission_value::NUMERIC) AS score
+FROM form_submission
+JOIN form ON form.form_id = form_submission.form_id
+JOIN form_submission_field ON form_submission_field.form_submission_id = form_submission.form_submission_id
+JOIN form_field ON form_field.form_field_id = form_submission_field.form_field_id
+WHERE form_field.intent = 'sum_up'
+GROUP BY form.form_id, form_title, form_category, applicant_id, submitter_id;
