@@ -11,6 +11,7 @@ export const PaymentMethodsAdapter = () => {
     const setupIntent = await paymentService.payment.initialize(
       stripeCustomerId,
     );
+
     return {body: setupIntent.client_secret};
   });
 
@@ -23,6 +24,7 @@ export const PaymentMethodsAdapter = () => {
     const paymentMethods = await paymentService.paymentMethods.list(
       stripeCustomerId,
     );
+
     return {body: paymentMethods};
   });
 
@@ -34,6 +36,7 @@ export const PaymentMethodsAdapter = () => {
       throw new BaseError(422, 'Missing Stripe customer id');
 
     await paymentService.paymentMethods.del(stripeCustomerId, paymentMethodId);
+
     return {status: 201};
   });
 
@@ -48,6 +51,7 @@ export const PaymentMethodsAdapter = () => {
       stripeCustomerId,
       paymentMethodId,
     );
+
     return {};
   });
 

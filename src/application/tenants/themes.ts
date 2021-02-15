@@ -1,14 +1,14 @@
-import {IncomingForm} from 'formidable';
-import {BaseError, httpReqHandler} from 'application/errorHandling';
 import fs from 'fs';
 import {S3} from 'aws-sdk';
+import {IncomingForm} from 'formidable';
 import db from 'infrastructure/db';
+import {BaseError, httpReqHandler} from 'application/errorHandling';
 
 export const ThemesAdapter = () => {
   const upload = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
-    const formidable = new IncomingForm();
     return new Promise((resolve, reject) => {
+      const formidable = new IncomingForm();
       formidable.parse(req, async (error, fields, files) => {
         if (error) return reject(new BaseError(500, error));
         const file = files.theme;
@@ -21,13 +21,12 @@ export const ThemesAdapter = () => {
         const tenant = await db.tenants.retrieve(tenantId);
         if (!tenant) throw new BaseError(404, 'Tenant Not Found');
 
-        const s3 = new S3();
-        const bucket = process.env.S3_BUCKET!;
-
         const fileId = (Math.random() * 1e32).toString(36);
         const fileKey = tenant.theme || tenantId + '.' + fileId + '.css';
         const fileStream = fs.createReadStream(file.path);
 
+        const s3 = new S3();
+        const bucket = process.env.S3_BUCKET!;
         const params = {
           Key: fileKey,
           Bucket: bucket,
@@ -38,10 +37,7 @@ export const ThemesAdapter = () => {
 
         if (!tenant.theme) await db.tenants.updateTheme(tenantId, fileKey);
 
-        resolve({
-          status: 201,
-          body: {message: 'Successfully uploaded theme'},
-        });
+        resolve({status: 201, body: {message: 'Successfully uploaded theme'}});
       });
     });
   });
@@ -56,7 +52,7 @@ export const ThemesAdapter = () => {
     const bucket = process.env.S3_BUCKET!;
     const delParams = {
       Bucket: bucket,
-      Delete: {Objects: [{Key: tenant.theme!}]},
+      Delete: {Objects: [{Key: tenant.theme}]},
     };
     await s3.deleteObjects(delParams).promise();
     await db.tenants.updateTheme(tenantId, null);

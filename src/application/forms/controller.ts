@@ -1,12 +1,12 @@
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
-import {S3} from 'aws-sdk';
 import {httpReqHandler, BaseError} from 'application/errorHandling';
 import db from 'infrastructure/db';
 import config from 'config';
 import {validateSubscription} from './utils';
-import {sendMail} from 'infrastructure/mailService';
 import templates, {Template} from 'infrastructure/mailService/templates';
+import {sendMail} from 'infrastructure/mailService';
+import storageService from 'infrastructure/storageService';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -81,9 +81,8 @@ export const FormsAdapter = () => {
     const tenant = await db.tenants.retrieve(form.tenantId);
     if (!tenant?.theme) return {view: 'form', body: params};
 
-    const bucket = process.env.S3_BUCKET;
-    const urlParams = {Bucket: bucket, Key: tenant.theme, Expires: 100};
-    const url = await new S3().getSignedUrlPromise('getObject', urlParams);
+    const url = storageService.getUrl(tenant.theme);
+
     return {view: 'form', body: {...params, theme: url}};
   });
 
@@ -112,7 +111,6 @@ export const FormsAdapter = () => {
       formidable.parse(req, async (error, fields, files) => {
         if (error) return resolve({view: 'form-submission', body: {error}});
 
-        const s3 = new S3();
         const promises = [];
 
         type Attributes = {formFieldId: string; attributeValue: string}[];
@@ -120,11 +118,11 @@ export const FormsAdapter = () => {
         try {
           attributes = form.formFields.reduce((acc, item) => {
             // !> filter out non submitted values
-            const fieldExists = fields[item.formFieldId];
+            const field = fields[item.formFieldId];
             let file = files[item.formFieldId];
             if (Array.isArray(file)) file = file[0];
             const fileExists = file && file.size;
-            if (!fieldExists && !fileExists) {
+            if (!field && !fileExists) {
               if (item.required) {
                 throw new BaseError(
                   402,
@@ -140,12 +138,12 @@ export const FormsAdapter = () => {
             ) {
               acc.push({
                 formFieldId: item.formFieldId,
-                attributeValue: fields[item.formFieldId] as string,
+                attributeValue: field as string,
               });
             } else if (item.component === 'checkbox') {
-              const value = Array.isArray(fields[item.formFieldId])
-                ? (fields[item.formFieldId] as string[]).join(', ')
-                : (fields[item.formFieldId] as string);
+              const value = Array.isArray(field)
+                ? (field as string[]).join(', ')
+                : (field as string);
 
               acc.push({
                 formFieldId: item.formFieldId,
@@ -159,15 +157,14 @@ export const FormsAdapter = () => {
               const fileKey = form.tenantId + '.' + fileId + '.' + extension;
               const fileStream = fs.createReadStream(file.path);
               const params = {
-                Key: fileKey,
-                Bucket: process.env.S3_BUCKET || '',
-                ContentType: file.type,
-                Body: fileStream,
+                path: fileKey,
+                contentType: file.type,
+                data: fileStream,
               };
+              promises.push(storageService.upload(params));
 
               fs.unlink(file.path, console.error);
 
-              promises.push(s3.upload(params).promise());
               acc.push({
                 formFieldId: item.formFieldId,
                 attributeValue: fileKey,

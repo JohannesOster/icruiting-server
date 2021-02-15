@@ -14,10 +14,7 @@ export const TenantsAdapter = () => {
       stripePriceId,
     );
     const tenant = await db.tenants.create(
-      createTenant({
-        tenantName,
-        stripeCustomerId: customerId,
-      }),
+      createTenant({tenantName, stripeCustomerId: customerId}),
     );
     const {user} = await authService.signUpUser({
       tenantId: tenant.tenantId,
@@ -33,13 +30,12 @@ export const TenantsAdapter = () => {
     let tenant = await db.tenants.retrieve(tenantId);
     if (!tenant) throw new BaseError(404, 'Tenant Not Found');
     if (tenant.theme) {
-      const url = await new S3().getSignedUrlPromise('getObject', {
-        Bucket: process.env.S3_BUCKET!,
-        Key: tenant.theme,
-        Expires: 100,
-      });
+      const bucket = process.env.S3_BUCKET!;
+      const params = {Bucket: bucket, Key: tenant.theme, Expires: 100};
+      const url = await new S3().getSignedUrlPromise('getObject', params);
       tenant = {...tenant, theme: url};
     }
+
     return {body: tenant};
   });
 
@@ -58,6 +54,7 @@ export const TenantsAdapter = () => {
 
     await Promise.all(promises || []);
     await db.tenants.del(tenantId);
+
     return {};
   });
 

@@ -105,12 +105,10 @@ export const ApplicantsAdapter = () => {
             // !> filter out non submitted values
             const isFile = item.component === 'file_upload';
             if (!fields[item.formFieldId] && !isFile) {
-              if (item.required) {
-                return reject(
-                  new BaseError(422, `Missing required field: ${item.label}`),
-                );
-              }
-              return acc;
+              if (!item.required) return acc;
+              return reject(
+                new BaseError(422, `Missing required field: ${item.label}`),
+              );
             }
 
             if (isFile) {
@@ -122,7 +120,6 @@ export const ApplicantsAdapter = () => {
               const fileExists = file && file.size;
               if (!fileExists) {
                 if (!oldFile) return acc;
-
                 const oldFileAttribute = {
                   formFieldId: item.formFieldId,
                   attributeValue: oldFile.uri,
@@ -187,10 +184,7 @@ export const ApplicantsAdapter = () => {
         };
         const appl = await db.applicants.update(params);
 
-        resolve({
-          status: 200,
-          body: appl,
-        });
+        resolve({status: 200, body: appl});
       });
     });
   });

@@ -31,6 +31,7 @@ export const SubscriptionsAdapter = () => {
   const del = httpReqHandler(async (req) => {
     const {subscriptionId} = req.params;
     await paymentService.subscriptions.cancel(subscriptionId);
+
     return {};
   });
 
