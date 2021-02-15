@@ -41,7 +41,7 @@ export const FormsAdapter = () => {
   const list = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const jobId = req.query.jobId as string;
-    const resp = await db.forms.list(tenantId, jobId);
+    const resp = await db.forms.list(tenantId, {jobId});
     return {body: resp};
   });
 

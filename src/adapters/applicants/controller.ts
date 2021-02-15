@@ -19,6 +19,25 @@ export const ApplicantsAdapter = () => {
       files,
     }));
 
+    /* MAP formFieldId to lable */
+    const form = (
+      await db.forms.list(tenantId, {
+        formCategory: 'application',
+        jobId: applicant.jobId,
+      })
+    )[0];
+
+    if (!form) throw new BaseError(404, 'Application form Not Found');
+    const formFields = form.formFields.reduce((acc, curr) => {
+      acc[curr.formFieldId] = curr.label;
+      return acc;
+    }, {} as any);
+
+    resp.attributes = applicant.attributes.map((attr) => ({
+      ...attr,
+      key: formFields[attr.formFieldId],
+    }));
+
     return {body: resp};
   });
 
@@ -36,8 +55,8 @@ export const ApplicantsAdapter = () => {
     const applicants = await Promise.all(promises);
 
     /* MAP formFieldId to lable */
-    const form = (await db.forms.list(tenantId, jobId)).filter(
-      ({formCategory}) => formCategory === 'application',
+    const form = (
+      await db.forms.list(tenantId, {jobId, formCategory: 'application'})
     )[0];
 
     if (!form) throw new BaseError(404, 'Application form Not Found');
