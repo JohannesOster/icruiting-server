@@ -1,5 +1,5 @@
 import {BaseError, httpReqHandler} from 'application/errorHandling';
-import payment from 'infrastructure/paymentService';
+import paymentService from 'infrastructure/paymentService';
 
 export const SubscriptionsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -8,7 +8,7 @@ export const SubscriptionsAdapter = () => {
     if (!stripeCustomerId)
       throw new BaseError(422, 'Missing Stripe customer id');
 
-    const subscription = await payment.subscriptions.create(
+    const subscription = await paymentService.subscriptions.create(
       stripeCustomerId,
       priceId,
     );
@@ -21,7 +21,7 @@ export const SubscriptionsAdapter = () => {
     if (!stripeCustomerId)
       throw new BaseError(422, 'Missing Stripe customer id');
 
-    const subscriptions = await payment.subscriptions.listActive(
+    const subscriptions = await paymentService.subscriptions.listActive(
       stripeCustomerId,
     );
 
@@ -30,7 +30,7 @@ export const SubscriptionsAdapter = () => {
 
   const del = httpReqHandler(async (req) => {
     const {subscriptionId} = req.params;
-    await payment.subscriptions.cancel(subscriptionId);
+    await paymentService.subscriptions.cancel(subscriptionId);
     return {};
   });
 

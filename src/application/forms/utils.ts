@@ -1,6 +1,6 @@
 import db from 'infrastructure/db';
 import {BaseError} from 'application/errorHandling';
-import payment from 'infrastructure/paymentService';
+import paymentService from 'infrastructure/paymentService';
 
 export const validateSubscription = async (tenantId: string) => {
   const tenant = await db.tenants.retrieve(tenantId);
@@ -8,7 +8,7 @@ export const validateSubscription = async (tenantId: string) => {
   if (!tenant.stripeCustomerId)
     throw new BaseError(404, 'Stripe customer id not found');
 
-  const subsCount = await payment.subscriptions
+  const subsCount = await paymentService.subscriptions
     .listActive(tenant.stripeCustomerId)
     .then((data) => data.length);
 

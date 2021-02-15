@@ -2,14 +2,17 @@ import {httpReqHandler} from 'application/errorHandling';
 import {S3} from 'aws-sdk';
 import db from 'infrastructure/db';
 import {BaseError} from 'application/errorHandling';
-import payment from 'infrastructure/paymentService';
+import paymentService from 'infrastructure/paymentService';
 import {createTenant} from 'domain/entities';
 import authService from 'infrastructure/authService';
 
 export const TenantsAdapter = () => {
   const create = httpReqHandler(async (req) => {
     const {tenantName, email, password, stripePriceId} = req.body;
-    const {customerId} = await payment.customers.create(email, stripePriceId);
+    const {customerId} = await paymentService.customers.create(
+      email,
+      stripePriceId,
+    );
     const tenant = await db.tenants.create(
       createTenant({
         tenantName,
@@ -45,7 +48,7 @@ export const TenantsAdapter = () => {
     const tenant = await db.tenants.retrieve(tenantId);
     if (!tenant) throw new BaseError(404, 'Tenant Not Found');
     if (tenant.stripeCustomerId) {
-      await payment.customers.del(tenant.stripeCustomerId);
+      await paymentService.customers.del(tenant.stripeCustomerId);
     }
 
     deleteTenantFiles(tenantId);

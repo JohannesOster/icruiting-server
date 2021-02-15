@@ -1,5 +1,5 @@
 import {BaseError, httpReqHandler} from 'application/errorHandling';
-import payment from 'infrastructure/paymentService';
+import paymentService from 'infrastructure/paymentService';
 
 export const PaymentMethodsAdapter = () => {
   const getSetupIntent = httpReqHandler(async (req) => {
@@ -8,7 +8,9 @@ export const PaymentMethodsAdapter = () => {
     if (!stripeCustomerId)
       throw new BaseError(422, 'Missing Stripe customer id');
 
-    const setupIntent = await payment.payment.initialize(stripeCustomerId);
+    const setupIntent = await paymentService.payment.initialize(
+      stripeCustomerId,
+    );
     return {body: setupIntent.client_secret};
   });
 
@@ -18,7 +20,9 @@ export const PaymentMethodsAdapter = () => {
     if (!stripeCustomerId)
       throw new BaseError(422, 'Missing Stripe customer id');
 
-    const paymentMethods = await payment.paymentMethods.list(stripeCustomerId);
+    const paymentMethods = await paymentService.paymentMethods.list(
+      stripeCustomerId,
+    );
     return {body: paymentMethods};
   });
 
@@ -29,7 +33,7 @@ export const PaymentMethodsAdapter = () => {
     if (!stripeCustomerId)
       throw new BaseError(422, 'Missing Stripe customer id');
 
-    await payment.paymentMethods.del(stripeCustomerId, paymentMethodId);
+    await paymentService.paymentMethods.del(stripeCustomerId, paymentMethodId);
     return {status: 201};
   });
 
@@ -40,7 +44,10 @@ export const PaymentMethodsAdapter = () => {
     if (!stripeCustomerId)
       throw new BaseError(422, 'Missing Stripe customer id');
 
-    await payment.paymentMethods.setDefault(stripeCustomerId, paymentMethodId);
+    await paymentService.paymentMethods.setDefault(
+      stripeCustomerId,
+      paymentMethodId,
+    );
     return {};
   });
 

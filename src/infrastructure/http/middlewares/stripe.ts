@@ -1,6 +1,6 @@
 import {BaseError, catchAsync} from 'application/errorHandling';
 import db from 'infrastructure/db';
-import payment from 'infrastructure/paymentService';
+import paymentService from 'infrastructure/paymentService';
 
 export const requireSubscription = catchAsync(async (req, res, next) => {
   let tenantId;
@@ -16,7 +16,7 @@ export const requireSubscription = catchAsync(async (req, res, next) => {
 
   req.user.stripeCustomerId = tenant.stripeCustomerId;
 
-  const subsCount = await payment.subscriptions
+  const subsCount = await paymentService.subscriptions
     .listActive(tenant.stripeCustomerId)
     .then((data) => data.length);
 
