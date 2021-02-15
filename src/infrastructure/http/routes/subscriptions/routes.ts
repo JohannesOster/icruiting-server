@@ -1,5 +1,5 @@
 import express from 'express';
-import {SubscriptionsAdapter} from 'adapters/Subscriptions/controller';
+import {SubscriptionsAdapter} from 'adapters/subscriptions/controller';
 
 const adapter = SubscriptionsAdapter();
 const router = express.Router();

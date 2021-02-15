@@ -1,7 +1,7 @@
 import {
   filterFormData,
   reduceSubmissions,
-} from 'domain/useCases/calcReport/preprocessor';
+} from 'adapters/applicants/calcReport/preprocessor';
 import {random} from 'faker';
 import {FormCategory, FormFieldIntent} from 'domain/entities';
 
