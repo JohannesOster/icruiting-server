@@ -1,5 +1,5 @@
 import express from 'express';
-import {TenantsAdapter} from 'adapters/tenants/tenants';
+import {TenantsAdapter} from 'application/tenants/tenants';
 import {createRules} from './validation';
 import {
   requireAuth,

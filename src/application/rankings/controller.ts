@@ -1,4 +1,4 @@
-import {httpReqHandler} from 'adapters/errorHandling';
+import {httpReqHandler} from 'application/errorHandling';
 import db from 'infrastructure/db';
 
 export const RankingsAdapter = () => {

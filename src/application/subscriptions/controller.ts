@@ -1,4 +1,4 @@
-import {httpReqHandler} from 'adapters/errorHandling';
+import {httpReqHandler} from 'application/errorHandling';
 import payment from 'infrastructure/payment';
 
 export const SubscriptionsAdapter = () => {

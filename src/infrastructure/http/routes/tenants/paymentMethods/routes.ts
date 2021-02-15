@@ -1,5 +1,5 @@
 import express from 'express';
-import {PaymentMethodsAdapter} from 'adapters/tenants/paymentMethods';
+import {PaymentMethodsAdapter} from 'application/tenants/paymentMethods';
 
 const adapter = PaymentMethodsAdapter();
 const router = express.Router();

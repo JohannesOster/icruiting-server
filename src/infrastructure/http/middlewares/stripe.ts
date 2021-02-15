@@ -1,4 +1,4 @@
-import {BaseError, catchAsync} from 'adapters/errorHandling';
+import {BaseError, catchAsync} from 'application/errorHandling';
 import db from 'infrastructure/db';
 import payment from 'infrastructure/payment';
 

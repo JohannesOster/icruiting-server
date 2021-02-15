@@ -1,5 +1,5 @@
 import express from 'express';
-import {RankingsAdapter} from 'adapters/rankings/controller';
+import {RankingsAdapter} from 'application/rankings/controller';
 import {retrieveRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';

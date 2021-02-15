@@ -1,8 +1,8 @@
-import {httpReqHandler} from 'adapters/errorHandling';
+import {httpReqHandler} from 'application/errorHandling';
 import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
 import db from 'infrastructure/db';
-import {BaseError} from 'adapters/errorHandling';
-import {mapCognitoUser} from 'adapters/utils';
+import {BaseError} from 'application/errorHandling';
+import {mapCognitoUser} from 'application/utils';
 import {signUp} from './signUp';
 import payment from 'infrastructure/payment';
 import {createTenant} from 'domain/entities';

@@ -1,5 +1,5 @@
 import {S3} from 'aws-sdk';
-import {BaseError, httpReqHandler} from 'adapters/errorHandling';
+import {BaseError, httpReqHandler} from 'application/errorHandling';
 import db from 'infrastructure/db';
 import {createJob} from 'domain/entities';
 

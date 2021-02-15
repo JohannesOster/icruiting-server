@@ -1,4 +1,4 @@
-import {BaseError, httpReqHandler} from 'adapters/errorHandling';
+import {BaseError, httpReqHandler} from 'application/errorHandling';
 import {createFormSubmission} from 'domain/entities';
 import db from 'infrastructure/db';
 

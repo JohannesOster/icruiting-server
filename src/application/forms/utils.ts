@@ -1,5 +1,5 @@
 import db from 'infrastructure/db';
-import {BaseError} from 'adapters/errorHandling';
+import {BaseError} from 'application/errorHandling';
 import payment from 'infrastructure/payment';
 
 export const validateSubscription = async (tenantId: string) => {

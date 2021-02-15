@@ -1,5 +1,5 @@
 import {IncomingForm} from 'formidable';
-import {BaseError, httpReqHandler} from 'adapters/errorHandling';
+import {BaseError, httpReqHandler} from 'application/errorHandling';
 import fs from 'fs';
 import {S3} from 'aws-sdk';
 import db from 'infrastructure/db';

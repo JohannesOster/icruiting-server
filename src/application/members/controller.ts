@@ -1,6 +1,6 @@
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
 import {mapCognitoUser, removePrefix} from '../utils';
-import {httpReqHandler} from 'adapters/errorHandling';
+import {httpReqHandler} from 'application/errorHandling';
 
 export const MembersAdapter = () => {
   const create = httpReqHandler(async (req) => {
