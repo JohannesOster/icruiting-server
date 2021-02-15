@@ -5,8 +5,8 @@ import {httpReqHandler, BaseError} from 'application/errorHandling';
 import db from 'infrastructure/db';
 import config from 'config';
 import {validateSubscription} from './utils';
-import {sendMail} from 'infrastructure/mailservice';
-import templates, {Template} from 'infrastructure/mailservice/templates';
+import {sendMail} from 'infrastructure/mailService';
+import templates, {Template} from 'infrastructure/mailService/templates';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {

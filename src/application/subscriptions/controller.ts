@@ -1,5 +1,5 @@
 import {httpReqHandler} from 'application/errorHandling';
-import payment from 'infrastructure/payment';
+import payment from 'infrastructure/paymentService';
 
 export const SubscriptionsAdapter = () => {
   const getSubscriptions = httpReqHandler(async (req) => {

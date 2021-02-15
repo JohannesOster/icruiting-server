@@ -1,6 +1,6 @@
 import db from 'infrastructure/db';
 import {BaseError} from 'application/errorHandling';
-import payment from 'infrastructure/payment';
+import payment from 'infrastructure/paymentService';
 
 export const validateSubscription = async (tenantId: string) => {
   const tenant = await db.tenants.retrieve(tenantId);

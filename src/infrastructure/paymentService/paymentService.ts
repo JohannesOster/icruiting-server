@@ -1,7 +1,7 @@
 import config from 'config';
 import Stripe from 'stripe';
 
-export const Payment = () => {
+export const PaymentService = () => {
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
   const stripe = new Stripe(stripeKey, {apiVersion: '2020-08-27'});

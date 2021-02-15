@@ -1,11 +1,10 @@
 import {httpReqHandler} from 'application/errorHandling';
-import {S3, CognitoIdentityServiceProvider} from 'aws-sdk';
+import {S3} from 'aws-sdk';
 import db from 'infrastructure/db';
 import {BaseError} from 'application/errorHandling';
-import {mapCognitoUser} from 'application/utils';
-import {signUp} from './signUp';
-import payment from 'infrastructure/payment';
+import payment from 'infrastructure/paymentService';
 import {createTenant} from 'domain/entities';
+import authService from 'infrastructure/authService';
 
 export const TenantsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -17,9 +16,13 @@ export const TenantsAdapter = () => {
         stripeCustomerId: customerId,
       }),
     );
-    const {User} = await signUp({tenantId: tenant.tenantId, email, password});
+    const {user} = await authService.signUpUser({
+      tenantId: tenant.tenantId,
+      email,
+      password,
+    });
 
-    return {status: 201, body: {tenant, user: User}};
+    return {status: 201, body: {tenant, user}};
   });
 
   const retrieve = httpReqHandler(async (req) => {
@@ -38,7 +41,7 @@ export const TenantsAdapter = () => {
   });
 
   const del = httpReqHandler(async (req) => {
-    const {userPoolID, tenantId} = req.user;
+    const {tenantId} = req.user;
     const tenant = await db.tenants.retrieve(tenantId);
     if (!tenant) throw new BaseError(404, 'Tenant Not Found');
     if (tenant.stripeCustomerId) {
@@ -47,27 +50,8 @@ export const TenantsAdapter = () => {
 
     deleteTenantFiles(tenantId);
 
-    const cIdp = new CognitoIdentityServiceProvider();
-    const params = {
-      UserPoolId: userPoolID,
-      AttributesToGet: ['email', 'custom:tenant_id'],
-    };
-
-    const users = await cIdp
-      .listUsers(params)
-      .promise()
-      .then(({Users}) => {
-        if (!Users) return [];
-        const users = Users.map((user) => mapCognitoUser(user));
-
-        // filter out foreign tenants
-        return users.filter((user) => user['custom:tenant_id'] === tenantId);
-      });
-
-    const promises = users.map((user) => {
-      const params = {UserPoolId: userPoolID, Username: user.email};
-      return cIdp.adminDeleteUser(params).promise();
-    });
+    const users = await authService.listUsers(tenantId);
+    const promises = users.map(({email}) => authService.deleteUser(email));
 
     await Promise.all(promises || []);
     await db.tenants.del(tenantId);

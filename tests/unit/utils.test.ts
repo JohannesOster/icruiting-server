@@ -1,8 +1,8 @@
-import {mapCognitoUser} from './utils';
+import {mapCognitoUser} from '../../src/infrastructure/authService/utils';
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
 
 import faker from 'faker';
-import {removePrefix} from './utils';
+import {removePrefix} from '../../src/infrastructure/authService/utils';
 
 describe('utils', () => {
   describe('removePrefix', () => {

@@ -3,20 +3,16 @@ import {
   createFormSubmission,
   createJob,
   createTenant,
-  createUser,
-  FormFieldIntent,
-  UserRole,
 } from 'domain/entities';
 import faker from 'faker';
 
 const fake = {
-  user: (userRole: UserRole = 'admin') =>
-    createUser({
-      tenantId: faker.random.uuid(),
-      userId: faker.random.uuid(),
-      email: faker.internet.email(),
-      userRole,
-    }),
+  user: (userRole: 'admin' | 'member' = 'admin') => ({
+    tenantId: faker.random.uuid(),
+    userId: faker.random.uuid(),
+    email: faker.internet.email(),
+    userRole,
+  }),
   tenant: (tenantId?: string) =>
     createTenant({
       tenantId,

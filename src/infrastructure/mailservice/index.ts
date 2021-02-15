@@ -1,2 +1,2 @@
 export * from './templates';
-export * from './mailservice';
+export * from './mailService';
