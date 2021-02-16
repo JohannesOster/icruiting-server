@@ -5,7 +5,7 @@ import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
 import {Form} from 'domain/entities';
 
-jest.mock('infrastructure/mailservice/mailservice');
+jest.mock('infrastructure/mailService/mailService');
 
 let tenantId: string;
 let jobId: string;
