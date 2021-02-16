@@ -1,8 +1,8 @@
 import fs from 'fs';
-import {S3} from 'aws-sdk';
 import {IncomingForm} from 'formidable';
 import db from 'infrastructure/db';
 import {BaseError, httpReqHandler} from 'application/errorHandling';
+import storageService from 'infrastructure/storageService';
 
 export const ThemesAdapter = () => {
   const upload = httpReqHandler(async (req) => {
@@ -25,15 +25,12 @@ export const ThemesAdapter = () => {
         const fileKey = tenant.theme || tenantId + '.' + fileId + '.css';
         const fileStream = fs.createReadStream(file.path);
 
-        const s3 = new S3();
-        const bucket = process.env.S3_BUCKET!;
         const params = {
-          Key: fileKey,
-          Bucket: bucket,
-          ContentType: file.type,
-          Body: fileStream,
+          path: fileKey,
+          contentType: file.type,
+          data: fileStream,
         };
-        await s3.upload(params).promise();
+        await storageService.upload(params);
 
         if (!tenant.theme) await db.tenants.updateTheme(tenantId, fileKey);
 
@@ -48,13 +45,7 @@ export const ThemesAdapter = () => {
     if (!tenant) throw new BaseError(404, 'Tenant Not Found');
     if (!tenant.theme) throw new BaseError(404, 'Theme Not Found');
 
-    const s3 = new S3();
-    const bucket = process.env.S3_BUCKET!;
-    const delParams = {
-      Bucket: bucket,
-      Delete: {Objects: [{Key: tenant.theme}]},
-    };
-    await s3.deleteObjects(delParams).promise();
+    await storageService.del(tenant.theme);
     await db.tenants.updateTheme(tenantId, null);
     return {};
   });

@@ -1,9 +1,8 @@
 import {S3} from 'aws-sdk';
-import {Body, PutObjectRequest} from 'aws-sdk/clients/s3';
+import {Body} from 'aws-sdk/clients/s3';
 
 export const StorageService = () => {
-  const bucket = process.env.S3_BUCKET;
-  if (!bucket) throw new Error('Missing S3 Bucket');
+  const bucket = process.env.S3_BUCKET || '';
 
   const getUrl = (path: string) => {
     const urlParams = {Bucket: bucket, Key: path, Expires: 100};
@@ -22,5 +21,19 @@ export const StorageService = () => {
     return new S3().upload(params).promise();
   };
 
-  return {getUrl, upload};
+  const del = (path: string) => {
+    return new S3().deleteObject({Key: path, Bucket: bucket}).promise();
+  };
+
+  const bulkDel = (paths: string[]) => {
+    return Promise.all(paths.map((path) => del(path)));
+  };
+
+  const list = async (prefix: string) => {
+    const listParams = {Bucket: bucket, Prefix: prefix};
+    const {Contents} = await new S3().listObjects(listParams).promise();
+    return Contents;
+  };
+
+  return {getUrl, upload, del, bulkDel, list};
 };

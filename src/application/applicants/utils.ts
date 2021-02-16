@@ -1,15 +1,10 @@
-import {S3} from 'aws-sdk';
 import {File} from 'domain/entities';
+import storageService from 'infrastructure/storageService';
 
 export const getApplicantFileURLs = async (files?: File[]) => {
-  const s3 = new S3();
-  const bucket = process.env.S3_BUCKET;
-
   const promises = files?.map((file) => {
-    const fileKey = file.uri;
-    const params = {Bucket: bucket, Key: fileKey, Expires: 100};
-    return s3
-      .getSignedUrlPromise('getObject', params)
+    return storageService
+      .getUrl(file.uri)
       .then((uri) => ({formFieldId: file.formFieldId, uri}));
   });
 

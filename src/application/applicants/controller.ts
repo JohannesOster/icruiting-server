@@ -1,7 +1,7 @@
 import fs from 'fs';
-import {S3} from 'aws-sdk';
 import {IncomingForm} from 'formidable';
 import {BaseError, httpReqHandler} from 'application/errorHandling';
+import storageService from 'infrastructure/storageService';
 import {getApplicantFileURLs} from './utils';
 import db from 'infrastructure/db';
 import {calcReport} from './calcReport';
@@ -85,8 +85,6 @@ export const ApplicantsAdapter = () => {
     return new Promise((resolve, reject) => {
       formidable.parse(req, async (err: Error, fields: any, files: any) => {
         if (err) return reject(err);
-        const s3 = new S3();
-        const bucket = process.env.S3_BUCKET || '';
         const {formId} = fields;
 
         if (!formId) return reject(new BaseError(422, 'Missing formId field'));
@@ -135,19 +133,16 @@ export const ApplicantsAdapter = () => {
               const fileId = (Math.random() * 1e32).toString(36);
               let fileKey = form.tenantId + '.' + fileId + '.' + extension;
 
-              if (oldFile) {
-                fileKey = oldFile.uri;
-                const params = {Bucket: bucket, Key: fileKey};
-                await s3.deleteObject(params).promise();
-              }
+              if (oldFile) await storageService.del(oldFile.uri);
 
               const fileStream = await fs.createReadStream(file.path);
               const params = {
-                Key: fileKey,
-                Bucket: bucket,
-                ContentType: file.type,
-                Body: fileStream,
+                path: fileKey,
+                contentType: file.type,
+                data: fileStream,
               };
+
+              await storageService.upload(params);
 
               await new Promise((resolve, reject) => {
                 fs.unlink(file.path, (error) => {
@@ -155,8 +150,6 @@ export const ApplicantsAdapter = () => {
                   resolve({});
                 });
               });
-
-              await s3.upload(params).promise();
 
               (await acc).attributes.push({
                 formFieldId: item.formFieldId,
@@ -215,14 +208,12 @@ export const ApplicantsAdapter = () => {
 
     if (applicant.files?.length) {
       const files = applicant.files;
-      const s3 = new S3();
-      const bucket = process.env.S3_BUCKET || '';
-      const fileKeys = files.map(({uri}) => ({Key: uri}));
-      const delParams = {Bucket: bucket, Delete: {Objects: fileKeys}};
-      await s3.deleteObjects(delParams).promise();
+      const fileKeys = files.map(({uri}) => uri);
+      await storageService.bulkDel(fileKeys);
     }
 
     await db.applicants.del(tenantId, applicantId);
+
     return {};
   });
 

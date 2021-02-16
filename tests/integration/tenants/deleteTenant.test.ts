@@ -20,9 +20,7 @@ jest.mock('aws-sdk', () => ({
     listObjects: () => ({
       promise: () => Promise.resolve({Contents: [{Key: faker.internet.url()}]}),
     }),
-    deleteObjects: () => ({
-      promise: () => Promise.resolve(),
-    }),
+    deleteObject: () => ({promise: () => Promise.resolve()}),
   })),
   CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({
     listUsers: () => ({

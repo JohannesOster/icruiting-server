@@ -1,10 +1,10 @@
 import {httpReqHandler} from 'application/errorHandling';
-import {S3} from 'aws-sdk';
 import db from 'infrastructure/db';
 import {BaseError} from 'application/errorHandling';
 import paymentService from 'infrastructure/paymentService';
 import {createTenant} from 'domain/entities';
 import authService from 'infrastructure/authService';
+import storageService from 'infrastructure/storageService';
 
 export const TenantsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -30,9 +30,7 @@ export const TenantsAdapter = () => {
     let tenant = await db.tenants.retrieve(tenantId);
     if (!tenant) throw new BaseError(404, 'Tenant Not Found');
     if (tenant.theme) {
-      const bucket = process.env.S3_BUCKET!;
-      const params = {Bucket: bucket, Key: tenant.theme, Expires: 100};
-      const url = await new S3().getSignedUrlPromise('getObject', params);
+      const url = await storageService.getUrl(tenant.theme);
       tenant = {...tenant, theme: url};
     }
 
@@ -59,16 +57,11 @@ export const TenantsAdapter = () => {
   });
 
   const deleteTenantFiles = async (tenantId: string) => {
-    const s3 = new S3();
-    const bucket = process.env.S3_BUCKET!;
-    const listParams = {Bucket: bucket, Prefix: tenantId};
+    const files = await storageService.list(tenantId);
+    if (!files?.length) return;
 
-    const {Contents} = await s3.listObjects(listParams).promise();
-    if (!Contents?.length) return;
-
-    const keys = Contents.map(({Key}) => ({Key: Key || ''}));
-    const delParams = {Bucket: bucket, Delete: {Objects: keys}};
-    await s3.deleteObjects(delParams).promise();
+    const keys = files.map(({Key}) => Key || '');
+    await storageService.bulkDel(keys);
   };
 
   return {create, retrieve, del};

@@ -17,7 +17,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 
 jest.mock('aws-sdk', () => ({
   S3: jest.fn().mockImplementation(() => ({
-    deleteObjects: () => ({promise: () => Promise.resolve()}),
+    deleteObject: () => ({promise: () => Promise.resolve()}),
   })),
 }));
 
