@@ -8,8 +8,10 @@ import {CognitoIdentityServiceProvider} from 'aws-sdk';
 import {String} from 'aws-sdk/clients/apigateway';
 import CognitoExpress from 'cognito-express';
 import {mapCognitoUser, removePrefix} from './utils';
+import dotenv from 'dotenv';
 
 export const AuthService = () => {
+  dotenv.config();
   const cognitoUserPoolId = process.env.AWS_USER_POOL_ID;
   const clientId = process.env.AWS_CLIENT_ID;
   const region = process.env.AWS_REGION;
