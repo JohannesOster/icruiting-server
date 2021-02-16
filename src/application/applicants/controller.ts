@@ -47,6 +47,8 @@ export const ApplicantsAdapter = () => {
     const params = {tenantId, jobId, userId, offset, limit, orderBy, filter};
     const data = await db.applicants.list(params);
 
+    if (!data.totalCount) return {body: {applicants: [], totalCount: 0}};
+
     // replace S3 filekeys with aws presigned URL
     const promises = data.applicants.map(({files, ...appl}) =>
       getApplicantFileURLs(files).then((files) => ({...appl, files})),

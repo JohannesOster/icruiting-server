@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS form_field (
   description TEXT,
   default_value TEXT,
   required BOOLEAN DEFAULT FALSE,
-  options JSONB,       -- array of options if componen is select, radio, etc.
+  options JSONB, -- array of options if componen is select, radio, etc.
   props JSONB, -- additional props
   editable BOOLEAN DEFAULT FALSE,
   deletable BOOLEAN DEFAULT FALSE,
@@ -111,45 +111,6 @@ CREATE TABLE IF NOT EXISTS form_submission_field (
   CONSTRAINT form_field_id FOREIGN KEY (form_field_id) REFERENCES form_field(form_field_id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS applicant_report (
-  applicant_report_id UUID DEFAULT uuid_generate_v4(),
-  tenant_id UUID NOT NULL,
-  job_id UUID NOT NULL,
-  image UUID DEFAULT NULL,
-  CONSTRAINT applicant_report_id_pk PRIMARY KEY (applicant_report_id),
-  CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE,
-  CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
-  CONSTRAINT image_fk FOREIGN KEY (image) REFERENCES form_field(form_field_id) ON DELETE CASCADE,
-  CONSTRAINT tenant_id_job_id_uq UNIQUE (tenant_id, job_id)
-);
-
-CREATE TABLE IF NOT EXISTS applicant_report_field (
-  applicant_report_id UUID,
-  form_field_id UUID,
-  CONSTRAINT applicant_report_id_form_field_id_pk PRIMARY KEY (applicant_report_id, form_field_id),
-  CONSTRAINT applicant_report_id_fk FOREIGN KEY (applicant_report_id) REFERENCES applicant_report(applicant_report_id) ON DELETE CASCADE,
-  CONSTRAINT form_field_id_fk FOREIGN KEY (form_field_id) REFERENCES form_field(form_field_id) ON DELETE CASCADE
-);
-
--- FUNCTIONS
-CREATE OR REPLACE FUNCTION screening_exists(tenant_id UUID, user_id TEXT, applicant_id UUID)
-RETURNS BOOLEAN AS $$
-DECLARE screening_exists BOOLEAN;
-BEGIN
-  SELECT COUNT(1)::int::boolean
-  INTO screening_exists
-  FROM form_submission
-  LEFT JOIN form
-  ON form_submission.form_id = form.form_id
-  WHERE form.tenant_id = $1
-    AND form.form_category = 'screening'
-    AND form_submission.submitter_id = $2
-    AND form_submission.applicant_id = $3;
-
-  RETURN screening_exists;
-END
-$$ LANGUAGE plpgsql;
-
 -- VIEWS
 CREATE OR REPLACE VIEW applicant_view AS
 SELECT applicant.*,
@@ -192,21 +153,6 @@ FROM
 	 ON form_field.form_field_id = form_submission_field.form_field_id AND form_field.intent='sum_up'
 	 GROUP BY form_submission.form_submission_id, form.form_id, form_category, job_id) AS submission
 GROUP BY submission.applicant_id, form_category, tenant_id, job_id;
-
-CREATE OR REPLACE VIEW form_submission_field_view AS
-SELECT
-	form_submission_id,
-	submission_value,
-	form_field.*,
-	options_field.form_field_max
-FROM form_submission_field
-LEFT JOIN
- (SELECT form_field_id, MAX((option->>'value')::NUMERIC) FILTER (WHERE intent='sum_up') AS form_field_max
-  FROM form_field CROSS JOIN jsonb_array_elements(options) AS option
-  GROUP BY form_field_id) AS options_field
-ON options_field.form_field_id = form_submission_field.form_field_id
-JOIN form_field
-ON form_field.form_field_id = form_submission_field.form_field_id;
 
 CREATE OR REPLACE VIEW assessments_view AS
 SELECT
