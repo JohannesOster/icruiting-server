@@ -1,5 +1,5 @@
 import express from 'express';
-import {ThemesAdapter} from 'adapters/tenants/themes';
+import {ThemesAdapter} from 'application/tenants/themes';
 
 const adapter = ThemesAdapter();
 const router = express.Router();

@@ -1,5 +1,4 @@
 type User = {
-  userPoolID: string;
   userId: string;
   tenantId: string;
   email: string;

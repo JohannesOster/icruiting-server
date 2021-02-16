@@ -1,5 +1,5 @@
 import express from 'express';
-import {FormsAdapter} from 'adapters/forms/controller';
+import {FormsAdapter} from 'application/forms/controller';
 import {createRules, updateRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';

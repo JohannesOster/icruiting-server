@@ -125,12 +125,13 @@ describe('applicants', () => {
       const fieldIds = form.formFields.map(({formFieldId}) => formFieldId);
       await dataGenerator.insertApplicant(tenantId, jobId, fieldIds);
 
-      const res = await request(app)
+      const resp = await request(app)
         .get('/applicants?jobId=' + jobId)
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(res.body.applicants.length).toBe(0);
+      expect(resp.body.totalCount).toBe(0);
+      expect(resp.body.applicants.length).toBe(0);
     });
 
     it('limits by limit query', async () => {

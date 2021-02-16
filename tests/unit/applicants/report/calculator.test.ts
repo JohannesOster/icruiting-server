@@ -1,35 +1,31 @@
-import {Calculator} from '../../../../src/adapters/applicants/report/calculator';
+import * as calc from '../../../../src/application/applicants/calcReport/calculator';
 
 describe('Calculator', () => {
   describe('score', () => {
     it('calculates mean correctly', () => {
-      const math = Calculator();
       const data = [0, 4];
-      const [mean] = math.score(data);
+      const [mean] = calc.score(data);
       expect(mean).toEqual(2);
     });
 
     it('calculates stdDev correclty', () => {
-      const math = Calculator();
       const data = [0, 4];
-      const [, stdev] = math.score(data);
+      const [, stdev] = calc.score(data);
       expect(stdev).toEqual(2);
     });
   });
 
   describe('mean', () => {
     it('calculates mean correctly', () => {
-      const math = Calculator();
       const data = [2, 4, 6, 8];
-      const mean = math.mean(data);
+      const mean = calc.mean(data);
       expect(mean).toEqual(5);
     });
   });
   describe('stdDev', () => {
     it('calculates stdDev correclty', () => {
-      const math = Calculator();
       const data = [0, 2];
-      const stdDev = math.stdDev(data);
+      const stdDev = calc.stdDev(data);
       expect(stdDev).toEqual(1);
     });
   });
@@ -40,9 +36,8 @@ describe('Calculator', () => {
         submitter1: {formId1: {formField1: '0'}},
         submitter2: {formId1: {formField1: '4'}},
       };
-      const calculator = Calculator();
       const path = 'formId1.formField1';
-      const [mean, stdDev] = calculator.deepScore(submissions, path);
+      const [mean, stdDev] = calc.deepScore(submissions, path);
       expect(mean).toEqual(2);
       expect(stdDev).toEqual(2);
     });

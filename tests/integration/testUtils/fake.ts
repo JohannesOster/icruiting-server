@@ -3,20 +3,16 @@ import {
   createFormSubmission,
   createJob,
   createTenant,
-  createUser,
-  FormFieldIntent,
-  UserRole,
 } from 'domain/entities';
 import faker from 'faker';
 
 const fake = {
-  user: (userRole: UserRole = 'admin') =>
-    createUser({
-      tenantId: faker.random.uuid(),
-      userId: faker.random.uuid(),
-      email: faker.internet.email(),
-      userRole,
-    }),
+  user: (userRole: 'admin' | 'member' = 'admin') => ({
+    tenantId: faker.random.uuid(),
+    userId: faker.random.uuid(),
+    email: faker.internet.email(),
+    userRole,
+  }),
   tenant: (tenantId?: string) =>
     createTenant({
       tenantId,
@@ -52,15 +48,23 @@ const fake = {
       formFields: [
         {
           component: 'input',
-          label: faker.random.word(),
+          label: 'E-Mail-Adresse',
           placeholder: faker.random.word(),
           rowIndex: 0,
           required: true,
           description: faker.random.words(),
         },
         {
-          component: 'checkbox',
+          component: 'input',
+          label: 'Vollständiger-Name',
+          placeholder: faker.random.word(),
           rowIndex: 1,
+          required: true,
+          description: faker.random.words(),
+        },
+        {
+          component: 'checkbox',
+          rowIndex: 2,
           label: faker.random.word(),
           description: faker.random.words(),
           options: [
@@ -74,7 +78,7 @@ const fake = {
         {
           component: 'file_upload',
           label: faker.random.word(),
-          rowIndex: 2,
+          rowIndex: 3,
           description: faker.random.words(),
           editable: true,
           deletable: true,

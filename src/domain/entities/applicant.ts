@@ -1,14 +1,14 @@
 import {v4 as uuidv4} from 'uuid';
 
+export type Attribute = {formFieldId: string; value: string};
+export type File = {formFieldId: string; uri: string};
 type BaseApplicant = {
   tenantId: string;
   jobId: string;
-  attributes: {key: string; value: string}[];
-  files: {key: string; value: string}[];
+  attributes: Attribute[];
+  files: File[];
 };
-export type Applicant = {
-  applicantId: string;
-} & BaseApplicant;
+export type Applicant = {applicantId: string} & BaseApplicant;
 
 export const createApplicant = (
   applicant: BaseApplicant & {applicantId: string},

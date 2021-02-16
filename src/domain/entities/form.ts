@@ -1,9 +1,18 @@
 import {v4 as uuidv4} from 'uuid';
 
 export type FormFieldIntent = 'sum_up' | 'aggregate' | 'count_distinct';
+export type FormFieldComponent =
+  | 'input'
+  | 'textarea'
+  | 'select'
+  | 'radio'
+  | 'checkbox'
+  | 'file_upload'
+  | 'rating_group'
+  | 'section_header';
 type BaseFormField = {
   rowIndex: number;
-  component: string;
+  component: FormFieldComponent;
   label: string;
   intent?: FormFieldIntent;
   placeholder?: string;
@@ -16,9 +25,7 @@ type BaseFormField = {
   jobRequirementId?: string;
 };
 
-export type FormField = {
-  formFieldId: string;
-} & BaseFormField;
+export type FormField = {formFieldId: string} & BaseFormField;
 
 export type FormCategory = 'application' | 'screening' | 'assessment';
 type BaseForm = {
@@ -28,10 +35,7 @@ type BaseForm = {
   formTitle?: string;
 };
 
-export type Form = {
-  formId: string;
-  formFields: FormField[];
-} & BaseForm;
+export type Form = {formId: string; formFields: FormField[]} & BaseForm;
 
 export const createForm = (
   form: BaseForm & {

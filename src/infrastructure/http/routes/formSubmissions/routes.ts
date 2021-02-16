@@ -1,5 +1,5 @@
 import express from 'express';
-import {FormSubmissionsAdapter} from 'adapters/formSubmissions/controller';
+import {FormSubmissionsAdapter} from 'application/formSubmissions/controller';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAuth} from 'infrastructure/http/middlewares';
 import {requireSubscription} from 'infrastructure/http/middlewares/stripe';

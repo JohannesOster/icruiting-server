@@ -1,5 +1,5 @@
 import express from 'express';
-import {ApplicantsAdapter} from 'adapters/applicants/controller';
+import {ApplicantsAdapter} from 'application/applicants/controller';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {getReportRules, listRules} from './validation';
 import {requireAuth, requireAdmin} from 'infrastructure/http/middlewares';

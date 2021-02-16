@@ -1,6 +1,6 @@
 import {RequestHandler, ErrorRequestHandler} from 'express';
 import {validationResult} from 'express-validator';
-import {BaseError} from 'adapters/errorHandling';
+import {BaseError} from 'application/errorHandling';
 
 export const notFound: RequestHandler = (req) => {
   throw new BaseError(404, `🔍 - Not Found - ${req.originalUrl}`);

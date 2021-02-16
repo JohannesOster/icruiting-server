@@ -1,22 +1,10 @@
 import {v4 as uuidv4} from 'uuid';
 
-type BaseJobRequirement = {
-  requirementLabel: string;
-  minValue?: string;
-};
-export type JobRequirement = {
-  jobRequirementId: string;
-} & BaseJobRequirement;
+type BaseJobRequirement = {requirementLabel: string; minValue?: string};
+export type JobRequirement = {jobRequirementId: string} & BaseJobRequirement;
 
-type BaseJob = {
-  tenantId: string;
-  jobTitle: string;
-};
-
-export type Job = {
-  jobId: string;
-  jobRequirements: JobRequirement[];
-} & BaseJob;
+type BaseJob = {tenantId: string; jobTitle: string};
+export type Job = {jobId: string; jobRequirements: JobRequirement[]} & BaseJob;
 
 export const createJob = (
   job: BaseJob & {

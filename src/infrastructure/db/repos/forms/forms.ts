@@ -1,11 +1,18 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
-import {Form} from 'domain/entities';
+import {Form, FormCategory} from 'domain/entities';
 
 export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
-  const list = (tenantId: string, jobId: string): Promise<Form[]> => {
-    return db.any(sql.list, {tenant_id: tenantId, job_id: jobId});
+  const list = (
+    tenantId: string,
+    query: {jobId?: string; formCategory?: FormCategory},
+  ): Promise<Form[]> => {
+    const params = {tenantId, ...query} as any;
+    if (!params.jobId) params.jobId = null;
+    if (!params.formCategory) params.formCategory = null;
+
+    return db.any(sql.list, decamelizeKeys(params));
   };
 
   const retrieve = (

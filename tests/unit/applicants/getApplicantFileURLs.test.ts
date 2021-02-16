@@ -1,5 +1,5 @@
 import {random, image} from 'faker';
-import {getApplicantFileURLs} from 'adapters/applicants/utils';
+import {getApplicantFileURLs} from 'application/applicants/utils';
 
 const mockURL = image.imageUrl();
 jest.mock('aws-sdk', () => ({
@@ -12,14 +12,14 @@ describe('applicants', () => {
   describe('getApplicantFileURLs', () => {
     it('calls S3 getPresigned URL for every file', async () => {
       const files = [
-        {key: random.alphaNumeric(), value: image.imageUrl()},
-        {key: random.alphaNumeric(), value: image.imageUrl()},
-        {key: random.alphaNumeric(), value: image.imageUrl()},
+        {formFieldId: random.alphaNumeric(), uri: image.imageUrl()},
+        {formFieldId: random.alphaNumeric(), uri: image.imageUrl()},
+        {formFieldId: random.alphaNumeric(), uri: image.imageUrl()},
       ];
 
-      const expectedResult = files.map((file) => ({
-        key: file.key,
-        value: mockURL,
+      const expectedResult = files.map(({formFieldId}) => ({
+        formFieldId,
+        uri: mockURL,
       }));
       const resp = await getApplicantFileURLs(files);
 

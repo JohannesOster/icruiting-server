@@ -1,5 +1,5 @@
 import express from 'express';
-import {MembersAdapter} from 'adapters/members/controller';
+import {MembersAdapter} from 'application/members/controller';
 import {retrieveRules, updateRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';

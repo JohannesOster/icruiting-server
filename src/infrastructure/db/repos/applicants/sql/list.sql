@@ -5,7 +5,8 @@ FROM applicant_view AS applicant
 LEFT JOIN (
 	SELECT applicant_id, attribute->>'value' AS order_value
 	FROM applicant_view CROSS JOIN UNNEST(attributes) AS attribute
-	WHERE attribute->>'key' = ${order_by}) AS order_query
+	JOIN form_field ON form_field.form_field_id::TEXT = attribute->>'form_field_id'
+	WHERE label = ${order_by}) AS order_query
 ON ${order_by} IS NOT NULL AND order_query.applicant_id = applicant.applicant_id
 JOIN (
 	SELECT applicant_id

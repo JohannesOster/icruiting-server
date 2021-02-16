@@ -1,5 +1,5 @@
 import express from 'express';
-import {SubscriptionsAdapter} from 'adapters/tenants/subscriptions';
+import {SubscriptionsAdapter} from 'application/tenants/subscriptions';
 import {createRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares';
 
