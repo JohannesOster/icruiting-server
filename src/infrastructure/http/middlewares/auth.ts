@@ -17,6 +17,7 @@ export const requireAuth: RequestHandler = catchAsync(
       .validateToken(token)
       .then((user) => {
         req.user = user;
+        next();
       })
       .catch(next);
   },
