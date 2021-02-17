@@ -59,7 +59,7 @@ export const PaymentService = () => {
           expand: ['data.product'],
         })
         .then(({data}) => {
-          data.filter((price) => {
+          return data.filter((price) => {
             const isFriendsAndFamiliy =
               (price.product as any).id === config.freeStripeProducId;
             const isActive = price.active;
