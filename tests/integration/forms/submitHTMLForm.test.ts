@@ -4,8 +4,11 @@ import app from 'infrastructure/http';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
 import {Form} from 'domain/entities';
+import Mail from 'nodemailer/lib/mailer';
 
-jest.mock('infrastructure/mailService/mailService');
+jest.mock('infrastructure/mailService/mailService', () => ({
+  sendMail: jest.fn((options: Mail.Options) => Promise.resolve({})),
+}));
 
 let tenantId: string;
 let jobId: string;
