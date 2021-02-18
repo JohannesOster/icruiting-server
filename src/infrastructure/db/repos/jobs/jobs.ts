@@ -3,6 +3,7 @@ import sql from './sql';
 import {rawText} from '../../utils';
 import {decamelizeKeys} from 'humps';
 import {Job} from 'domain/entities';
+import {inspect} from 'util';
 
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const {ColumnSet} = pgp.helpers;
@@ -55,10 +56,10 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     await db.tx(async (t) => {
       await t.none('SET CONSTRAINTS ALL DEFERRED');
       const promises: Promise<any>[] = [];
-      if (job.jobTitle != originalJob.jobTitle) {
+      if (job.jobTitle !== originalJob.jobTitle) {
         const vals = {job_title: job.jobTitle};
         const stmt =
-          update(vals, null, 'job') + ' WHERE tenant_id=$1 AND job_id=$1';
+          update(vals, null, 'job') + ' WHERE tenant_id=$1 AND job_id=$2';
         promises.push(t.none(stmt, [tenantId, job.jobId]));
       }
 
@@ -76,7 +77,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
         // does exist in old but not in new
         if (!newReq) return requirementsMap.shouldDelete.push(old);
         // does exist in both jobs
-        requirementsMap.shouldUpdate.push(old);
+        requirementsMap.shouldUpdate.push(newReq);
       });
 
       // find shouldInsert
@@ -93,7 +94,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       promises.concat(
         requirementsMap.shouldDelete.map(async ({jobRequirementId}) => {
           return t.none(
-            'DELETE FROM job_requirement WHERE jobRequirementId=$1',
+            'DELETE FROM job_requirement WHERE job_requirement_id=$1',
             jobRequirementId,
           );
         }),
@@ -101,10 +102,10 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
 
       /** INSERT ========================= */
       if (requirementsMap.shouldInsert.length) {
-        const requirements = job.jobRequirements.map((req) => {
-          const tmp: any = {jobId: job.jobId, ...req};
-          return tmp;
-        });
+        const requirements = requirementsMap.shouldInsert.map((req) => ({
+          jobId: job.jobId,
+          ...req,
+        }));
 
         const reqVals = requirements.map((req) => decamelizeKeys(req));
         const reqStmt = insert(reqVals, jrColumnSet);
@@ -114,10 +115,19 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
 
       /** UPDATE ========================== */
       if (requirementsMap.shouldUpdate.length) {
+        const csUpdate = new ColumnSet(
+          [
+            '?job_requirement_id',
+            'requirement_label',
+            {name: 'min_value', def: null, cast: 'numeric'},
+          ],
+          {table: 'job_requirement'},
+        );
+
         const values = decamelizeKeys(requirementsMap.shouldUpdate);
         const updateStmt =
-          update(values, jrColumnSet) +
-          ' WHERE v.job_requirement_id::uuid = t.job_requirement_id';
+          update(values, csUpdate) +
+          ' WHERE v.job_requirement_id::UUID = t.job_requirement_id';
         promises.push(t.any(updateStmt));
       }
       return t.batch(promises);

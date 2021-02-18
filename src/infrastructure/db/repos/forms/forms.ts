@@ -121,7 +121,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
         // exists in old but not in new => delete
         if (!newFormField) return fieldsMap.shouldDelete.push(field);
         // exists in both => update
-        fieldsMap.shouldUpdate.push(field);
+        fieldsMap.shouldUpdate.push(newFormField);
       });
 
       /** DELETE ======================== */
