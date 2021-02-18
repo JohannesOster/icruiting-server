@@ -1,9 +1,8 @@
 import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
-import {rawText} from '../../utils';
+import {compareArrays, rawText} from '../../utils';
 import {decamelizeKeys} from 'humps';
 import {Job} from 'domain/entities';
-import {inspect} from 'util';
 
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const {ColumnSet} = pgp.helpers;
@@ -63,36 +62,15 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
         promises.push(t.none(stmt, [tenantId, job.jobId]));
       }
 
-      const requirementsMap = {
-        shouldDelete: [], // exists in original but does not exist in params
-        shouldUpdate: [], // exists in original and exists in params
-        shouldInsert: [], // does not exist in original but in params
-      } as {[key: string]: typeof job.jobRequirements};
-
-      // find shouldDelete and shouldUpdate
-      originalJob.jobRequirements.forEach((old) => {
-        const newReq = job.jobRequirements.find(
-          ({jobRequirementId}) => jobRequirementId === old.jobRequirementId,
-        );
-        // does exist in old but not in new
-        if (!newReq) return requirementsMap.shouldDelete.push(old);
-        // does exist in both jobs
-        requirementsMap.shouldUpdate.push(newReq);
-      });
-
-      // find shouldInsert
-      job.jobRequirements.forEach((newReq) => {
-        const oldReq = originalJob.jobRequirements.find(
-          ({jobRequirementId}) => jobRequirementId === newReq.jobRequirementId,
-        );
-        if (oldReq) return;
-        // exists in new but not in original => add new
-        requirementsMap.shouldInsert.push(newReq);
-      });
+      const requirementsMap = compareArrays(
+        job.jobRequirements,
+        originalJob.jobRequirements,
+        (a, b) => a.jobRequirementId === b.jobRequirementId,
+      );
 
       /** DELETE ======================== */
       promises.concat(
-        requirementsMap.shouldDelete.map(async ({jobRequirementId}) => {
+        requirementsMap.secondMinusFirst.map(async ({jobRequirementId}) => {
           return t.none(
             'DELETE FROM job_requirement WHERE job_requirement_id=$1',
             jobRequirementId,
@@ -101,8 +79,8 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       );
 
       /** INSERT ========================= */
-      if (requirementsMap.shouldInsert.length) {
-        const requirements = requirementsMap.shouldInsert.map((req) => ({
+      if (requirementsMap.firstMinusSecond.length) {
+        const requirements = requirementsMap.firstMinusSecond.map((req) => ({
           jobId: job.jobId,
           ...req,
         }));
@@ -114,7 +92,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       }
 
       /** UPDATE ========================== */
-      if (requirementsMap.shouldUpdate.length) {
+      if (requirementsMap.intersection.length) {
         const csUpdate = new ColumnSet(
           [
             '?job_requirement_id',
@@ -124,7 +102,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
           {table: 'job_requirement'},
         );
 
-        const values = decamelizeKeys(requirementsMap.shouldUpdate);
+        const values = decamelizeKeys(requirementsMap.intersection);
         const updateStmt =
           update(values, csUpdate) +
           ' WHERE v.job_requirement_id::UUID = t.job_requirement_id';
