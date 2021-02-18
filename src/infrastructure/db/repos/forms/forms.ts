@@ -72,7 +72,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
 
   const update = async (params: Form): Promise<Form> => {
     const orgignialForm = await retrieve(params.tenantId, params.formId);
-    if (!orgignialForm) throw new Error('Di not find form to update');
+    if (!orgignialForm) throw new Error('Did not find form to update');
     const {update, insert, ColumnSet} = pgp.helpers;
 
     await db.tx(async (t) => {
@@ -103,16 +103,25 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
         shouldInsert: [], // does not exist in original but in params = does not have a formFieldId
       } as {[key: string]: typeof params.formFields};
 
+      // find shouldInsert
       params.formFields.forEach((field) => {
-        if (!field.formFieldId) fieldsMap.shouldInsert.push(field);
-        else fieldsMap.shouldUpdate.push(field);
+        const oldField = orgignialForm.formFields.find(
+          ({formFieldId}) => formFieldId === field.formFieldId,
+        );
+        if (oldField) return;
+        // exists in new but not in old => insert
+        fieldsMap.shouldInsert.push(field);
       });
 
+      // find shouldDelete and shouldUpdate
       orgignialForm.formFields.forEach((field) => {
         const newFormField = params.formFields.find(
           ({formFieldId}) => formFieldId === field.formFieldId,
         );
-        if (!newFormField) fieldsMap.shouldDelete.push(field);
+        // exists in old but not in new => delete
+        if (!newFormField) return fieldsMap.shouldDelete.push(field);
+        // exists in both => update
+        fieldsMap.shouldUpdate.push(field);
       });
 
       /** DELETE ======================== */

@@ -48,24 +48,79 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
 
   const update = async (params: Job): Promise<Job> => {
     const {tenantId, ...job} = params;
+    const originalJob = await retrieve(tenantId, job.jobId);
+    if (!originalJob) throw new Error('Did not find job to update');
+    const {insert, update} = db.$config.pgp.helpers;
+
     await db.tx(async (t) => {
-      const {insert, update} = db.$config.pgp.helpers;
-      const vals = {job_title: job.jobTitle};
-      const stmt = update(vals, null, 'job') + ' WHERE job_id=$1';
-      await t.none(stmt, job.jobId);
+      await t.none('SET CONSTRAINTS ALL DEFERRED');
+      const promises: Promise<any>[] = [];
+      if (job.jobTitle != originalJob.jobTitle) {
+        const vals = {job_title: job.jobTitle};
+        const stmt =
+          update(vals, null, 'job') + ' WHERE tenant_id=$1 AND job_id=$1';
+        promises.push(t.none(stmt, [tenantId, job.jobId]));
+      }
 
-      await t.any('SET CONSTRAINTS job_requirement_id_fk DEFERRED');
-      await t.none('DELETE FROM job_requirement WHERE job_id=$1', job.jobId);
+      const requirementsMap = {
+        shouldDelete: [], // exists in original but does not exist in params
+        shouldUpdate: [], // exists in original and exists in params
+        shouldInsert: [], // does not exist in original but in params
+      } as {[key: string]: typeof job.jobRequirements};
 
-      const requirements = job.jobRequirements.map((req: any) => {
-        const tmp: any = {jobId: job.jobId, ...req};
-        if (!tmp.jobRequirementId) delete tmp.jobRequirementId; // filter out empty strings
-        return tmp;
+      // find shouldDelete and shouldUpdate
+      originalJob.jobRequirements.forEach((old) => {
+        const newReq = job.jobRequirements.find(
+          ({jobRequirementId}) => jobRequirementId === old.jobRequirementId,
+        );
+        // does exist in old but not in new
+        if (!newReq) return requirementsMap.shouldDelete.push(old);
+        // does exist in both jobs
+        requirementsMap.shouldUpdate.push(old);
       });
 
-      const reqVals = requirements.map((req) => decamelizeKeys(req));
-      const reqStmt = insert(reqVals, jrColumnSet);
-      await t.none(reqStmt);
+      // find shouldInsert
+      job.jobRequirements.forEach((newReq) => {
+        const oldReq = originalJob.jobRequirements.find(
+          ({jobRequirementId}) => jobRequirementId === newReq.jobRequirementId,
+        );
+        if (oldReq) return;
+        // exists in new but not in original => add new
+        requirementsMap.shouldInsert.push(newReq);
+      });
+
+      /** DELETE ======================== */
+      promises.concat(
+        requirementsMap.shouldDelete.map(async ({jobRequirementId}) => {
+          return t.none(
+            'DELETE FROM job_requirement WHERE jobRequirementId=$1',
+            jobRequirementId,
+          );
+        }),
+      );
+
+      /** INSERT ========================= */
+      if (requirementsMap.shouldInsert.length) {
+        const requirements = job.jobRequirements.map((req) => {
+          const tmp: any = {jobId: job.jobId, ...req};
+          return tmp;
+        });
+
+        const reqVals = requirements.map((req) => decamelizeKeys(req));
+        const reqStmt = insert(reqVals, jrColumnSet);
+
+        promises.push(t.none(reqStmt));
+      }
+
+      /** UPDATE ========================== */
+      if (requirementsMap.shouldUpdate.length) {
+        const values = decamelizeKeys(requirementsMap.shouldUpdate);
+        const updateStmt =
+          update(values, jrColumnSet) +
+          ' WHERE v.job_requirement_id::uuid = t.job_requirement_id';
+        promises.push(t.any(updateStmt));
+      }
+      return t.batch(promises);
     });
 
     return retrieve(tenantId, job.jobId).then((job) => {
