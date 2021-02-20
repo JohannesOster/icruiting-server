@@ -29,18 +29,18 @@ export const calcReport = (
     rank,
     formCategory: rows[0].formCategory,
     formCategoryScore: report.formCategoryScores[applicantId],
-    formResults: Object.entries(report.formScores[applicantId]).map(
-      ([formId, formScore]) => ({
+    formResults: Object.entries(forms).map(([formId, {formTitle}]) => {
+      const formScore = report.formScores[applicantId][formId];
+      const fields = formFields[formId];
+      return {
         formId,
         formTitle: forms[formId].formTitle,
         formScore: formScore.mean,
         stdDevFormScore: formScore.stdDev,
-        formFieldScores: Object.entries(
-          report.formFieldScores[applicantId][formId],
-        ).map(([formFieldId, formFieldScore]) => {
-          const {jobRequirementId, rowIndex, intent, label} = formFields[
-            formId
-          ][formFieldId];
+        formFieldScores: Object.entries(fields).map(([formFieldId, value]) => {
+          const {jobRequirementId, rowIndex, intent, label} = value;
+          const formFieldScore =
+            report.formFieldScores[applicantId][formId][formFieldId];
           return {
             formFieldId,
             jobRequirementId,
@@ -52,12 +52,17 @@ export const calcReport = (
               `${applicantId}.${formId}.${formFieldId}`,
               [],
             ) as string[],
-            formFieldScore: formFieldScore.mean,
-            stdDevFormFieldScores: formFieldScore.stdDev,
+            countDistinct: _.get(
+              report.countDistinct,
+              `${applicantId}.${formId}.${formFieldId}`,
+              undefined,
+            ) as {[key: string]: number} | undefined,
+            formFieldScore: formFieldScore?.mean,
+            stdDevFormFieldScores: formFieldScore?.stdDev,
           };
         }),
-      }),
-    ),
+      };
+    }),
     jobRequirementResults: jobRequiremnts.map(
       ({jobRequirementId, requirementLabel, minValue}) => ({
         jobRequirementId,

@@ -30,6 +30,11 @@ export type ReportBuilderReturnType = {
       [formId: string]: {[formFieldId: string]: string[]};
     };
   };
+  countDistinct: {
+    [applicantId: string]: {
+      [formId: string]: {[formfieldId: string]: {[label: string]: number}};
+    };
+  };
   jobRequirements: {
     [applicantId: string]: {[jobRequirementId: string]: number};
   };
@@ -51,6 +56,7 @@ export type Report = {
       intent: FormFieldIntent;
       label: string;
       aggregatedValues: string[];
+      countDistinct?: {[key: string]: number};
       formFieldScore: number;
       stdDevFormFieldScores: number;
     }[];
