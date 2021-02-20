@@ -9,18 +9,33 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
     [jobRequirementId: string]: {[formId: string]: string}[];
   } = {};
 
+  const aggregateFormSubmissionFields = (
+    applicantId: string,
+    formId: string,
+    formFieldId: string,
+  ) => {
+    const submission = Object.values(submissions[applicantId]).find(
+      (val) => !!val[formId],
+    );
+    if (!submission) return;
+
+    const aggregated = Object.values(submissions[applicantId])
+      .map((subs) => _.get(subs, `${formId}.${formFieldId}`) as any)
+      .filter((val) => !!val);
+
+    return aggregated;
+  };
+
   const result = Object.entries(forms).reduce((acc, [formId, formFields]) => {
     Object.entries(formFields).forEach(([formFieldId, formField]) => {
       if (formField.intent === 'aggregate') {
         applicantIds.forEach((applicantId) => {
-          const submission = Object.values(submissions[applicantId]).find(
-            (val) => !!val[formId],
+          const aggregated = aggregateFormSubmissionFields(
+            applicantId,
+            formId,
+            formFieldId,
           );
-          if (!submission) return;
-
-          const aggregated = Object.values(submissions[applicantId])
-            .map((subs) => _.get(subs, `${formId}.${formFieldId}`) as any)
-            .filter((val) => !!val);
+          if (!aggregated) return;
 
           let path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
           _.set(acc, path, aggregated);
@@ -30,15 +45,12 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
 
       if (formField.intent === 'count_distinct') {
         applicantIds.forEach((applicantId) => {
-          const submission = Object.values(submissions[applicantId]).find(
-            (val) => !!val[formId],
+          const aggregated = aggregateFormSubmissionFields(
+            applicantId,
+            formId,
+            formFieldId,
           );
-          if (!submission) return;
-
-          // all submissions to this one field for one applicant
-          const aggregated = Object.values(submissions[applicantId])
-            .map((subs) => _.get(subs, `${formId}.${formFieldId}`) as any)
-            .filter((val) => !!val);
+          if (!aggregated) return;
 
           const options = formField.options?.reduce((acc, curr) => {
             acc[curr.value] = curr.label;
@@ -87,7 +99,7 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
         .map((submissions) => {
           if (!submissions[formId]) return;
           const submissionValues = Object.entries(submissions[formId])
-            .filter(([key, value]) => formFields[key].intent === 'sum_up')
+            .filter(([key]) => formFields[key].intent === 'sum_up')
             .map(([, val]) => +val)
             .filter((val) => !isNaN(val));
           if (!submissionValues.length) return;
