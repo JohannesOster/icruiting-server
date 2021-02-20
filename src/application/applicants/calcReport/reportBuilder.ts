@@ -14,12 +14,11 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
     formId: string,
     formFieldId: string,
   ) => {
-    const submission = Object.values(submissions[applicantId]).find(
-      (val) => !!val[formId],
-    );
+    const forms = submissions[applicantId];
+    const submission = Object.values(forms).find((val) => !!val[formId]);
     if (!submission) return;
 
-    const aggregated = Object.values(submissions[applicantId])
+    const aggregated: string[] = Object.values(forms)
       .map((subs) => _.get(subs, `${formId}.${formFieldId}`) as any)
       .filter((val) => !!val);
 
@@ -62,7 +61,7 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
             if (!acc[key]) acc[key] = 0;
             ++acc[key];
             return acc;
-          }, {});
+          }, {} as any);
 
           let path = `countDistinct.${applicantId}.${formId}.${formFieldId}`;
           _.set(acc, path, counter);
