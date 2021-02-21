@@ -27,7 +27,11 @@ type BaseFormField = {
 
 export type FormField = {formFieldId: string} & BaseFormField;
 
-export type FormCategory = 'application' | 'screening' | 'assessment';
+export type FormCategory =
+  | 'application'
+  | 'screening'
+  | 'assessment'
+  | 'onboarding';
 type BaseForm = {
   tenantId: string;
   jobId: string;
