@@ -5,6 +5,7 @@ import storageService from 'infrastructure/storageService';
 import {getApplicantFileURLs} from './utils';
 import db from 'infrastructure/db';
 import {calcReport} from './calcReport';
+import {FormCategory} from 'domain/entities';
 
 export const ApplicantsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {
@@ -187,7 +188,7 @@ export const ApplicantsAdapter = () => {
   const getReport = httpReqHandler(async (req) => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
-    type QueryType = {formCategory: 'screening' | 'assessment'};
+    type QueryType = {formCategory: FormCategory};
     const {formCategory} = req.query as QueryType;
 
     const applicant = await db.applicants.retrieve(tenantId, applicantId);
