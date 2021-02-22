@@ -1,7 +1,7 @@
 import db from 'infrastructure/db';
 import fake from './fake';
 import {random} from 'faker';
-import {FormCategory} from 'domain/entities';
+import {Form, FormCategory} from 'domain/entities';
 
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {
@@ -12,14 +12,30 @@ const dataGenerator = {
     const job = fake.job(tenantId);
     return db.jobs.create(job);
   },
-  insertForm: (tenantId: string, jobId: string, formCategory: FormCategory) => {
-    let form: any;
-    if (formCategory === 'application') {
-      form = fake.applicationForm(tenantId, jobId);
-    } else if (formCategory === 'screening') {
-      form = fake.screeningForm(tenantId, jobId);
-    } else {
-      form = fake.assessmentForm(tenantId, jobId);
+  insertForm: (
+    tenantId: string,
+    jobId: string,
+    formCategory: FormCategory,
+    options?: {[key: string]: any},
+  ) => {
+    let form: Form;
+    switch (formCategory) {
+      case 'application': {
+        form = fake.applicationForm(tenantId, jobId);
+        break;
+      }
+      case 'screening': {
+        form = fake.screeningForm(tenantId, jobId);
+        break;
+      }
+      case 'assessment': {
+        form = fake.assessmentForm(tenantId, jobId);
+        break;
+      }
+      case 'onboarding': {
+        form = fake.onboardingForm(tenantId, jobId, options?.replicaOf);
+        break;
+      }
     }
 
     return db.forms.create(form);

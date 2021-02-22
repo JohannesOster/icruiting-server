@@ -28,16 +28,18 @@ CREATE TABLE IF NOT EXISTS job_requirement (
   CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
-CREATE TYPE form_category AS ENUM ('application', 'screening', 'assessment');
+CREATE TYPE form_category AS ENUM ('application', 'screening', 'assessment', 'onboarding');
 CREATE TABLE IF NOT EXISTS form (
   form_id UUID DEFAULT uuid_generate_v4(),
   tenant_id UUID NOT NULL,
   job_id UUID NOT NULL,
   form_category form_category NOT NULL,
   form_title TEXT DEFAULT NULL,
+  replica_of UUID,
   CONSTRAINT form_id_pk PRIMARY KEY (form_id),
   CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE,
   CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
+  CONSTRAINT replica_of_fk FOREIGN KEY (replica_of) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT form_title_assessment_form_not_null CHECK(form_title IS NOT NULL OR form_category != 'assessment')
 );
 

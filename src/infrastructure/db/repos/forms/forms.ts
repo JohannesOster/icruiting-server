@@ -33,6 +33,10 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
       helpers.insert(decamelizeKeys(form), null, 'form') + ' RETURNING *';
     const insertedForm = await db.one(formStmt);
 
+    if (!formFields.length) {
+      return Promise.resolve({...insertedForm, formFields: []});
+    }
+
     // - insert formFields
     const cs = new helpers.ColumnSet(
       [

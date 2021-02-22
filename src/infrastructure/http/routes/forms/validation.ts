@@ -1,9 +1,16 @@
 import {body} from 'express-validator';
 
 const formRules = [
+  body('formId').optional({nullable: true}).isString(),
   body('jobId').isUUID(),
-  body('formCategory').isIn(['application', 'screening', 'assessment']),
+  body('formCategory').isIn([
+    'application',
+    'screening',
+    'assessment',
+    'onboarding',
+  ]),
   body('formTitle').optional({nullable: true}).isString(),
+  body('replicaOf').optional({nullable: true}).isString(),
   body('formFields').isArray({min: 1}),
   body('formFields[*].component').isIn([
     'section_header',
@@ -27,4 +34,4 @@ const formRules = [
 ];
 
 export const createRules = formRules;
-export const updateRules = [...formRules, body('formId')];
+export const updateRules = formRules;
