@@ -10,14 +10,14 @@ describe('ReportBuilder', () => {
       form1: {
         formField1: {
           intent: 'sum_up' as 'sum_up',
-          options: options,
+          options,
           rowIndex: 0,
           label: '',
           jobRequirementId: '',
         },
         formField2: {
           intent: 'sum_up' as 'sum_up',
-          options: options,
+          options,
           rowIndex: 1,
           label: '',
           jobRequirementId: '',
@@ -26,7 +26,7 @@ describe('ReportBuilder', () => {
       form2: {
         formField1: {
           intent: 'sum_up' as 'sum_up',
-          options: options,
+          options,
           rowIndex: 0,
           label: '',
           jobRequirementId: '',
@@ -140,7 +140,7 @@ describe('ReportBuilder', () => {
       form1: {
         formField1: {
           intent: 'sum_up' as 'sum_up',
-          options: options,
+          options,
           rowIndex: 0,
           label: '',
           jobRequirementId: 'DdUJWo',
@@ -148,7 +148,7 @@ describe('ReportBuilder', () => {
         formField2: {
           intent: 'sum_up' as 'sum_up',
           rowIndex: 1,
-          options: options,
+          options,
           label: '',
           jobRequirementId: 'DKBfVT',
         },
@@ -157,7 +157,7 @@ describe('ReportBuilder', () => {
         formField1: {
           intent: 'sum_up' as 'sum_up',
           rowIndex: 0,
-          options: options,
+          options,
           label: '',
           jobRequirementId: 'DdUJWo',
         },

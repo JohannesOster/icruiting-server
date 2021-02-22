@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development ts-node-dev -r tsconfig-paths/register --respawn --ignore-watch node_modules ./src/index.ts",
-    "start": "NODE_PATH=dist/src node dist/src/index.js",
+    "start": "NODE_ENV=production NODE_PATH=dist/src npm run db-migrate && node dist/src/index.js",
     "build": "rimraf ./dist && tsc && npm run copy-files",
     "copy-files": "npx copyfiles \"src/**/*/*.sql\" \"src/**/*/*.pug\" \"src/**/*/*.css\" dist/",
     "db-migrate": "npx ts-node ./src/infrastructure/db/flyway.ts flyway migrate",

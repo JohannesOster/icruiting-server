@@ -36,7 +36,7 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
           );
           if (!aggregated) return;
 
-          let path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
+          const path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
           _.set(acc, path, aggregated);
         });
         return;
@@ -63,7 +63,7 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
             return acc;
           }, {} as any);
 
-          let path = `countDistinct.${applicantId}.${formId}.${formFieldId}`;
+          const path = `countDistinct.${applicantId}.${formId}.${formFieldId}`;
           _.set(acc, path, counter);
         });
         return;
