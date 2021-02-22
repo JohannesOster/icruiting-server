@@ -133,7 +133,7 @@ export const ApplicantsAdapter = () => {
               );
 
               const fileId = (Math.random() * 1e32).toString(36);
-              let fileKey = form.tenantId + '.' + fileId + '.' + extension;
+              const fileKey = form.tenantId + '.' + fileId + '.' + extension;
 
               if (oldFile) await storageService.del(oldFile.uri);
 

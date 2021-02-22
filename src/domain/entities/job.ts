@@ -1,6 +1,6 @@
 import {v4 as uuidv4} from 'uuid';
 
-type BaseJobRequirement = {requirementLabel: string; minValue?: string};
+type BaseJobRequirement = {requirementLabel: string; minValue?: number};
 export type JobRequirement = {jobRequirementId: string} & BaseJobRequirement;
 
 type BaseJob = {tenantId: string; jobTitle: string};

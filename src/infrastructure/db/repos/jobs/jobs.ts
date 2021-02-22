@@ -1,7 +1,7 @@
 import {IDatabase, IMain} from 'pg-promise';
-import sql from './sql';
-import {rawText} from '../../utils';
 import {decamelizeKeys} from 'humps';
+import sql from './sql';
+import {compareArrays} from '../../utils';
 import {Job} from 'domain/entities';
 
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
@@ -9,10 +9,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
 
   const jrColumnSet = new ColumnSet(
     [
-      {
-        name: 'job_requirement_id',
-        def: () => rawText('uuid_generate_v4()'),
-      },
+      'job_requirement_id',
       'job_id',
       'requirement_label',
       {name: 'min_value', def: null},
@@ -21,18 +18,17 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   );
 
   const list = (tenantId: string): Promise<Job[]> => {
-    return db.any(sql.retrieve, {tenant_id: tenantId, job_id: null});
+    return db.any(sql.list, decamelizeKeys({tenantId, jobId: null}));
   };
 
   const retrieve = (tenantId: string, jobId: string): Promise<Job | null> => {
-    return db.oneOrNone(sql.retrieve, {tenant_id: tenantId, job_id: jobId});
+    return db.oneOrNone(sql.list, decamelizeKeys({tenantId, jobId}));
   };
 
   const create = async (params: Job): Promise<Job> => {
     const {jobRequirements, ...job} = params;
     const {insert} = pgp.helpers;
-    const jobVals = decamelizeKeys(job);
-    const stmt = insert(jobVals, null, 'job') + 'RETURNING *';
+    const stmt = insert(decamelizeKeys(job), null, 'job') + ' RETURNING *';
     const insertedJob = await db.one(stmt);
 
     const requirements = jobRequirements.map((req) => ({
@@ -48,24 +44,66 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
 
   const update = async (params: Job): Promise<Job> => {
     const {tenantId, ...job} = params;
+    const originalJob = await retrieve(tenantId, job.jobId);
+    if (!originalJob) throw new Error('Did not find job to update');
+    const {insert, update} = db.$config.pgp.helpers;
+
     await db.tx(async (t) => {
-      const {insert, update} = db.$config.pgp.helpers;
-      const vals = {job_title: job.jobTitle};
-      const stmt = update(vals, null, 'job') + ' WHERE job_id=$1';
-      await t.none(stmt, job.jobId);
+      const promises: Promise<any>[] = [];
+      if (job.jobTitle !== originalJob.jobTitle) {
+        const vals = {job_title: job.jobTitle};
+        const condition = ' WHERE tenant_id=$1 AND job_id=$2';
+        const stmt = update(vals, null, 'job') + condition;
+        promises.push(t.none(stmt, [tenantId, job.jobId]));
+      }
 
-      await t.any('SET CONSTRAINTS job_requirement_id_fk DEFERRED');
-      await t.none('DELETE FROM job_requirement WHERE job_id=$1', job.jobId);
+      const requirementsMap = compareArrays(
+        job.jobRequirements,
+        originalJob.jobRequirements,
+        (a, b) => a.jobRequirementId === b.jobRequirementId,
+      );
 
-      const requirements = job.jobRequirements.map((req: any) => {
-        const tmp: any = {jobId: job.jobId, ...req};
-        if (!tmp.jobRequirementId) delete tmp.jobRequirementId; // filter out empty strings
-        return tmp;
-      });
+      /** DELETE ======================== */
+      promises.concat(
+        requirementsMap.secondMinusFirst.map(async ({jobRequirementId}) => {
+          return t.none(
+            'DELETE FROM job_requirement WHERE job_requirement_id=$1',
+            jobRequirementId,
+          );
+        }),
+      );
 
-      const reqVals = requirements.map((req) => decamelizeKeys(req));
-      const reqStmt = insert(reqVals, jrColumnSet);
-      await t.none(reqStmt);
+      /** INSERT ========================= */
+      if (requirementsMap.firstMinusSecond.length) {
+        const requirements = requirementsMap.firstMinusSecond.map((req) => ({
+          jobId: job.jobId,
+          ...req,
+        }));
+
+        const reqVals = requirements.map((req) => decamelizeKeys(req));
+        const reqStmt = insert(reqVals, jrColumnSet);
+
+        promises.push(t.none(reqStmt));
+      }
+
+      /** UPDATE ========================== */
+      if (requirementsMap.intersection.length) {
+        const csUpdate = new ColumnSet(
+          [
+            '?job_requirement_id',
+            'requirement_label',
+            {name: 'min_value', def: null, cast: 'numeric'},
+          ],
+          {table: 'job_requirement'},
+        );
+
+        const values = decamelizeKeys(requirementsMap.intersection);
+        const updateStmt =
+          update(values, csUpdate) +
+          ' WHERE v.job_requirement_id::UUID = t.job_requirement_id';
+        promises.push(t.any(updateStmt));
+      }
+      return t.batch(promises);
     });
 
     return retrieve(tenantId, job.jobId).then((job) => {
@@ -77,7 +115,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const del = (tenantId: string, jobId: string): Promise<null> => {
     return db.none(
       'DELETE FROM job WHERE tenant_id=${tenant_id} AND job_id=${job_id}',
-      {tenant_id: tenantId, job_id: jobId},
+      decamelizeKeys({tenantId, jobId}),
     );
   };
 

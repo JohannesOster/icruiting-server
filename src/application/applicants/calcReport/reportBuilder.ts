@@ -9,21 +9,62 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
     [jobRequirementId: string]: {[formId: string]: string}[];
   } = {};
 
+  const aggregateFormSubmissionFields = (
+    applicantId: string,
+    formId: string,
+    formFieldId: string,
+  ) => {
+    const forms = submissions[applicantId];
+    const submission = Object.values(forms).find((val) => !!val[formId]);
+    if (!submission) return;
+
+    const aggregated: string[] = Object.values(forms)
+      .map((subs) => _.get(subs, `${formId}.${formFieldId}`) as any)
+      .filter((val) => !!val);
+
+    return aggregated;
+  };
+
   const result = Object.entries(forms).reduce((acc, [formId, formFields]) => {
     Object.entries(formFields).forEach(([formFieldId, formField]) => {
-      if (formField.intent !== 'sum_up') {
+      if (formField.intent === 'aggregate') {
         applicantIds.forEach((applicantId) => {
-          const submission = Object.values(submissions[applicantId]).find(
-            (val) => !!val[formId],
+          const aggregated = aggregateFormSubmissionFields(
+            applicantId,
+            formId,
+            formFieldId,
           );
-          if (!submission) return;
+          if (!aggregated) return;
 
-          const aggregated = Object.values(submissions[applicantId])
-            .map((subs) => _.get(subs, `${formId}.${formFieldId}`) as any)
-            .filter((val) => !!val);
-
-          let path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
+          const path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
           _.set(acc, path, aggregated);
+        });
+        return;
+      }
+
+      if (formField.intent === 'count_distinct') {
+        applicantIds.forEach((applicantId) => {
+          const aggregated = aggregateFormSubmissionFields(
+            applicantId,
+            formId,
+            formFieldId,
+          );
+          if (!aggregated) return;
+
+          const options = formField.options?.reduce((acc, curr) => {
+            acc[curr.value] = curr.label;
+            return acc;
+          }, {} as any);
+
+          const counter = aggregated.reduce((acc, curr) => {
+            const key = options[curr];
+            if (!acc[key]) acc[key] = 0;
+            ++acc[key];
+            return acc;
+          }, {} as any);
+
+          const path = `countDistinct.${applicantId}.${formId}.${formFieldId}`;
+          _.set(acc, path, counter);
         });
         return;
       }
@@ -56,14 +97,15 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
       const formSubmissionScores = Object.values(submissions[applicantId])
         .map((submissions) => {
           if (!submissions[formId]) return;
-          const submissionValues = Object.values(submissions[formId])
-            .map((val) => +val)
+          const submissionValues = Object.entries(submissions[formId])
+            .filter(([key]) => formFields[key].intent === 'sum_up')
+            .map(([, val]) => +val)
             .filter((val) => !isNaN(val));
           if (!submissionValues.length) return;
 
           return calc.sum(submissionValues);
         })
-        .filter((val) => !!val) as number[];
+        .filter((val) => val !== undefined) as number[];
       if (formSubmissionScores.length) {
         const [formMean, formStdDev] = calc.score(formSubmissionScores);
 

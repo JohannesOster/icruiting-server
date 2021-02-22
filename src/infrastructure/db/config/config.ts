@@ -34,11 +34,9 @@ const config = {
   },
 };
 
-const configForEnv = () => {
+export const configForEnv = () => {
   const defaultConfig = config.development;
   const env = process.env.NODE_ENV;
   if (!env) return defaultConfig;
   return config[env as Environment] || defaultConfig;
 };
-
-export default configForEnv();

@@ -2,6 +2,7 @@ import {IDatabase, IMain} from 'pg-promise';
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
 import {Form, FormCategory} from 'domain/entities';
+import {compareArrays} from '../../utils';
 
 export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const list = (
@@ -72,7 +73,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
 
   const update = async (params: Form): Promise<Form> => {
     const orgignialForm = await retrieve(params.tenantId, params.formId);
-    if (!orgignialForm) throw new Error('Di not find form to update');
+    if (!orgignialForm) throw new Error('Did not find form to update');
     const {update, insert, ColumnSet} = pgp.helpers;
 
     await db.tx(async (t) => {
@@ -97,27 +98,15 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
         promises.push(promise);
       }
 
-      const fieldsMap = {
-        shouldDelete: [], // exists in original but does not exist in params
-        shouldUpdate: [], // exists in original and exists in params
-        shouldInsert: [], // does not exist in original but in params = does not have a formFieldId
-      } as {[key: string]: typeof params.formFields};
-
-      params.formFields.forEach((field) => {
-        if (!field.formFieldId) fieldsMap.shouldInsert.push(field);
-        else fieldsMap.shouldUpdate.push(field);
-      });
-
-      orgignialForm.formFields.forEach((field) => {
-        const newFormField = params.formFields.find(
-          ({formFieldId}) => formFieldId === field.formFieldId,
-        );
-        if (!newFormField) fieldsMap.shouldDelete.push(field);
-      });
+      const fieldsMap = compareArrays(
+        params.formFields,
+        orgignialForm.formFields,
+        (a, b) => a.formFieldId === b.formFieldId,
+      );
 
       /** DELETE ======================== */
       promises.concat(
-        fieldsMap.shouldDelete.map(async ({formFieldId}) => {
+        fieldsMap.secondMinusFirst.map(async ({formFieldId}) => {
           return t.none(
             'DELETE FROM form_field WHERE form_field_id=$1',
             formFieldId,
@@ -126,7 +115,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
       );
 
       /** INSERT ========================= */
-      if (fieldsMap.shouldInsert.length) {
+      if (fieldsMap.firstMinusSecond.length) {
         const cs = new ColumnSet(
           [
             {name: 'form_id', cast: 'uuid'},
@@ -147,7 +136,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
           {table: 'form_field'},
         );
 
-        const fields = fieldsMap.shouldInsert.map((item) => ({
+        const fields = fieldsMap.firstMinusSecond.map((item) => ({
           ...item,
           formId: params.formId,
         }));
@@ -158,7 +147,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
       }
 
       /** UPDATE ========================== */
-      if (fieldsMap.shouldUpdate.length) {
+      if (fieldsMap.intersection.length) {
         const csUpdate = new ColumnSet(
           [
             '?form_field_id',
@@ -179,7 +168,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
           {table: 'form_field'},
         );
 
-        const values = decamelizeKeys(fieldsMap.shouldUpdate);
+        const values = decamelizeKeys(fieldsMap.intersection);
         const updateStmt =
           update(values, csUpdate) +
           ' WHERE v.form_field_id::uuid = t.form_field_id';

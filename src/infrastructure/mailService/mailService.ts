@@ -17,7 +17,7 @@ export const sendMail = (options: Mail.Options): Promise<any> => {
   const transporter = nodemailer.createTransport(smtpConfig);
 
   return new Promise((resolve, reject) => {
-    transporter.sendMail({from: user, ...options}, function (error, info) {
+    transporter.sendMail({from: user, ...options}, (error, info) => {
       if (error) return reject(error);
       resolve(info);
     });

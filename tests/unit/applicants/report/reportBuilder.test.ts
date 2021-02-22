@@ -10,14 +10,14 @@ describe('ReportBuilder', () => {
       form1: {
         formField1: {
           intent: 'sum_up' as 'sum_up',
-          options: options,
+          options,
           rowIndex: 0,
           label: '',
           jobRequirementId: '',
         },
         formField2: {
           intent: 'sum_up' as 'sum_up',
-          options: options,
+          options,
           rowIndex: 1,
           label: '',
           jobRequirementId: '',
@@ -26,7 +26,7 @@ describe('ReportBuilder', () => {
       form2: {
         formField1: {
           intent: 'sum_up' as 'sum_up',
-          options: options,
+          options,
           rowIndex: 0,
           label: '',
           jobRequirementId: '',
@@ -140,7 +140,7 @@ describe('ReportBuilder', () => {
       form1: {
         formField1: {
           intent: 'sum_up' as 'sum_up',
-          options: options,
+          options,
           rowIndex: 0,
           label: '',
           jobRequirementId: 'DdUJWo',
@@ -148,7 +148,7 @@ describe('ReportBuilder', () => {
         formField2: {
           intent: 'sum_up' as 'sum_up',
           rowIndex: 1,
-          options: options,
+          options,
           label: '',
           jobRequirementId: 'DKBfVT',
         },
@@ -157,7 +157,7 @@ describe('ReportBuilder', () => {
         formField1: {
           intent: 'sum_up' as 'sum_up',
           rowIndex: 0,
-          options: options,
+          options,
           label: '',
           jobRequirementId: 'DdUJWo',
         },
@@ -188,6 +188,94 @@ describe('ReportBuilder', () => {
         applicant2: {DdUJWo: 3, DKBfVT: 0},
       };
       expect(report.jobRequirements).toEqual(expected);
+    });
+  });
+  describe('count_distinct', () => {
+    const options = ['0', '1', '2', '3', '4'].map((s) => ({
+      label: `Option ${s}`,
+      value: s,
+    }));
+
+    const forms = {
+      form1: {
+        formField1: {
+          intent: 'count_distinct' as 'count_distinct',
+          rowIndex: 0,
+          options,
+          label: '',
+        },
+      },
+      form2: {
+        formField1: {
+          intent: 'count_distinct' as 'count_distinct',
+          rowIndex: 0,
+          options,
+          label: '',
+        },
+      },
+    };
+    const submissions = {
+      applicant1: {
+        submitter1: {form1: {formField1: '0'}, form2: {formField1: '1'}},
+        submitter2: {form1: {formField1: '0'}},
+      },
+      applicant2: {
+        submitter1: {form1: {formField1: '0'}},
+        submitter2: {form1: {formField1: '1'}},
+      },
+    };
+    it('counts values correctly', () => {
+      const report = ReportBuilder(forms, submissions);
+      const expected = {
+        applicant1: {
+          form1: {formField1: {'Option 0': 2}},
+          form2: {formField1: {'Option 1': 1}},
+        },
+        applicant2: {
+          form1: {formField1: {'Option 0': 1, 'Option 1': 1}},
+        },
+      };
+      expect(report.countDistinct).toEqual(expected);
+    });
+  });
+  describe('formScore', () => {
+    const options = ['0', '1', '2', '3', '4'].map((s) => ({
+      label: s,
+      value: s,
+    }));
+
+    const forms = {
+      form1: {
+        formField1: {
+          intent: 'sum_up' as 'sum_up',
+          rowIndex: 0,
+          options,
+          label: '',
+        },
+        formField2: {
+          intent: 'aggregate' as 'aggregate',
+          rowIndex: 1,
+          label: '',
+        },
+        formField3: {
+          intent: 'count_distinct' as 'count_distinct',
+          options,
+          rowIndex: 1,
+          label: '',
+        },
+      },
+    };
+    const submissions = {
+      applicant1: {
+        submitter1: {
+          form1: {formField1: '0', formField2: '1', formField3: '2'},
+        },
+      },
+    };
+    it('only uses intent = sum_up formScore', () => {
+      const report = ReportBuilder(forms, submissions);
+      const expected = {applicant1: {form1: {mean: 0, stdDev: 0}}};
+      expect(report.formScores).toEqual(expected);
     });
   });
 });
