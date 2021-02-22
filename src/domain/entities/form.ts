@@ -10,6 +10,7 @@ export type FormFieldComponent =
   | 'file_upload'
   | 'rating_group'
   | 'section_header';
+
 type BaseFormField = {
   rowIndex: number;
   component: FormFieldComponent;
@@ -37,6 +38,7 @@ type BaseForm = {
   jobId: string;
   formCategory: FormCategory;
   formTitle?: string;
+  replicaOf?: string;
 };
 
 export type Form = {formId: string; formFields: FormField[]} & BaseForm;

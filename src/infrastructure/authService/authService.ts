@@ -105,7 +105,7 @@ export const AuthService = () => {
     });
   };
 
-  type UpdateUserRoleParams = {userRole: string; email: String};
+  type UpdateUserRoleParams = {userRole: string; email: string};
   const updateUserRole = ({userRole, email}: UpdateUserRoleParams) => {
     const cIdp = new CognitoIdentityServiceProvider();
     const params = {

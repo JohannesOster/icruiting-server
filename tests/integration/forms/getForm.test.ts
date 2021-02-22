@@ -70,5 +70,29 @@ describe('forms', () => {
         .set('Accept', 'application/json')
         .expect(404);
     });
+
+    it('retrieves replica with formFields of primary form', async () => {
+      const primary = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        'onboarding',
+      );
+
+      const replica = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        'onboarding',
+        {replicaOf: primary.formId},
+      );
+
+      const resp = await request(app)
+        .get(`/forms/${replica.formId}`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(resp.body.formFields.sort()).toStrictEqual(
+        primary.formFields.sort(),
+      );
+    });
   });
 });

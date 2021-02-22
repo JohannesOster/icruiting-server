@@ -35,9 +35,11 @@ CREATE TABLE IF NOT EXISTS form (
   job_id UUID NOT NULL,
   form_category form_category NOT NULL,
   form_title TEXT DEFAULT NULL,
+  replica_of UUID,
   CONSTRAINT form_id_pk PRIMARY KEY (form_id),
   CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE,
   CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE,
+  CONSTRAINT replica_of_fk FOREIGN KEY (replica_of) REFERENCES form(form_id) ON DELETE CASCADE,
   CONSTRAINT form_title_assessment_form_not_null CHECK(form_title IS NOT NULL OR form_category != 'assessment')
 );
 

@@ -7,12 +7,13 @@ import {validateSubscription} from './utils';
 import templates, {Template} from 'infrastructure/mailService/templates';
 import {sendMail} from 'infrastructure/mailService';
 import storageService from 'infrastructure/storageService';
+import {createForm} from 'domain/entities';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
-    const params = {...req.body, tenantId};
-    const resp = await db.forms.create(params);
+    const form = createForm({...req.body, tenantId});
+    const resp = await db.forms.create(form);
     return {status: 201, body: resp};
   });
 
