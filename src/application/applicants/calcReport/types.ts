@@ -6,7 +6,7 @@ export type Submissions = {
   };
 };
 
-export type Forms = {
+export type FormFields = {
   [formId: string]: {
     [formFieldId: string]: {
       intent: FormFieldIntent;
@@ -15,6 +15,13 @@ export type Forms = {
       label: string;
       jobRequirementId?: string;
     };
+  };
+};
+
+export type Forms = {
+  [formId: string]: {
+    formTitle: string;
+    replicaOf?: string;
   };
 };
 
