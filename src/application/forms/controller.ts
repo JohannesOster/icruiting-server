@@ -82,7 +82,7 @@ export const FormsAdapter = () => {
     const tenant = await db.tenants.retrieve(form.tenantId);
     if (!tenant?.theme) return {view: 'form', body: params};
 
-    const url = storageService.getUrl(tenant.theme);
+    const url = await storageService.getUrl(tenant.theme);
 
     return {view: 'form', body: {...params, theme: url}};
   });
