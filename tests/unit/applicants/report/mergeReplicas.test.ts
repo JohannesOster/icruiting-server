@@ -66,4 +66,40 @@ describe('mergereplicas', () => {
 
     expect(mergeReplicas(report, forms)).toStrictEqual(expected);
   });
+
+  it('Merges replica aggregations', () => {
+    const report = {
+      formFieldScores: {},
+      formScores: {},
+      formCategoryScores: {},
+      aggregates: {
+        applicant1: {
+          form1: {formField1: ['a', 'b']},
+          form2: {formField1: ['c']},
+        },
+      },
+      countDistinct: {},
+      jobRequirements: {},
+    };
+    const forms = {
+      form1: {formTitle: 'formTitle'},
+      form2: {formTitle: 'formTitle2', replicaOf: 'form1'},
+    };
+    const expected = {
+      ...report,
+      aggregates: {
+        applicant1: {
+          form1: {
+            formField1: ['a', 'b', 'c'],
+            replicas: {
+              form1: {formField1: ['a', 'b']},
+              form2: {formField1: ['c']},
+            },
+          },
+        },
+      },
+    };
+
+    expect(mergeReplicas(report, forms)).toStrictEqual(expected);
+  });
 });

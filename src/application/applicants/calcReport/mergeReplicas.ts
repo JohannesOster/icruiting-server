@@ -17,6 +17,7 @@ export const mergeReplicas = (
     acc[form.replicaOf].push(formId);
     return acc;
   }, {} as {[key: string]: string[]});
+
   Object.values(report.formFieldScores).forEach((forms) => {
     Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
       replicaIds.forEach((id) => {
@@ -68,6 +69,35 @@ export const mergeReplicas = (
     });
   });
 
-  console.log(report.formFieldScores.applicant1.form1.replicas);
+  Object.values(report.aggregates).forEach((forms) => {
+    Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
+      replicaIds.forEach((id) => {
+        const {replicas, ...aggregates} = forms[id];
+        _.set(forms, `${formId}.replicas.${id}`, _.cloneDeep(aggregates)); // cloneDeep, since otherwise primary form replica will  be overwritten down below
+        if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
+      });
+
+      const replicas = (forms[formId].replicas as unknown) as {
+        [formId: string]: {[formFieldId: string]: string[]};
+      };
+      if (!replicas) return;
+
+      const replicaMeans = Object.values(replicas).reduce((acc, formFields) => {
+        Object.entries(formFields).forEach(([formFieldId, values]) => {
+          if (!acc[formFieldId]) acc[formFieldId] = [];
+          acc[formFieldId] = acc[formFieldId].concat(values);
+        });
+        return acc;
+      }, {} as {[key: string]: string[]});
+
+      Object.entries(replicaMeans).forEach(([formFieldId, values]) => {
+        forms[formId][formFieldId] = values;
+      });
+    });
+  });
+
+  console.log(report.aggregates?.applicant1);
+  console.log(report.aggregates?.applicant1?.form1.formField1);
+
   return report;
 };
