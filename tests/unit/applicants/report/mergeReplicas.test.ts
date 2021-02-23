@@ -102,4 +102,53 @@ describe('mergereplicas', () => {
 
     expect(mergeReplicas(report, forms)).toStrictEqual(expected);
   });
+
+  it('Merges replica countDistinct', () => {
+    const report = {
+      formFieldScores: {},
+      formScores: {},
+      formCategoryScores: {},
+      aggregates: {},
+      countDistinct: {
+        applicant1: {
+          form1: {
+            formField1: {'Option 0': 1, 'Option 1': 1},
+            formFieldId2: {'Option 0': 1},
+          },
+          form2: {
+            formField1: {'Option 1': 1, 'Option 2': 1},
+            formFieldId2: {'Option 0': 1},
+          },
+        },
+      },
+      jobRequirements: {},
+    };
+    const forms = {
+      form1: {formTitle: 'formTitle'},
+      form2: {formTitle: 'formTitle2', replicaOf: 'form1'},
+    };
+    const expected = {
+      ...report,
+      countDistinct: {
+        applicant1: {
+          form1: {
+            formField1: {'Option 0': 1, 'Option 1': 2, 'Option 2': 1},
+            formFieldId2: {'Option 0': 2},
+            replicas: {
+              form1: {
+                formField1: {'Option 0': 1, 'Option 1': 1},
+                formFieldId2: {'Option 0': 1},
+              },
+              form2: {
+                formField1: {'Option 1': 1, 'Option 2': 1},
+                formFieldId2: {'Option 0': 1},
+              },
+            },
+          },
+        },
+      },
+    };
+
+    expect(mergeReplicas(report, forms)).toStrictEqual(expected);
+  });
 });
