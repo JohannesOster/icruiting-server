@@ -4,6 +4,7 @@ import {filterFormData, reduceSubmissions} from './preprocessor';
 import {Report} from './types';
 import {ReportBuilder} from './reportBuilder';
 import {JobRequirement} from 'domain/entities';
+import {mergeReplicas} from './mergeReplicas';
 
 export const calcReport = (
   rows: ReportPrepareRow[],
@@ -12,7 +13,8 @@ export const calcReport = (
 ) => {
   const [forms, formFields] = filterFormData(rows);
   const submissions = reduceSubmissions(rows);
-  const report = ReportBuilder(formFields, submissions);
+  const raw = ReportBuilder(formFields, submissions);
+  const report = mergeReplicas(raw, forms);
 
   const sorted = Object.entries(report.formCategoryScores)
     .map(([id, score]) => ({[id]: score}))
