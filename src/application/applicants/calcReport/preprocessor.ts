@@ -12,9 +12,9 @@ export const filterFormData = (rows: ReportPrepareRow[]) => {
     return acc;
   }, {} as FormFields);
 
-  const forms = rows.reduce((acc, {formId, formTitle}) => {
+  const forms = rows.reduce((acc, {formId, formTitle, replicaOf}) => {
     if (!!acc[formId]) return acc;
-    _.set(acc, `${formId}.formTitle`, formTitle);
+    _.set(acc, `${formId}`, {formTitle, replicaOf});
     return acc;
   }, {} as Forms);
 

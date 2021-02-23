@@ -69,68 +69,71 @@ export const mergeReplicas = (
     });
   });
 
-  Object.values(report.aggregates).forEach((forms) => {
-    Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
-      replicaIds.forEach((id) => {
-        const {replicas, ...aggregates} = forms[id];
-        _.set(forms, `${formId}.replicas.${id}`, _.cloneDeep(aggregates)); // cloneDeep, since otherwise primary form replica will  be overwritten down below
-        if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
-      });
+  if (report.aggregates) {
+    Object.values(report.aggregates).forEach((forms) => {
+      Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
+        replicaIds.forEach((id) => {
+          const {replicas, ...aggregates} = forms[id];
+          _.set(forms, `${formId}.replicas.${id}`, _.cloneDeep(aggregates)); // cloneDeep, since otherwise primary form replica will  be overwritten down below
+          if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
+        });
 
-      const replicas = (forms[formId].replicas as unknown) as {
-        [formId: string]: {[formFieldId: string]: string[]};
-      };
-      if (!replicas) return;
+        const replicas = (forms[formId].replicas as unknown) as {
+          [formId: string]: {[formFieldId: string]: string[]};
+        };
+        if (!replicas) return;
 
-      const replicaAggregations = Object.values(replicas).reduce(
-        (acc, formFields) => {
-          Object.entries(formFields).forEach(([formFieldId, values]) => {
-            if (!acc[formFieldId]) acc[formFieldId] = [];
-            acc[formFieldId] = acc[formFieldId].concat(values);
-          });
-          return acc;
-        },
-        {} as {[key: string]: string[]},
-      );
-
-      Object.entries(replicaAggregations).forEach(([formFieldId, values]) => {
-        forms[formId][formFieldId] = values;
-      });
-    });
-  });
-
-  Object.values(report.countDistinct).forEach((forms) => {
-    Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
-      replicaIds.forEach((id) => {
-        const {replicas, ...counts} = forms[id];
-        _.set(forms, `${formId}.replicas.${id}`, _.cloneDeep(counts)); // cloneDeep, since otherwise primary form replica will  be overwritten down below
-        if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
-      });
-
-      const replicas = (forms[formId].replicas as unknown) as {
-        [formId: string]: {[formFieldId: string]: {[key: string]: number}};
-      };
-      if (!replicas) return;
-
-      const replicaCounts = Object.values(replicas).reduce(
-        (acc, formFields) => {
-          Object.entries(formFields).forEach(([formFieldId, values]) => {
-            Object.entries(values).forEach(([key, value]) => {
-              if (!acc[formFieldId]) acc[formFieldId] = {};
-              if (acc[formFieldId][key]) acc[formFieldId][key] += value;
-              else acc[formFieldId][key] = value;
+        const replicaAggregations = Object.values(replicas).reduce(
+          (acc, formFields) => {
+            Object.entries(formFields).forEach(([formFieldId, values]) => {
+              if (!acc[formFieldId]) acc[formFieldId] = [];
+              acc[formFieldId] = acc[formFieldId].concat(values);
             });
-          });
-          return acc;
-        },
-        {} as {[key: string]: {[key: string]: number}},
-      );
+            return acc;
+          },
+          {} as {[key: string]: string[]},
+        );
 
-      Object.entries(replicaCounts).forEach(([formFieldId, counts]) => {
-        forms[formId][formFieldId] = counts;
+        Object.entries(replicaAggregations).forEach(([formFieldId, values]) => {
+          forms[formId][formFieldId] = values;
+        });
       });
     });
-  });
+  }
+  if (report.countDistinct) {
+    Object.values(report.countDistinct).forEach((forms) => {
+      Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
+        replicaIds.forEach((id) => {
+          const {replicas, ...counts} = forms[id];
+          _.set(forms, `${formId}.replicas.${id}`, _.cloneDeep(counts)); // cloneDeep, since otherwise primary form replica will  be overwritten down below
+          if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
+        });
+
+        const replicas = (forms[formId].replicas as unknown) as {
+          [formId: string]: {[formFieldId: string]: {[key: string]: number}};
+        };
+        if (!replicas) return;
+
+        const replicaCounts = Object.values(replicas).reduce(
+          (acc, formFields) => {
+            Object.entries(formFields).forEach(([formFieldId, values]) => {
+              Object.entries(values).forEach(([key, value]) => {
+                if (!acc[formFieldId]) acc[formFieldId] = {};
+                if (acc[formFieldId][key]) acc[formFieldId][key] += value;
+                else acc[formFieldId][key] = value;
+              });
+            });
+            return acc;
+          },
+          {} as {[key: string]: {[key: string]: number}},
+        );
+
+        Object.entries(replicaCounts).forEach(([formFieldId, counts]) => {
+          forms[formId][formFieldId] = counts;
+        });
+      });
+    });
+  }
 
   return report;
 };

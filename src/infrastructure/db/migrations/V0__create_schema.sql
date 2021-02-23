@@ -138,7 +138,6 @@ SELECT
 	form_category,
 	applicant_id,
 	COUNT(DISTINCT (submitter_id, form_id, applicant_id)) AS submissions_count,
-	ROUND(STDDEV_POP(score), 2) AS standard_deviation,
 	ROUND(AVG(score), 2) AS score,
   ROW_NUMBER() OVER (PARTITION BY form_category ORDER BY AVG(score) DESC) AS rank
 FROM
