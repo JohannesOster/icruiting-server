@@ -87,5 +87,32 @@ describe('forms', () => {
 
       expect(parseInt(count, 10)).toBe(1);
     });
+
+    it('deletes replicas', async () => {
+      const primary = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        'onboarding',
+      );
+
+      const replica = await dataGenerator.insertForm(
+        mockUser.tenantId,
+        jobId,
+        'onboarding',
+        {replicaOf: primary.formId},
+      );
+
+      await request(app)
+        .delete(`/forms/${primary.formId}`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      const {count} = await db.one(
+        'SELECT COUNT(*) FROM form WHERE form_id=$1',
+        replica.formId,
+      );
+
+      expect(parseInt(count, 10)).toBe(0);
+    });
   });
 });
