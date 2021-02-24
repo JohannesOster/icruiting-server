@@ -19,3 +19,5 @@ export const updateRules = [
     .isNumeric()
     .toFloat(),
 ];
+
+export const reportRules = [body().isArray()];
