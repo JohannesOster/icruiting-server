@@ -1,8 +1,8 @@
 import {IDatabase, IMain} from 'pg-promise';
 import {decamelizeKeys} from 'humps';
-import sql from './sql';
-import {compareArrays} from '../../utils';
 import {Job} from 'domain/entities';
+import {compareArrays} from '../../utils';
+import sql from './sql';
 
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const {ColumnSet} = pgp.helpers;
@@ -12,7 +12,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       'job_requirement_id',
       'job_id',
       'requirement_label',
-      {name: 'min_value', def: null},
+      {name: 'min_value', def: null, cast: 'numeric'},
     ],
     {table: 'job_requirement'},
   );
@@ -87,7 +87,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
           [
             '?job_requirement_id',
             'requirement_label',
-            {name: 'min_value', def: null},
+            {name: 'min_value', def: null, cast: 'numeric'},
           ],
           {table: 'job_requirement'},
         );
