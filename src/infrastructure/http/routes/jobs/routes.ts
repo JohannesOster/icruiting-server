@@ -19,5 +19,6 @@ router.put('/:jobId', updateRules, validate, adapter.update);
 router.delete('/:jobId', adapter.del);
 
 router.post('/:jobId/reports', reportRules, validate, adapter.createReport);
+router.get('/:jobId/reports/:reportId', adapter.retrieveReport);
 
 export {router as routes};

@@ -146,5 +146,12 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
       .then((formFields) => ({...insertedReport, formFields}));
   };
 
-  return {create, retrieve, update, del, list, createReport};
+  const retrieveReport = async (tenantId: string, reportId: string) => {
+    return db.oneOrNone(
+      'SELECT report.*, json_agg(report_field.*) as form_fields FROM report JOIN report_field ON report.report_id = report_field.report_id WHERE tenant_id=$1 AND report.report_id=$2 GROUP BY tenant_id, report.report_id',
+      [tenantId, reportId],
+    );
+  };
+
+  return {create, retrieve, update, del, list, createReport, retrieveReport};
 };
