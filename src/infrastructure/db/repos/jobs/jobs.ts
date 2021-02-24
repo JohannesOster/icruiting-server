@@ -153,5 +153,21 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     );
   };
 
-  return {create, retrieve, update, del, list, createReport, retrieveReport};
+  const delReport = async (tenantId: string, reportId: string) => {
+    return db.none('DELETE FROM report WHERE tenant_id=$1 AND report_id=$2', [
+      tenantId,
+      reportId,
+    ]);
+  };
+
+  return {
+    create,
+    retrieve,
+    update,
+    del,
+    list,
+    createReport,
+    retrieveReport,
+    delReport,
+  };
 };

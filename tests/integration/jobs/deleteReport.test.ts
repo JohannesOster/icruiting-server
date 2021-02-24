@@ -4,6 +4,7 @@ import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import db from 'infrastructure/db';
 import dataGenerator from '../testUtils/dataGenerator';
+import {Form} from 'domain/entities';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -27,14 +28,18 @@ afterAll(async () => {
 });
 
 describe('jobs', () => {
-  describe('GET /jobs/:jobId/reports/:reportId', () => {
-    let report: any;
+  describe('DELETE /jobs/:jobId/reports/:reportId', () => {
+    let applicationForm: Form;
     beforeAll(async () => {
-      const applicationForm = await dataGenerator.insertForm(
+      applicationForm = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
         'application',
       );
+    });
+
+    let report: any;
+    beforeEach(async () => {
       const formFields = applicationForm.formFields.map(
         ({formFieldId}) => formFieldId,
       );
@@ -43,20 +48,24 @@ describe('jobs', () => {
 
     it('returns 200 json response', (done) => {
       request(app)
-        .get(`/jobs/${jobId}/reports/${report.reportId}`)
+        .del(`/jobs/${jobId}/reports/${report.reportId}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
 
-    it('returns report', async () => {
+    it('deletes report', async () => {
       const resp = await request(app)
-        .get(`/jobs/${jobId}/reports/${report.reportId}`)
+        .del(`/jobs/${jobId}/reports/${report.reportId}`)
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(resp.body.reportId).toStrictEqual(report.reportId);
-      expect(resp.body.formFields).toStrictEqual(report.formFields);
+      const {count} = await db.one(
+        'SELECT COUNT(*) FROM report WHERE report_id=$1',
+        report.reportId,
+      );
+
+      expect(parseInt(count, 10)).toBe(0);
     });
   });
 });

@@ -20,5 +20,6 @@ router.delete('/:jobId', adapter.del);
 
 router.post('/:jobId/reports', reportRules, validate, adapter.createReport);
 router.get('/:jobId/reports/:reportId', adapter.retrieveReport);
+router.delete('/:jobId/reports/:reportId', adapter.delReport);
 
 export {router as routes};
