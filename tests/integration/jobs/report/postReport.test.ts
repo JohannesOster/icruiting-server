@@ -63,5 +63,13 @@ describe('jobs', () => {
       expect(resp.body.tenantId).toBe(dbReport.tenantId);
       expect(resp.body.jobId).toBe(dbReport.jobId);
     });
+
+    it('returns 422 for empty formFields', (done) => {
+      request(app)
+        .post(`/jobs/${jobId}/report`)
+        .set('Accept', 'application/json')
+        .send([])
+        .expect(422, done);
+    });
   });
 });
