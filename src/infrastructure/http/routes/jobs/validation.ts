@@ -20,4 +20,4 @@ export const updateRules = [
     .toFloat(),
 ];
 
-export const reportRules = [body().isArray()];
+export const reportRules = [body().isArray({min: 1})];
