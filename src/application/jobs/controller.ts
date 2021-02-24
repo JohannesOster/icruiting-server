@@ -58,5 +58,12 @@ export const JobsAdapter = () => {
     return {body: resp};
   });
 
-  return {create, retrieve, update, del, list};
+  const createReport = httpReqHandler(async (req) => {
+    const {tenantId} = req.user;
+    const {jobId, formFields} = req.body;
+    const resp = await db.jobs.createReport(tenantId, jobId, formFields);
+    return {status: 201, body: resp};
+  });
+
+  return {create, retrieve, update, del, list, createReport};
 };

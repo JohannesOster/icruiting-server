@@ -19,3 +19,8 @@ export const updateRules = [
     .isNumeric()
     .toFloat(),
 ];
+
+export const reportRules = [
+  body('jobId').isString(),
+  body('formFields').isArray(),
+];

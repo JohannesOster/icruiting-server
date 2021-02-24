@@ -119,5 +119,32 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     );
   };
 
-  return {create, retrieve, update, del, list};
+  const createReport = async (
+    tenantId: string,
+    jobId: string,
+    formFields: string[],
+  ) => {
+    const {insert} = pgp.helpers;
+    const stmt =
+      insert(decamelizeKeys({tenantId, jobId}), null, 'report') +
+      ' RETURNING *';
+    const insertedReport = await db.one(stmt);
+
+    const formFieldIds = formFields.map((formFieldId) =>
+      decamelizeKeys({
+        reportId: insertedReport.reportId,
+        formFieldId,
+      }),
+    );
+
+    const cs = new ColumnSet(['report_id', 'form_field_id'], {
+      table: 'report_field',
+    });
+
+    return db
+      .any(insert(formFieldIds, cs) + ' RETURNING *')
+      .then((formFields) => ({...insertedReport, formFields}));
+  };
+
+  return {create, retrieve, update, del, list, createReport};
 };

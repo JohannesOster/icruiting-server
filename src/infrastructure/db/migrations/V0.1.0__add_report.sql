@@ -1,9 +1,11 @@
 CREATE TABLE IF NOT EXISTS report (
   report_id UUID DEFAULT uuid_generate_v4(),
   tenant_id UUID,
+  job_id UUID,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT report_id_pk PRIMARY KEY (report_id),
-  CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE
+  CONSTRAINT tenant_id_fk FOREIGN KEY (tenant_id) REFERENCES tenant(tenant_id) ON DELETE CASCADE,
+  CONSTRAINT job_id_fk FOREIGN KEY (job_id) REFERENCES job(job_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS report_field (
