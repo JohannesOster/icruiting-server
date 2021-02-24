@@ -8,6 +8,7 @@ import templates, {Template} from 'infrastructure/mailService/templates';
 import {sendMail} from 'infrastructure/mailService';
 import storageService from 'infrastructure/storageService';
 import {createForm} from 'domain/entities';
+import {v4 as uuid4} from 'uuid';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -59,8 +60,9 @@ export const FormsAdapter = () => {
     delete form.createdAt;
     form.formFields.forEach((field: any) => {
       delete field.formId;
-      delete field.formFieldId;
       delete field.jobRequirementId;
+      // reassign formFieldId
+      field.formFieldId = uuid4();
     });
 
     return {file: {name: 'form.json', data: form}};
