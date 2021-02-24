@@ -6,7 +6,7 @@ export type Submissions = {
   };
 };
 
-export type Forms = {
+export type FormFields = {
   [formId: string]: {
     [formFieldId: string]: {
       intent: FormFieldIntent;
@@ -15,6 +15,13 @@ export type Forms = {
       label: string;
       jobRequirementId?: string;
     };
+  };
+};
+
+export type Forms = {
+  [formId: string]: {
+    formTitle: string;
+    replicaOf?: string;
   };
 };
 
@@ -40,6 +47,18 @@ export type ReportBuilderReturnType = {
   };
 };
 
+type ReportFormFieldResult = {
+  formFieldId: string;
+  jobRequirementId?: string;
+  rowIndex: number;
+  intent: FormFieldIntent;
+  label: string;
+  aggregatedValues: string[];
+  countDistinct?: {[key: string]: number};
+  formFieldScore: number;
+  stdDevFormFieldScores: number;
+};
+
 export type Report = {
   rank: number;
   formCategory: FormCategory;
@@ -49,16 +68,13 @@ export type Report = {
     formTitle: string;
     formScore: number;
     stdDevFormScore: number;
-    formFieldScores: {
-      formFieldId: string;
-      jobRequirementId?: string;
-      rowIndex: number;
-      intent: FormFieldIntent;
-      label: string;
-      aggregatedValues: string[];
-      countDistinct?: {[key: string]: number};
-      formFieldScore: number;
-      stdDevFormFieldScores: number;
+    formFieldScores: ReportFormFieldResult[];
+    replicas?: {
+      formId: string;
+      formTitle: string;
+      formScore: number;
+      stdDevFormScore: number;
+      formFieldScores: ReportFormFieldResult[];
     }[];
   }[];
   jobRequirementResults: {
