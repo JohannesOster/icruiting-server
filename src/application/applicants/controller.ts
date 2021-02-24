@@ -39,6 +39,11 @@ export const ApplicantsAdapter = () => {
       key: formFields[attr.formFieldId],
     }));
 
+    resp.files = resp.files.map((file) => ({
+      ...file,
+      key: formFields[file.formFieldId],
+    }));
+
     return {body: resp};
   });
 
@@ -73,6 +78,12 @@ export const ApplicantsAdapter = () => {
         ...attr,
         key: formFields[attr.formFieldId],
       }));
+
+      appl.files = appl.files.map((file) => ({
+        ...file,
+        key: formFields[file.formFieldId],
+      }));
+
       return appl;
     });
 

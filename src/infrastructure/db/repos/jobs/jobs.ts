@@ -125,39 +125,36 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     formFields: string[],
   ) => {
     const {insert} = pgp.helpers;
-    const stmt =
-      insert(decamelizeKeys({tenantId, jobId}), null, 'report') +
-      ' RETURNING *';
-    const insertedReport = await db.one(stmt);
-
     const formFieldIds = formFields.map((formFieldId) =>
-      decamelizeKeys({
-        reportId: insertedReport.reportId,
-        formFieldId,
-      }),
+      decamelizeKeys({jobId, tenantId, formFieldId}),
     );
 
-    const cs = new ColumnSet(['report_id', 'form_field_id'], {
-      table: 'report_field',
-    });
+    const table = {table: 'report_field'};
+    const cs = new ColumnSet(['job_id', 'tenant_id', 'form_field_id'], table);
 
     return db
-      .any(insert(formFieldIds, cs) + ' RETURNING *')
-      .then((formFields) => ({...insertedReport, formFields}));
+      .any(insert(formFieldIds, cs))
+      .then(() => retrieveReport(tenantId, jobId));
   };
 
-  const retrieveReport = async (tenantId: string, reportId: string) => {
-    return db.oneOrNone(
-      'SELECT report.*, json_agg(report_field.*) as form_fields FROM report JOIN report_field ON report.report_id = report_field.report_id WHERE tenant_id=$1 AND report.report_id=$2 GROUP BY tenant_id, report.report_id',
-      [tenantId, reportId],
+  const retrieveReport = async (tenantId: string, jobId: string) => {
+    return db.oneOrNone(sql.retrieveReport, decamelizeKeys({tenantId, jobId}));
+  };
+
+  const updateReport = async (
+    tenantId: string,
+    jobId: string,
+    formFields: string[],
+  ) => {
+    await delReport(tenantId, jobId);
+    return createReport(tenantId, jobId, formFields);
+  };
+
+  const delReport = async (tenantId: string, jobId: string) => {
+    return db.none(
+      'DELETE FROM report_field WHERE tenant_id=$1 AND job_id=$2',
+      [tenantId, jobId],
     );
-  };
-
-  const delReport = async (tenantId: string, reportId: string) => {
-    return db.none('DELETE FROM report WHERE tenant_id=$1 AND report_id=$2', [
-      tenantId,
-      reportId,
-    ]);
   };
 
   return {
@@ -168,6 +165,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     list,
     createReport,
     retrieveReport,
+    updateReport,
     delReport,
   };
 };

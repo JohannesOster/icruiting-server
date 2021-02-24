@@ -1,10 +1,9 @@
 import request from 'supertest';
 import app from 'infrastructure/http';
-import fake from '../testUtils/fake';
+import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import db from 'infrastructure/db';
-import dataGenerator from '../testUtils/dataGenerator';
-import {Form} from 'domain/entities';
+import dataGenerator from '../../testUtils/dataGenerator';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -28,44 +27,46 @@ afterAll(async () => {
 });
 
 describe('jobs', () => {
-  describe('DELETE /jobs/:jobId/reports/:reportId', () => {
-    let applicationForm: Form;
+  describe('PUT /jobs/:jobId/report', () => {
+    let report: any;
+    let formFields: string[];
     beforeAll(async () => {
-      applicationForm = await dataGenerator.insertForm(
+      const applicationForm = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
         'application',
       );
-    });
-
-    let report: any;
-    beforeEach(async () => {
-      const formFields = applicationForm.formFields.map(
+      formFields = applicationForm.formFields.map(
         ({formFieldId}) => formFieldId,
       );
+    });
+
+    beforeEach(async () => {
       report = await db.jobs.createReport(mockUser.tenantId, jobId, formFields);
+    });
+
+    afterEach(async () => {
+      await db.none('TRUNCATE report_field CASCADE');
     });
 
     it('returns 200 json response', (done) => {
       request(app)
-        .del(`/jobs/${jobId}/reports/${report.reportId}`)
+        .put(`/jobs/${jobId}/report`)
         .set('Accept', 'application/json')
+        .send(formFields)
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
 
-    it('deletes report', async () => {
+    it('returns updated report', async () => {
       const resp = await request(app)
-        .del(`/jobs/${jobId}/reports/${report.reportId}`)
+        .put(`/jobs/${jobId}/report`)
         .set('Accept', 'application/json')
+        .send([formFields[0]])
         .expect(200);
 
-      const {count} = await db.one(
-        'SELECT COUNT(*) FROM report WHERE report_id=$1',
-        report.reportId,
-      );
-
-      expect(parseInt(count, 10)).toBe(0);
+      expect(resp.body.formFields.length).toBe(1);
+      expect(resp.body.formFields[0]).toBe(formFields[0]);
     });
   });
 });

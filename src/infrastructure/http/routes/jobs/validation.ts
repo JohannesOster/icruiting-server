@@ -20,7 +20,4 @@ export const updateRules = [
     .toFloat(),
 ];
 
-export const reportRules = [
-  body('jobId').isString(),
-  body('formFields').isArray(),
-];
+export const reportRules = [body().isArray()];

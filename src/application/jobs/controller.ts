@@ -60,22 +60,29 @@ export const JobsAdapter = () => {
 
   const createReport = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
-    const {jobId, formFields} = req.body;
-    const resp = await db.jobs.createReport(tenantId, jobId, formFields);
+    const {jobId} = req.params;
+    const resp = await db.jobs.createReport(tenantId, jobId, req.body);
     return {status: 201, body: resp};
   });
 
   const retrieveReport = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
-    const {reportId} = req.params;
-    const report = await db.jobs.retrieveReport(tenantId, reportId);
+    const {jobId} = req.params;
+    const report = await db.jobs.retrieveReport(tenantId, jobId);
     return {body: report};
+  });
+
+  const updateReport = httpReqHandler(async (req) => {
+    const {tenantId} = req.user;
+    const {jobId} = req.params;
+    const resp = await db.jobs.updateReport(tenantId, jobId, req.body);
+    return {body: resp};
   });
 
   const delReport = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
-    const {reportId} = req.params;
-    const report = await db.jobs.delReport(tenantId, reportId);
+    const {jobId} = req.params;
+    const report = await db.jobs.delReport(tenantId, jobId);
     return {body: report};
   });
 
@@ -87,6 +94,7 @@ export const JobsAdapter = () => {
     list,
     createReport,
     retrieveReport,
+    updateReport,
     delReport,
   };
 };

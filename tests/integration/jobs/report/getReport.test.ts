@@ -1,9 +1,9 @@
 import request from 'supertest';
 import app from 'infrastructure/http';
-import fake from '../testUtils/fake';
+import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import db from 'infrastructure/db';
-import dataGenerator from '../testUtils/dataGenerator';
+import dataGenerator from '../../testUtils/dataGenerator';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -27,7 +27,7 @@ afterAll(async () => {
 });
 
 describe('jobs', () => {
-  describe('GET /jobs/:jobId/reports/:reportId', () => {
+  describe('GET /jobs/:jobId/report', () => {
     let report: any;
     beforeAll(async () => {
       const applicationForm = await dataGenerator.insertForm(
@@ -43,7 +43,7 @@ describe('jobs', () => {
 
     it('returns 200 json response', (done) => {
       request(app)
-        .get(`/jobs/${jobId}/reports/${report.reportId}`)
+        .get(`/jobs/${jobId}/report`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -51,7 +51,7 @@ describe('jobs', () => {
 
     it('returns report', async () => {
       const resp = await request(app)
-        .get(`/jobs/${jobId}/reports/${report.reportId}`)
+        .get(`/jobs/${jobId}/report`)
         .set('Accept', 'application/json')
         .expect(200);
 
