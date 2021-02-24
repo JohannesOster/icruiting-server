@@ -1,8 +1,11 @@
 import _ from 'lodash';
 import * as calc from './calculator';
-import {Forms, Submissions, ReportBuilderReturnType} from './types';
+import {Forms, Submissions, ReportBuilderReturnType, FormFields} from './types';
 
-export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
+export const ReportBuilder = (
+  formFields: FormFields,
+  submissions: Submissions,
+) => {
   const applicantIds = Object.keys(submissions);
 
   const jobRequirements: {
@@ -25,99 +28,102 @@ export const ReportBuilder = (forms: Forms, submissions: Submissions) => {
     return aggregated;
   };
 
-  const result = Object.entries(forms).reduce((acc, [formId, formFields]) => {
-    Object.entries(formFields).forEach(([formFieldId, formField]) => {
-      if (formField.intent === 'aggregate') {
+  const result = Object.entries(formFields).reduce(
+    (acc, [formId, formFields]) => {
+      Object.entries(formFields).forEach(([formFieldId, formField]) => {
+        if (formField.intent === 'aggregate') {
+          applicantIds.forEach((applicantId) => {
+            const aggregated = aggregateFormSubmissionFields(
+              applicantId,
+              formId,
+              formFieldId,
+            );
+            if (!aggregated) return;
+
+            const path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
+            _.set(acc, path, aggregated);
+          });
+          return;
+        }
+
+        if (formField.intent === 'count_distinct') {
+          applicantIds.forEach((applicantId) => {
+            const aggregated = aggregateFormSubmissionFields(
+              applicantId,
+              formId,
+              formFieldId,
+            );
+            if (!aggregated) return;
+
+            const options = formField.options?.reduce((acc, curr) => {
+              acc[curr.value] = curr.label;
+              return acc;
+            }, {} as any);
+
+            const counter = aggregated.reduce((acc, curr) => {
+              const key = options[curr];
+              if (!acc[key]) acc[key] = 0;
+              ++acc[key];
+              return acc;
+            }, {} as any);
+
+            const path = `countDistinct.${applicantId}.${formId}.${formFieldId}`;
+            _.set(acc, path, counter);
+          });
+          return;
+        }
+
         applicantIds.forEach((applicantId) => {
-          const aggregated = aggregateFormSubmissionFields(
-            applicantId,
-            formId,
-            formFieldId,
+          const submission = Object.values(submissions[applicantId]).find(
+            (val) => !!val[formId],
           );
-          if (!aggregated) return;
-
-          const path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
-          _.set(acc, path, aggregated);
+          if (!submission) return;
+          let path = `${formId}.${formFieldId}`;
+          const [mean, stdDev] = calc.deepScore(submissions[applicantId], path);
+          path = `${applicantId}.${path}`;
+          _.set(acc, `formFieldScores.${path}`, {mean, stdDev});
         });
-        return;
-      }
 
-      if (formField.intent === 'count_distinct') {
-        applicantIds.forEach((applicantId) => {
-          const aggregated = aggregateFormSubmissionFields(
-            applicantId,
-            formId,
-            formFieldId,
-          );
-          if (!aggregated) return;
-
-          const options = formField.options?.reduce((acc, curr) => {
-            acc[curr.value] = curr.label;
-            return acc;
-          }, {} as any);
-
-          const counter = aggregated.reduce((acc, curr) => {
-            const key = options[curr];
-            if (!acc[key]) acc[key] = 0;
-            ++acc[key];
-            return acc;
-          }, {} as any);
-
-          const path = `countDistinct.${applicantId}.${formId}.${formFieldId}`;
-          _.set(acc, path, counter);
-        });
-        return;
-      }
+        if (!formField.jobRequirementId) return;
+        if (!jobRequirements[formField.jobRequirementId]) {
+          jobRequirements[formField.jobRequirementId] = [];
+        }
+        const kv = {[formId]: formFieldId};
+        jobRequirements[formField.jobRequirementId].push(kv);
+      });
 
       applicantIds.forEach((applicantId) => {
         const submission = Object.values(submissions[applicantId]).find(
           (val) => !!val[formId],
         );
         if (!submission) return;
-        let path = `${formId}.${formFieldId}`;
-        const [mean, stdDev] = calc.deepScore(submissions[applicantId], path);
-        path = `${applicantId}.${path}`;
-        _.set(acc, `formFieldScores.${path}`, {mean, stdDev});
+
+        const formSubmissionScores = Object.values(submissions[applicantId])
+          .map((submissions) => {
+            if (!submissions[formId]) return;
+            const submissionValues = Object.entries(submissions[formId])
+              .filter(([key]) => formFields[key].intent === 'sum_up')
+              .map(([, val]) => +val)
+              .filter((val) => !isNaN(val));
+            if (!submissionValues.length) return;
+
+            return calc.sum(submissionValues);
+          })
+          .filter((val) => val !== undefined) as number[];
+        if (formSubmissionScores.length) {
+          const [formMean, formStdDev] = calc.score(formSubmissionScores);
+
+          _.set(acc, `formScores.${applicantId}.${formId}`, {
+            mean: formMean,
+            stdDev: formStdDev,
+          });
+        }
       });
 
-      if (!formField.jobRequirementId) return;
-      if (!jobRequirements[formField.jobRequirementId]) {
-        jobRequirements[formField.jobRequirementId] = [];
-      }
-      const kv = {[formId]: formFieldId};
-      jobRequirements[formField.jobRequirementId].push(kv);
-    });
-
-    applicantIds.forEach((applicantId) => {
-      const submission = Object.values(submissions[applicantId]).find(
-        (val) => !!val[formId],
-      );
-      if (!submission) return;
-
-      const formSubmissionScores = Object.values(submissions[applicantId])
-        .map((submissions) => {
-          if (!submissions[formId]) return;
-          const submissionValues = Object.entries(submissions[formId])
-            .filter(([key]) => formFields[key].intent === 'sum_up')
-            .map(([, val]) => +val)
-            .filter((val) => !isNaN(val));
-          if (!submissionValues.length) return;
-
-          return calc.sum(submissionValues);
-        })
-        .filter((val) => val !== undefined) as number[];
-      if (formSubmissionScores.length) {
-        const [formMean, formStdDev] = calc.score(formSubmissionScores);
-
-        _.set(acc, `formScores.${applicantId}.${formId}`, {
-          mean: formMean,
-          stdDev: formStdDev,
-        });
-      }
-    });
-
-    return acc;
-  }, {} as ReportBuilderReturnType);
+      return acc;
+    },
+    {} as ReportBuilderReturnType,
+  );
 
   applicantIds.forEach((applicantId) => {
     if (!result.formScores) return;

@@ -12,5 +12,6 @@ export type ReportPrepareRow = {
   formId: string;
   formTitle: string;
   formCategory: FormCategory;
+  replicaOf?: string;
   jobRequirementId?: string;
 };

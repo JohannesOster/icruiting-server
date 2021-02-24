@@ -119,5 +119,53 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     );
   };
 
-  return {create, retrieve, update, del, list};
+  const createReport = async (
+    tenantId: string,
+    jobId: string,
+    formFields: string[],
+  ) => {
+    const {insert} = pgp.helpers;
+    const formFieldIds = formFields.map((formFieldId) =>
+      decamelizeKeys({jobId, tenantId, formFieldId}),
+    );
+
+    const table = {table: 'report_field'};
+    const cs = new ColumnSet(['job_id', 'tenant_id', 'form_field_id'], table);
+
+    return db
+      .any(insert(formFieldIds, cs))
+      .then(() => retrieveReport(tenantId, jobId));
+  };
+
+  const retrieveReport = async (tenantId: string, jobId: string) => {
+    return db.oneOrNone(sql.retrieveReport, decamelizeKeys({tenantId, jobId}));
+  };
+
+  const updateReport = async (
+    tenantId: string,
+    jobId: string,
+    formFields: string[],
+  ) => {
+    await delReport(tenantId, jobId);
+    return createReport(tenantId, jobId, formFields);
+  };
+
+  const delReport = async (tenantId: string, jobId: string) => {
+    return db.none(
+      'DELETE FROM report_field WHERE tenant_id=$1 AND job_id=$2',
+      [tenantId, jobId],
+    );
+  };
+
+  return {
+    create,
+    retrieve,
+    update,
+    del,
+    list,
+    createReport,
+    retrieveReport,
+    updateReport,
+    delReport,
+  };
 };
