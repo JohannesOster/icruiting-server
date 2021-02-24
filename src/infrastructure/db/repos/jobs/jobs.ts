@@ -3,7 +3,6 @@ import {decamelizeKeys} from 'humps';
 import sql from './sql';
 import {compareArrays} from '../../utils';
 import {Job} from 'domain/entities';
-import {BaseError} from 'application/errorHandling';
 
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const {ColumnSet} = pgp.helpers;
@@ -45,7 +44,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const update = async (params: Job): Promise<Job> => {
     const {tenantId, ...job} = params;
     const originalJob = await retrieve(tenantId, job.jobId);
-    if (!originalJob) throw new BaseError(404, 'Did not find job to update');
+    if (!originalJob) throw new Error('Did not find job to update');
     const {insert, update} = db.$config.pgp.helpers;
 
     await db.tx(async (t) => {
@@ -103,7 +102,7 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     });
 
     return retrieve(tenantId, job.jobId).then((job) => {
-      if (!job) throw new BaseError(404, 'Did not find job after update');
+      if (!job) throw new Error('Did not find job after update');
       return job;
     });
   };
