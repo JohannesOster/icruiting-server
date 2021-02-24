@@ -9,5 +9,5 @@ export const listRules = [
 ];
 
 export const getReportRules = [
-  query('formCategory').isIn(['assessment', 'screening']),
+  query('formCategory').isIn(['assessment', 'screening', 'onboarding']),
 ];
