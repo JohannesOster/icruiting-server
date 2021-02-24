@@ -3,6 +3,7 @@ import {decamelizeKeys} from 'humps';
 import sql from './sql';
 import {compareArrays} from '../../utils';
 import {Job} from 'domain/entities';
+import {BaseError} from 'application/errorHandling';
 
 export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
   const {ColumnSet} = pgp.helpers;
@@ -31,27 +32,26 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     const stmt = insert(decamelizeKeys(job), null, 'job') + ' RETURNING *';
     const insertedJob = await db.one(stmt);
 
-    const requirements = jobRequirements.map((req) => ({
-      jobId: insertedJob.jobId,
-      ...req,
-    }));
+    const jobId = insertedJob.jobId;
+    const requirements = jobRequirements.map((req) =>
+      decamelizeKeys({jobId, ...req}),
+    );
 
-    const reqVals = requirements.map((req) => decamelizeKeys(req));
     return db
-      .any(insert(reqVals, jrColumnSet) + ' RETURNING *')
+      .any(insert(requirements, jrColumnSet) + ' RETURNING *')
       .then((jobRequirements) => ({...insertedJob, jobRequirements}));
   };
 
   const update = async (params: Job): Promise<Job> => {
     const {tenantId, ...job} = params;
     const originalJob = await retrieve(tenantId, job.jobId);
-    if (!originalJob) throw new Error('Did not find job to update');
+    if (!originalJob) throw new BaseError(404, 'Did not find job to update');
     const {insert, update} = db.$config.pgp.helpers;
 
     await db.tx(async (t) => {
       const promises: Promise<any>[] = [];
       if (job.jobTitle !== originalJob.jobTitle) {
-        const vals = {job_title: job.jobTitle};
+        const vals = decamelizeKeys({jobTitle: job.jobTitle});
         const condition = ' WHERE tenant_id=$1 AND job_id=$2';
         const stmt = update(vals, null, 'job') + condition;
         promises.push(t.none(stmt, [tenantId, job.jobId]));
@@ -75,15 +75,11 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
 
       /** INSERT ========================= */
       if (requirementsMap.firstMinusSecond.length) {
-        const requirements = requirementsMap.firstMinusSecond.map((req) => ({
-          jobId: job.jobId,
-          ...req,
-        }));
-
-        const reqVals = requirements.map((req) => decamelizeKeys(req));
-        const reqStmt = insert(reqVals, jrColumnSet);
-
-        promises.push(t.none(reqStmt));
+        const requirements = requirementsMap.firstMinusSecond.map((req) =>
+          decamelizeKeys({jobId: job.jobId, ...req}),
+        );
+        const stmt = insert(requirements, jrColumnSet);
+        promises.push(t.none(stmt));
       }
 
       /** UPDATE ========================== */
@@ -92,22 +88,22 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
           [
             '?job_requirement_id',
             'requirement_label',
-            {name: 'min_value', def: null, cast: 'numeric'},
+            {name: 'min_value', def: null},
           ],
           {table: 'job_requirement'},
         );
 
         const values = decamelizeKeys(requirementsMap.intersection);
-        const updateStmt =
+        const stmt =
           update(values, csUpdate) +
           ' WHERE v.job_requirement_id::UUID = t.job_requirement_id';
-        promises.push(t.any(updateStmt));
+        promises.push(t.any(stmt));
       }
       return t.batch(promises);
     });
 
     return retrieve(tenantId, job.jobId).then((job) => {
-      if (!job) throw new Error('Did not find job after update');
+      if (!job) throw new BaseError(404, 'Did not find job after update');
       return job;
     });
   };
@@ -152,8 +148,8 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
 
   const delReport = async (tenantId: string, jobId: string) => {
     return db.none(
-      'DELETE FROM report_field WHERE tenant_id=$1 AND job_id=$2',
-      [tenantId, jobId],
+      'DELETE FROM report_field WHERE tenant_id=${tenant_id} AND job_id=${job_id}',
+      decamelizeKeys({tenantId, jobId}),
     );
   };
 

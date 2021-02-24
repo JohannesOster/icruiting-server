@@ -1,7 +1,7 @@
-import {BaseError, httpReqHandler} from 'application/errorHandling';
 import db from 'infrastructure/db';
-import {createJob} from 'domain/entities';
 import storageService from 'infrastructure/storageService';
+import {BaseError, httpReqHandler} from 'application/errorHandling';
+import {createJob} from 'domain/entities';
 
 export const JobsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {
@@ -15,29 +15,23 @@ export const JobsAdapter = () => {
   const create = httpReqHandler(async (req) => {
     const {jobTitle, jobRequirements} = req.body;
     const {tenantId} = req.user;
-    const params = {jobTitle, tenantId, jobRequirements};
-    const resp = await db.jobs.create(createJob(params));
-    return {status: 201, body: resp};
+    const job = createJob({jobTitle, tenantId, jobRequirements});
+    return db.jobs.create(job).then((body) => ({status: 201, body}));
   });
 
   const update = httpReqHandler(async (req) => {
     const {jobId} = req.params;
     const {tenantId} = req.user;
-    const resp = await db.jobs.update(
-      createJob({...req.body, jobId, tenantId}),
-    );
-    return {body: resp};
+    const job = createJob({...req.body, jobId, tenantId});
+    return db.jobs.update(job).then((body) => ({status: 200, body}));
   });
 
   const del = httpReqHandler(async (req) => {
     const {jobId} = req.params;
     const {tenantId, userId} = req.user;
 
-    const {applicants} = await db.applicants.list({
-      tenantId,
-      jobId,
-      userId,
-    });
+    const query = {tenantId, jobId, userId};
+    const {applicants} = await db.applicants.list(query);
 
     const fileKeys = applicants.reduce((acc, {files}) => {
       if (!files) return acc;
@@ -47,43 +41,40 @@ export const JobsAdapter = () => {
 
     if (fileKeys.length) await storageService.bulkDel(fileKeys);
 
-    await db.jobs.del(tenantId, jobId);
-
-    return {};
+    return db.jobs.del(tenantId, jobId).then(() => ({}));
   });
 
   const list = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
-    const resp = await db.jobs.list(tenantId);
-    return {body: resp};
+    return db.jobs.list(tenantId).then((body) => ({body}));
   });
 
   const createReport = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const {jobId} = req.params;
-    const resp = await db.jobs.createReport(tenantId, jobId, req.body);
-    return {status: 201, body: resp};
+    return db.jobs
+      .createReport(tenantId, jobId, req.body)
+      .then((body) => ({status: 201, body}));
   });
 
   const retrieveReport = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const {jobId} = req.params;
-    const report = await db.jobs.retrieveReport(tenantId, jobId);
-    return {body: report};
+    return db.jobs.retrieveReport(tenantId, jobId).then((body) => ({body}));
   });
 
   const updateReport = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const {jobId} = req.params;
-    const resp = await db.jobs.updateReport(tenantId, jobId, req.body);
-    return {body: resp};
+    return await db.jobs
+      .updateReport(tenantId, jobId, req.body)
+      .then((body) => ({body}));
   });
 
   const delReport = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const {jobId} = req.params;
-    const report = await db.jobs.delReport(tenantId, jobId);
-    return {body: report};
+    return await db.jobs.delReport(tenantId, jobId).then(() => ({}));
   });
 
   return {

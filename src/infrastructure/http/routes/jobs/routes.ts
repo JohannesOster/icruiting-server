@@ -1,5 +1,5 @@
 import express from 'express';
-import {JobsAdapter} from 'application/jobs/controller';
+import {JobsAdapter} from 'application/jobs';
 import {updateRules, createRules, reportRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAuth, requireAdmin} from 'infrastructure/http/middlewares';
