@@ -77,6 +77,15 @@ export const JobsAdapter = () => {
     return await db.jobs.delReport(tenantId, jobId).then(() => ({}));
   });
 
+  const exportJob = httpReqHandler(async (req) => {
+    const {tenantId} = req.user;
+    const {jobId} = req.params;
+    const job = db.jobs.retrieve(tenantId, jobId);
+    if (!job) throw new BaseError(404, 'Not Found');
+
+    return {file: {name: 'form.json', data: job}};
+  });
+
   return {
     create,
     retrieve,
@@ -87,5 +96,6 @@ export const JobsAdapter = () => {
     retrieveReport,
     updateReport,
     delReport,
+    exportJob,
   };
 };
