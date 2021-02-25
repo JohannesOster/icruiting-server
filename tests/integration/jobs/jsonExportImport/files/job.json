@@ -1,11 +1,6 @@
 {
-  "jobTitle": "Fellow Wien SS21",
-  "jobRequirements": [
-    {
-      "requirementLabel": "Kreativität",
-      "minValue": null
-    }
-  ],
+  "jobTitle": "Teststelle",
+  "jobRequirements": [{"requirementLabel": "qwere", "minValue": null}],
   "forms": [
     {
       "formCategory": "application",
@@ -22,7 +17,7 @@
           "defaultValue": null,
           "required": true,
           "options": null,
-          "props": {"name": "ca831b5d-08f7-45b5-b91b-a29b404aaf9b"},
+          "props": {"name": "name"},
           "editable": false,
           "deletable": false
         },
@@ -36,91 +31,23 @@
           "defaultValue": null,
           "required": true,
           "options": null,
-          "props": {
-            "name": "4767b329-e1bb-4d27-98b4-bdbe483e1243",
-            "type": "email"
-          },
+          "props": {"name": "email", "type": "email"},
           "editable": false,
           "deletable": false
         },
         {
           "intent": null,
-          "component": "checkbox",
-          "rowIndex": 2,
-          "label": "Checkbox",
-          "placeholder": null,
-          "description": "",
-          "defaultValue": null,
-          "required": false,
-          "options": [
-            {"label": "Option-1", "value": "Option-1"},
-            {"label": "Option-2", "value": "Option-2"}
-          ],
-          "props": {"name": "4pxy6i"},
-          "editable": true,
-          "deletable": true
-        },
-        {
-          "intent": null,
-          "component": "input",
-          "rowIndex": 3,
-          "label": "Geburtstag",
-          "placeholder": "Geburtstag",
-          "description": "",
-          "defaultValue": null,
-          "required": false,
-          "options": null,
-          "props": {
-            "name": "2ff46e14-d898-46cf-9f95-bedf70e5021c",
-            "type": "date"
-          },
-          "editable": true,
-          "deletable": true
-        },
-        {
-          "intent": null,
           "component": "file_upload",
-          "rowIndex": 4,
+          "rowIndex": 2,
           "label": "Bewerbungsfoto (.jpeg)",
           "placeholder": null,
           "description": null,
           "defaultValue": null,
           "required": false,
           "options": null,
-          "props": {
-            "name": "f5ff0bbb-9f9a-487d-a453-604a2f46d890",
-            "type": "file",
-            "accept": "image/jpeg"
-          },
+          "props": {"name": "photo", "type": "file", "accept": "image/jpeg"},
           "editable": true,
           "deletable": true
-        }
-      ]
-    },
-    {
-      "formCategory": "screening",
-      "formTitle": null,
-      "replicaOf": null,
-      "formFields": [
-        {
-          "intent": "sum_up",
-          "component": "rating_group",
-          "rowIndex": 0,
-          "label": "Die Bewerbung war professionell",
-          "placeholder": null,
-          "description": null,
-          "defaultValue": null,
-          "required": true,
-          "options": [
-            {"label": "0", "value": "0"},
-            {"label": "1", "value": "1"},
-            {"label": "2", "value": "2"},
-            {"label": "3", "value": "3"},
-            {"label": "4", "value": "4"}
-          ],
-          "props": {"name": "l42xik"},
-          "editable": true,
-          "deletable": false
         }
       ]
     }

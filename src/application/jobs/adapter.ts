@@ -90,14 +90,14 @@ export const JobsAdapter = () => {
     const body = {
       jobTitle: job.jobTitle,
       jobRequirements: job.jobRequirements.map(
-        ({jobRequirementId, ...requirement}) => requirement,
+        ({jobRequirementId, jobId, ...requirement}) => requirement,
       ),
       forms: forms.map((form) => ({
         formCategory: form.formCategory,
         formTitle: form.formTitle,
         replicaOf: form.replicaOf,
         formFields: form.formFields.map(
-          ({jobRequirementId, formFieldId, ...formField}) => ({
+          ({jobRequirementId, formId, formFieldId, ...formField}) => ({
             ...formField,
           }),
         ),
@@ -139,7 +139,8 @@ export const JobsAdapter = () => {
           ),
         );
 
-        resolve({status: 201, body: {..._job, forms: _forms}});
+        const body = {..._job, forms: _forms};
+        resolve({status: 201, body});
       });
     });
   });

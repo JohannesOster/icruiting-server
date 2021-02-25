@@ -5,6 +5,7 @@ import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../../testUtils/dataGenerator';
 import {Form} from 'domain/entities';
+import * as jsonJob from './files/job.json';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -62,6 +63,21 @@ describe('jobs', () => {
         body.jobId,
       );
       expect(parseInt(count, 10)).toBe(1);
+    });
+
+    it('Returns inserted jobRequirements', async () => {
+      const {body} = await request(app)
+        .post(`/jobs/import`)
+        .set('Accept', 'application/json')
+        .attach('job', `${__dirname}/files/job.json`)
+        .expect('Content-Type', /json/)
+        .expect(201);
+
+      const {count} = await db.one(
+        'SELECT COUNT(*) FROM job_requirement WHERE job_id=$1',
+        body.jobId,
+      );
+      expect(parseInt(count, 10)).toBe(jsonJob.jobRequirements.length);
     });
 
     it('Returns inserted forms', async () => {

@@ -31,13 +31,10 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
     const stmt = insert(decamelizeKeys(job), null, 'job') + ' RETURNING *';
     const insertedJob = await db.one(stmt);
 
-    const jobId = insertedJob.jobId;
-    const requirements = jobRequirements.map((req) =>
-      decamelizeKeys({jobId, ...req}),
-    );
-
     return db
-      .any(insert(requirements, jrColumnSet) + ' RETURNING *')
+      .any(
+        insert(decamelizeKeys(jobRequirements), jrColumnSet) + ' RETURNING *',
+      )
       .then((jobRequirements) => ({...insertedJob, jobRequirements}));
   };
 
@@ -74,10 +71,10 @@ export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
 
       /** INSERT ========================= */
       if (requirementsMap.firstMinusSecond.length) {
-        const requirements = requirementsMap.firstMinusSecond.map((req) =>
-          decamelizeKeys({jobId: job.jobId, ...req}),
+        const stmt = insert(
+          decamelizeKeys(requirementsMap.firstMinusSecond),
+          jrColumnSet,
         );
-        const stmt = insert(requirements, jrColumnSet);
         promises.push(t.none(stmt));
       }
 
