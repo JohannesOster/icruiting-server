@@ -83,7 +83,7 @@ export const JobsAdapter = () => {
     const job = db.jobs.retrieve(tenantId, jobId);
     if (!job) throw new BaseError(404, 'Not Found');
 
-    return {file: {name: 'form.json', data: job}};
+    return {body: job};
   });
 
   return {

@@ -65,7 +65,7 @@ export const FormsAdapter = () => {
       field.formFieldId = uuid4();
     });
 
-    return {file: {name: 'form.json', data: form}};
+    return {body: form};
   });
 
   const renderHTMLForm = httpReqHandler(async (req) => {
