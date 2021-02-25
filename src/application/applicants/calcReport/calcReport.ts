@@ -6,6 +6,10 @@ import {ReportBuilder} from './reportBuilder';
 import {JobRequirement} from 'domain/entities';
 import {mergeReplicas} from './mergeReplicas';
 
+const sortAsc = (a: any, b: any, prop: string) => {
+  return a[prop] > b[prop] ? 1 : -1;
+};
+
 export const calcReport = (
   rows: ReportPrepareRow[],
   applicantId: string,
@@ -41,8 +45,8 @@ export const calcReport = (
           formTitle,
           formScore: formScore.mean,
           stdDevFormScore: formScore.stdDev,
-          formFieldScores: Object.entries(fields).map(
-            ([formFieldId, value]) => {
+          formFieldScores: Object.entries(fields)
+            .map(([formFieldId, value]) => {
               const {jobRequirementId, rowIndex, intent, label} = value;
               const formFieldScore =
                 report.formFieldScores[applicantId][formId][formFieldId];
@@ -65,8 +69,8 @@ export const calcReport = (
                 formFieldScore: formFieldScore?.mean,
                 stdDevFormFieldScores: formFieldScore?.stdDev,
               };
-            },
-          ),
+            })
+            .sort((a, b) => sortAsc(a, b, 'rowIndex')) as any[],
           replicas: Object.entries(
             formScore.replicas as {[key: string]: any},
           ).map(([replicaFormId, formScore]) => {
@@ -75,8 +79,8 @@ export const calcReport = (
               formTitle: forms[replicaFormId].formTitle,
               formScore: formScore.mean,
               stdDevFormScore: formScore.stdDev,
-              formFieldScores: Object.entries(fields).map(
-                ([formFieldId, value]) => {
+              formFieldScores: Object.entries(fields)
+                .map(([formFieldId, value]) => {
                   const {jobRequirementId, rowIndex, intent, label} = value;
                   const formFieldScore = _.get(
                     report.formFieldScores,
@@ -103,13 +107,14 @@ export const calcReport = (
                     formFieldScore: formFieldScore?.mean,
                     stdDevFormFieldScores: formFieldScore?.stdDev,
                   };
-                },
-              ),
+                })
+                .sort((a, b) => sortAsc(a, b, 'rowIndex')) as any[],
             };
           }),
         };
       })
-      .filter((val) => val) as any,
+      .filter((val) => val)
+      .sort((a, b) => sortAsc(a, b, 'formTitle')) as any[],
     jobRequirementResults: jobRequiremnts.map(
       ({jobRequirementId, requirementLabel, minValue}) => ({
         jobRequirementId,
