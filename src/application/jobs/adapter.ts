@@ -1,7 +1,7 @@
 import db from 'infrastructure/db';
 import storageService from 'infrastructure/storageService';
 import {BaseError, httpReqHandler} from 'application/errorHandling';
-import {createForm, createJob} from 'domain/entities';
+import {createForm, createJob, Form, Job} from 'domain/entities';
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
 
@@ -113,34 +113,44 @@ export const JobsAdapter = () => {
     return new Promise((resolve, reject) => {
       const formidable = new IncomingForm();
       formidable.parse(req, async (error, fields, files) => {
-        if (error) return reject(new BaseError(500, error));
-        const file = files.job;
-        if (Array.isArray(file))
-          return reject(new BaseError(422, 'Multifile no supported.'));
-        const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
-        if (extension !== 'json')
-          return reject(new BaseError(422, `Invalid fileformat ${extension}`));
+        try {
+          if (error) return reject(new BaseError(500, error));
+          const file = files.job;
+          if (Array.isArray(file))
+            return reject(new BaseError(422, 'Multifile no supported.'));
+          const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
+          if (extension !== 'json')
+            return reject(
+              new BaseError(422, `Invalid fileformat ${extension}`),
+            );
 
-        const rawData = (await new Promise((resolve, reject) => {
-          fs.readFile(file.path, (error, data) => {
-            if (error) return reject(new BaseError(500, error.message));
-            resolve(data);
-          });
-        }).catch(reject)) as Buffer;
+          const rawData = (await new Promise((resolve, reject) => {
+            fs.readFile(file.path, (error, data) => {
+              if (error) return reject(new BaseError(500, error.message));
+              resolve(data);
+            });
+          })) as Buffer;
 
-        const json = JSON.parse(rawData.toString());
+          const json = JSON.parse(rawData.toString());
 
-        const {forms, ...job} = json;
-        const _job = await db.jobs.create(createJob({tenantId, ...job}));
+          const {forms, ...job} = json;
+          const _job = await db.jobs.create(createJob({tenantId, ...job}));
 
-        const _forms = await Promise.all(
-          forms.map((form: any) =>
-            db.forms.create(createForm({tenantId, jobId: _job.jobId, ...form})),
-          ),
-        );
+          const _forms = await Promise.all(
+            (forms as Form[])
+              .filter((form) => !form.replicaOf)
+              .map((form) =>
+                db.forms.create(
+                  createForm({...form, tenantId, jobId: _job.jobId}),
+                ),
+              ),
+          );
 
-        const body = {..._job, forms: _forms};
-        resolve({status: 201, body});
+          const body = {..._job, forms: _forms};
+          resolve({status: 201, body});
+        } catch (error) {
+          reject(error);
+        }
       });
     });
   });
