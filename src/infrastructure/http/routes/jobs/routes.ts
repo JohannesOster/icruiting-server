@@ -19,6 +19,7 @@ router.put('/:jobId', updateRules, validate, adapter.update);
 router.delete('/:jobId', adapter.del);
 
 router.get('/:jobId/export', adapter.exportJob);
+router.post('/import', adapter.importJob);
 
 router.post('/:jobId/report', reportRules, validate, adapter.createReport);
 router.put('/:jobId/report', reportRules, validate, adapter.updateReport);
