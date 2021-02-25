@@ -1,9 +1,9 @@
 import {random} from 'faker';
 import request from 'supertest';
 import app from 'infrastructure/http';
-import fake from '../testUtils/fake';
+import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
-import dataGenerator from '../testUtils/dataGenerator';
+import dataGenerator from '../../testUtils/dataGenerator';
 import {Form, Job, JobRequirement} from 'domain/entities';
 
 const mockUser = fake.user();
