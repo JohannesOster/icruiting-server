@@ -2,6 +2,7 @@ import db from 'infrastructure/db';
 import storageService from 'infrastructure/storageService';
 import {BaseError, httpReqHandler} from 'application/errorHandling';
 import {createJob} from 'domain/entities';
+import {v4 as uuidv4} from 'uuid';
 
 export const JobsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {
@@ -80,10 +81,29 @@ export const JobsAdapter = () => {
   const exportJob = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const {jobId} = req.params;
-    const job = db.jobs.retrieve(tenantId, jobId);
+    const job = await db.jobs.retrieve(tenantId, jobId);
     if (!job) throw new BaseError(404, 'Not Found');
 
-    return {body: job};
+    const forms = await db.forms.list(tenantId, {jobId});
+
+    const body = {
+      jobTitle: job.jobTitle,
+      jobRequirements: job.jobRequirements.map(
+        ({jobRequirementId, ...requirement}) => requirement,
+      ),
+      forms: forms.map((form) => ({
+        formCategory: form.formCategory,
+        formTitle: form.formTitle,
+        replicaOf: form.replicaOf,
+        formFields: form.formFields.map(
+          ({jobRequirementId, formFieldId, ...formField}) => ({
+            ...formField,
+          }),
+        ),
+      })),
+    };
+
+    return {body};
   });
 
   return {

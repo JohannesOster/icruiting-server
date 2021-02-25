@@ -50,22 +50,18 @@ export const FormsAdapter = () => {
   const exportForm = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const {formId} = req.params;
-    const form: any = await db.forms.retrieve(tenantId, formId); // has to be any in order to delete props
+    const form = await db.forms.retrieve(tenantId, formId); // has to be any in order to delete props
     if (!form) throw new BaseError(404, 'Not Found');
 
-    // remove unnecessary ids
-    delete form.tenantId;
-    delete form.formId;
-    delete form.jobId;
-    delete form.createdAt;
-    form.formFields.forEach((field: any) => {
-      delete field.formId;
-      delete field.jobRequirementId;
-      // reassign formFieldId
-      field.formFieldId = uuid4();
-    });
+    const body = {
+      formCategory: form.formCategory,
+      formFields: form.formFields.map(({jobRequirementId, ...formField}) => ({
+        ...formField,
+        formFieldId: uuid4(), // remove db primary key but provide unique identity
+      })),
+    };
 
-    return {body: form};
+    return {body};
   });
 
   const renderHTMLForm = httpReqHandler(async (req) => {
