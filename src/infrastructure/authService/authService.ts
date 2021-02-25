@@ -5,7 +5,6 @@ import {
 } from 'amazon-cognito-identity-js';
 import {BaseError} from 'application/errorHandling';
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
-import {String} from 'aws-sdk/clients/apigateway';
 import CognitoExpress from 'cognito-express';
 import {mapCognitoUser, removePrefix} from './utils';
 import dotenv from 'dotenv';

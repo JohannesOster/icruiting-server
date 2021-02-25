@@ -1,0 +1,55 @@
+{
+  "jobTitle": "Teststelle",
+  "jobRequirements": [{"requirementLabel": "qwere", "minValue": null}],
+  "forms": [
+    {
+      "formCategory": "application",
+      "formTitle": null,
+      "replicaOf": null,
+      "formFields": [
+        {
+          "intent": null,
+          "component": "input",
+          "rowIndex": 0,
+          "label": "Vollständiger Name",
+          "placeholder": "Vollständiger Name",
+          "description": null,
+          "defaultValue": null,
+          "required": true,
+          "options": null,
+          "props": {"name": "name"},
+          "editable": false,
+          "deletable": false
+        },
+        {
+          "intent": null,
+          "component": "input",
+          "rowIndex": 1,
+          "label": "E-Mail-Adresse",
+          "placeholder": "E-Mail-Adresse",
+          "description": null,
+          "defaultValue": null,
+          "required": true,
+          "options": null,
+          "props": {"name": "email", "type": "email"},
+          "editable": false,
+          "deletable": false
+        },
+        {
+          "intent": null,
+          "component": "file_upload",
+          "rowIndex": 2,
+          "label": "Bewerbungsfoto (.jpeg)",
+          "placeholder": null,
+          "description": null,
+          "defaultValue": null,
+          "required": false,
+          "options": null,
+          "props": {"name": "photo", "type": "file", "accept": "image/jpeg"},
+          "editable": true,
+          "deletable": true
+        }
+      ]
+    }
+  ]
+}
