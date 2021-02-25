@@ -26,7 +26,7 @@ type BaseFormField = {
   jobRequirementId?: string;
 };
 
-export type FormField = {formFieldId: string} & BaseFormField;
+export type FormField = {formFieldId: string; formId: string} & BaseFormField;
 
 export type FormCategory =
   | 'application'
@@ -49,11 +49,13 @@ export const createForm = (
     formFields: (BaseFormField & {formFieldId?: string})[];
   },
 ): Form => {
+  const formId = form.formId || uuidv4();
   return Object.freeze({
     ...form,
-    formId: form.formId || uuidv4(),
+    formId,
     formFields: form.formFields.map((field) => ({
       ...field,
+      formId,
       formFieldId: field.formFieldId || uuidv4(),
     })),
   });

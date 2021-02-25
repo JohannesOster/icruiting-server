@@ -24,7 +24,6 @@ export const httpReqHandler = (
       .then((response) => {
         const {status, body, view, file} = response;
         if (view) return res.render(view, body);
-        if (file) return res.attachment(file.name).send(file.data);
         res.status(status || 200).json(body);
       })
       .catch(next);
