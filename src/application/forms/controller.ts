@@ -106,7 +106,7 @@ export const FormsAdapter = () => {
 
     const formidable = new IncomingForm();
     formidable.maxFileSize = 500 * 1024 * 1024;
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       formidable.parse(req, async (error, fields, files) => {
         if (error) return resolve({view: 'form-submission', body: {error}});
 
@@ -200,9 +200,11 @@ export const FormsAdapter = () => {
           {} as any,
         );
         if (!emailFieldId)
-          throw new BaseError(500, 'E-Mail-Adresse field not found');
+          return reject(new BaseError(500, 'E-Mail-Adresse field not found'));
         if (!fullNameFieldId)
-          throw new BaseError(500, 'Vollständiger-Name field not found');
+          return reject(
+            new BaseError(500, 'Vollständiger-Name field not found'),
+          );
 
         const {email, fullName} = attributes.reduce((acc, curr) => {
           if (curr.formFieldId === emailFieldId)
@@ -212,9 +214,10 @@ export const FormsAdapter = () => {
           return acc;
         }, {} as any);
 
-        if (!email) throw new BaseError(500, 'Applicant has no email-adress');
+        if (!email)
+          return reject(new BaseError(500, 'Applicant has no email-adress'));
         if (!fullName)
-          throw new BaseError(500, 'Applicant has no email-adress');
+          return reject(new BaseError(500, 'Applicant has no email-adress'));
 
         const templateOptions = {tenantName: tenant.tenantName, fullName};
         const html = templates(Template.EmailConfirmation, templateOptions);
