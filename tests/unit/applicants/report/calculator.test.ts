@@ -42,4 +42,21 @@ describe('Calculator', () => {
       expect(stdDev).toEqual(2);
     });
   });
+
+  describe('round', () => {
+    it('rounds param correclty', () => {
+      const numb = 1.256;
+      expect(calc.round(numb)).toBe(1.26);
+    });
+
+    it('rounds param correclty to provided digits', () => {
+      const numb = 1.25;
+      expect(calc.round(numb, 1)).toBe(1.3);
+    });
+
+    it('defaults to 0 digits if digits param is negative', () => {
+      const numb = 100.1;
+      expect(calc.round(numb, -1)).toBe(100);
+    });
+  });
 });

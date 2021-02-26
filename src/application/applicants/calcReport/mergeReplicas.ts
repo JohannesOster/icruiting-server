@@ -18,6 +18,11 @@ export const mergeReplicas = (
     return acc;
   }, {} as {[key: string]: string[]});
 
+  // filter non replicated forms
+  Object.entries(replicasMap).forEach(([formId, replicas]) => {
+    if (replicas.length <= 1) delete replicasMap[formId];
+  });
+
   Object.values(report.formFieldScores).forEach((forms) => {
     Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
       replicaIds.forEach((id) => {
