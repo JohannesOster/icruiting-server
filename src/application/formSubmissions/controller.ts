@@ -36,5 +36,12 @@ export const FormSubmissionsAdapter = () => {
     return {body: resp};
   });
 
-  return {create, retrieve, update};
+  const del = httpReqHandler(async (req) => {
+    const {tenantId} = req.user;
+    const {formSubmissionId} = req.params;
+    await db.formSubmissions.del(tenantId, formSubmissionId);
+    return {body: {}};
+  });
+
+  return {create, retrieve, update, del};
 };
