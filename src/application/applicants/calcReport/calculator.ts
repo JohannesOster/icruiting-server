@@ -35,4 +35,10 @@ const score = (data: number[]) => {
   return [_mean, stdDev] as const;
 };
 
-export {deepScore, score, stdDev, mean, sum};
+const round = (number: number, digitst: number = 2) => {
+  if (digitst <= 0) return Math.round(number);
+  const factor = Math.pow(10, digitst);
+  return Math.round(factor * number) / factor;
+};
+
+export {deepScore, score, stdDev, mean, sum, round};

@@ -1,19 +1,20 @@
+import _ from 'lodash';
 import {mergeReplicas} from 'application/applicants/calcReport/mergeReplicas';
 
 describe('mergereplicas', () => {
   it('does nothing if there are not replicas', () => {
     const report = {
       formFieldScores: {
-        applicant1: {form1: {formField1: {mean: 0, stdDev: 0}}},
+        applicant1: {form1: {formField1: {mean: 1, stdDev: 1}}},
       },
-      formScores: {applicant1: {form1: {mean: 0, stdDev: 0}}},
-      formCategoryScores: {applicant1: 0},
+      formScores: {applicant1: {form1: {mean: 1, stdDev: 1}}},
+      formCategoryScores: {applicant1: 1},
       aggregates: {applicant1: {form1: {formField2: []}}},
       countDistinct: {applicant1: {form1: {formField2: {}}}},
-      jobRequirements: {applicant1: {jobRequirement1: 0}},
+      jobRequirements: {applicant1: {jobRequirement1: 1}},
     };
-    const forms = {};
-    const expected = report;
+    const forms = {form1: {formTitle: 'form1'}};
+    const expected = _.cloneDeep(report); // otherwise expected will be modified as well, therefore test would always pass
 
     expect(mergeReplicas(report, forms)).toStrictEqual(expected);
   });
