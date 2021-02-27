@@ -207,7 +207,11 @@ export const ApplicantsAdapter = () => {
     const job = await db.jobs.retrieve(tenantId, applicant.jobId);
     if (!job) throw new BaseError(404, 'Job Not Found');
 
-    const data = await db.formSubmissions.prepareReport(tenantId, formCategory);
+    const data = await db.formSubmissions.prepareReport(
+      tenantId,
+      formCategory,
+      job.jobId,
+    );
     const report = calcReport(data, applicantId, job.jobRequirements);
 
     return {body: report};

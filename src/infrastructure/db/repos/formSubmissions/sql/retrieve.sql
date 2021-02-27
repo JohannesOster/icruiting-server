@@ -1,9 +1,9 @@
-SELECT 
+SELECT
   form_submission.*,
   array_agg(
      json_build_object(
        'form_field_id', form_field_id,
-       'submission_value', submission_value) 
+       'submission_value', submission_value)
   ) as submission
 FROM form_submission
 JOIN form_submission_field

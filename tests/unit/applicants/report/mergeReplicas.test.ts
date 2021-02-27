@@ -22,14 +22,20 @@ describe('mergereplicas', () => {
     const report = {
       formFieldScores: {
         applicant1: {
-          form1: {formField1: {mean: 0, stdDev: 0}},
-          form2: {formField1: {mean: 2, stdDev: 0}},
+          form1: {
+            formField1: {mean: 0, stdDev: 0},
+            formField2: {mean: 4, stdDev: 0},
+          },
+          form2: {
+            formField1: {mean: 2, stdDev: 0},
+            formField2: {mean: 2, stdDev: 0},
+          },
         },
       },
       formScores: {
-        applicant1: {form1: {mean: 0, stdDev: 0}, form2: {mean: 2, stdDev: 0}},
+        applicant1: {form1: {mean: 2, stdDev: 2}, form2: {mean: 2, stdDev: 0}},
       },
-      formCategoryScores: {applicant1: 1},
+      formCategoryScores: {applicant1: 2},
       aggregates: {},
       countDistinct: {},
       jobRequirements: {},
@@ -39,14 +45,21 @@ describe('mergereplicas', () => {
       form2: {formTitle: 'formTitle2', replicaOf: 'form1'},
     };
     const expected = {
-      ...report,
+      ..._.cloneDeep(report),
       formFieldScores: {
         applicant1: {
           form1: {
             formField1: {mean: 1, stdDev: 1},
+            formField2: {mean: 3, stdDev: 1},
             replicas: {
-              form1: {formField1: {mean: 0, stdDev: 0}},
-              form2: {formField1: {mean: 2, stdDev: 0}},
+              form1: {
+                formField1: {mean: 0, stdDev: 0},
+                formField2: {mean: 4, stdDev: 0},
+              },
+              form2: {
+                formField1: {mean: 2, stdDev: 0},
+                formField2: {mean: 2, stdDev: 0},
+              },
             },
           },
         },
@@ -54,10 +67,10 @@ describe('mergereplicas', () => {
       formScores: {
         applicant1: {
           form1: {
-            mean: 1,
-            stdDev: 1,
+            mean: 2,
+            stdDev: 0,
             replicas: {
-              form1: {mean: 0, stdDev: 0},
+              form1: {mean: 2, stdDev: 2},
               form2: {mean: 2, stdDev: 0},
             },
           },
@@ -148,6 +161,79 @@ describe('mergereplicas', () => {
           },
         },
       },
+    };
+
+    expect(mergeReplicas(report, forms)).toStrictEqual(expected);
+  });
+
+  it('Merges replicas if primary form is not submitted', () => {
+    const report = {
+      formFieldScores: {
+        applicant1: {
+          form1: {formField1: {mean: 2, stdDev: 0}},
+          form2: {formField1: {mean: 4, stdDev: 0}},
+        },
+        applicant2: {form2: {formField1: {mean: 4, stdDev: 0}}},
+      },
+      formScores: {
+        applicant1: {
+          form1: {mean: 2, stdDev: 0},
+          form2: {mean: 4, stdDev: 0},
+        },
+        applicant2: {form2: {mean: 4, stdDev: 0}},
+      },
+      formCategoryScores: {applicant1: 3, applicant2: 4},
+      jobRequirements: {},
+      countDistinct: {},
+      aggregates: {},
+    };
+
+    const forms = {
+      form1: {formTitle: 'formTitle1'},
+      form2: {formTitle: 'formTitle2', replicaOf: 'form1'},
+    };
+
+    const expected = {
+      formFieldScores: {
+        applicant1: {
+          form1: {
+            formField1: {mean: 3, stdDev: 1},
+            replicas: {
+              form1: {formField1: {mean: 2, stdDev: 0}},
+              form2: {formField1: {mean: 4, stdDev: 0}},
+            },
+          },
+        },
+        applicant2: {
+          form1: {
+            replicas: {form2: {formField1: {mean: 4, stdDev: 0}}},
+            formField1: {mean: 4, stdDev: 0},
+          },
+        },
+      },
+      formScores: {
+        applicant1: {
+          form1: {
+            mean: 3,
+            stdDev: 1,
+            replicas: {
+              form1: {mean: 2, stdDev: 0},
+              form2: {mean: 4, stdDev: 0},
+            },
+          },
+        },
+        applicant2: {
+          form1: {
+            replicas: {form2: {mean: 4, stdDev: 0}},
+            mean: 4,
+            stdDev: 0,
+          },
+        },
+      },
+      formCategoryScores: {applicant1: 3, applicant2: 4},
+      jobRequirements: {},
+      countDistinct: {},
+      aggregates: {},
     };
 
     expect(mergeReplicas(report, forms)).toStrictEqual(expected);
