@@ -55,7 +55,7 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     tenantId: string;
   }): Promise<FormSubmission | null> => {
     return db.oneOrNone(sql.retrieve, decamelizeKeys(params)).then((data) => {
-      if (!data) return data;
+      if (!data) return null;
       return {...data, submission: reduceSubmission(data.submission)};
     });
   };
@@ -105,5 +105,12 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     );
   };
 
-  return {create, retrieve, update, prepareReport};
+  const del = (tenantId: string, formSubmissionId: string) => {
+    return db.none(
+      'DELETE FROM form_submission WHERE tenant_id=${tenant_id} AND form_submission_id=${form_submission_id}',
+      decamelizeKeys({tenantId, formSubmissionId}),
+    );
+  };
+
+  return {create, retrieve, update, del, prepareReport};
 };
