@@ -33,9 +33,15 @@ export const calcReport = (
     formCategoryScore: round(report.formCategoryScores[applicantId]),
     formResults: Object.entries(forms)
       .map(([formId, {formTitle, replicaOf}]) => {
-        const formScore = report.formScores[applicantId][formId] as any;
+        const formScore = report.formScores[applicantId][formId];
         const fields = formFields[formId];
         if (replicaOf) return null;
+
+        const replicas = Object.entries((formScore as any).replicas || {}) as [
+          [string, {mean: number; stdDev: number}],
+        ];
+        const addReplicas =
+          replicas.length > 1 || (replicas[0] && replicas[0][0] !== formId);
 
         return {
           formId,
@@ -68,10 +74,10 @@ export const calcReport = (
               };
             })
             .sort((a, b) => sort(a, b, 'rowIndex')) as any[],
-          ...(formScore.replicas
+          ...(addReplicas
             ? {
                 replicas: Object.entries(
-                  formScore.replicas as {[key: string]: any},
+                  (formScore as any).replicas as {[key: string]: any},
                 ).map(([replicaFormId, formScore]) => {
                   return {
                     formId: replicaFormId,
