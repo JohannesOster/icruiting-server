@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import {ReportPrepareRow} from 'infrastructure/db/repos/formSubmissions/types';
 import {filterFormData, reduceSubmissions} from './preprocessor';
-import {Report} from './types';
+import {Score, Report} from './types';
 import {ReportBuilder} from './reportBuilder';
 import {JobRequirement} from 'domain/entities';
 import {mergeReplicas} from './mergeReplicas';
@@ -27,48 +27,54 @@ export const calcReport = (
     .sort((a, b) => sort(a, b, 'score', false));
 
   const rank = sorted.findIndex((elem) => elem.applicantId === applicantId) + 1;
+  const formCategory = rows[0].formCategory;
+  const formCategoryScore = round(report.formCategoryScores[applicantId]);
+
+  const formResults = Object.entries(forms);
+
   const result: Report = {
     rank,
-    formCategory: rows[0].formCategory,
-    formCategoryScore: round(report.formCategoryScores[applicantId]),
-    formResults: Object.entries(forms)
+    formCategory,
+    formCategoryScore,
+    formResults: formResults
       .map(([formId, {formTitle, replicaOf}]) => {
-        const formScore = report.formScores[applicantId][formId];
-        const fields = formFields[formId];
         if (replicaOf) return null;
 
-        const replicas = Object.entries((formScore as any).replicas || {}) as [
-          [string, {mean: number; stdDev: number}],
-        ];
-        const addReplicas =
-          replicas.length > 1 || (replicas[0] && replicas[0][0] !== formId);
+        const formScore = report.formScores[applicantId][formId];
+        const {mean, stdDev} = formScore;
+        const fields = formFields[formId];
+
+        type ReplicaEntry = [string, {mean: number; stdDev: number}];
+        const formScoreReplicas = (formScore as any).replicas || {};
+        const replicas = Object.entries(formScoreReplicas) as ReplicaEntry[];
+
+        const hasNonPrimaryReplica = replicas[0] && replicas[0][0] !== formId;
+        const addReplicas = replicas.length > 1 || hasNonPrimaryReplica;
 
         return {
           formId,
           formTitle,
-          formScore: round(formScore.mean),
-          stdDevFormScore: round(formScore.stdDev),
+          formScore: round(mean),
+          stdDevFormScore: round(stdDev),
           formFieldScores: Object.entries(fields)
             .map(([formFieldId, value]) => {
-              const {jobRequirementId, rowIndex, intent, label} = value;
-              const formFieldScore =
-                report.formFieldScores[applicantId][formId][formFieldId];
+              const {options, ...formFieldInfo} = value;
+              const formFields = report.formFieldScores[applicantId][formId];
+              const formFieldScore = formFields[formFieldId];
+
+              let path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
+              const aggregatedValues = _.get(report, path, []) as string[];
+
+              path = `countDistinct.${applicantId}.${formId}.${formFieldId}`;
+              const countDistinct = _.get(report, path, undefined) as
+                | {[key: string]: number}
+                | undefined;
+
               return {
                 formFieldId,
-                jobRequirementId,
-                rowIndex,
-                intent,
-                label,
-                aggregatedValues: _.get(
-                  report.aggregates,
-                  `${applicantId}.${formId}.${formFieldId}`,
-                  [],
-                ) as string[],
-                countDistinct: _.get(
-                  report.countDistinct,
-                  `${applicantId}.${formId}.${formFieldId}`,
-                  undefined,
-                ) as {[key: string]: number} | undefined,
+                ...formFieldInfo,
+                aggregatedValues,
+                countDistinct,
                 formFieldScore: round(formFieldScore?.mean),
                 stdDevFormFieldScores: round(formFieldScore?.stdDev),
               };
@@ -76,44 +82,38 @@ export const calcReport = (
             .sort((a, b) => sort(a, b, 'rowIndex')) as any[],
           ...(addReplicas
             ? {
-                replicas: Object.entries(
-                  (formScore as any).replicas as {[key: string]: any},
-                ).map(([replicaFormId, formScore]) => {
+                replicas: replicas.map(([replicaFormId, formScore]) => {
+                  const {formTitle} = forms[replicaFormId];
+                  const {mean, stdDev} = formScore;
+
                   return {
                     formId: replicaFormId,
-                    formTitle: forms[replicaFormId].formTitle,
-                    formScore: round(formScore.mean),
-                    stdDevFormScore: round(formScore.stdDev),
+                    formTitle,
+                    formScore: round(mean),
+                    stdDevFormScore: round(stdDev),
                     formFieldScores: Object.entries(fields)
                       .map(([formFieldId, value]) => {
-                        const {
-                          jobRequirementId,
-                          rowIndex,
-                          intent,
-                          label,
-                        } = value;
-                        const formFieldScore = _.get(
-                          report.formFieldScores,
-                          `${applicantId}.${formId}.replicas.${replicaFormId}.${formFieldId}`,
+                        const {options, ...formFieldInfos} = value;
+                        let path = `formFieldScores.${applicantId}.${formId}.replicas.${replicaFormId}.${formFieldId}`;
+                        const formFieldScore = _.get(report, path) as Score;
+
+                        path = `aggregates.${applicantId}.${replicaFormId}.${formFieldId}`;
+                        const aggregatedValues = _.get(
+                          report,
+                          path,
                           [],
-                        ) as any;
+                        ) as string[];
+
+                        path = `countDistinct.${applicantId}.${replicaFormId}.${formFieldId}`;
+                        const countDistinct = _.get(report, path, undefined) as
+                          | {[key: string]: number}
+                          | undefined;
 
                         return {
                           formFieldId,
-                          jobRequirementId,
-                          rowIndex,
-                          intent,
-                          label,
-                          aggregatedValues: _.get(
-                            report.aggregates,
-                            `${applicantId}.${formId}.replicas.${replicaFormId}.${formFieldId}`,
-                            [],
-                          ) as string[],
-                          countDistinct: _.get(
-                            report.countDistinct,
-                            `${applicantId}.${formId}.replicas.${replicaFormId}.${formFieldId}`,
-                            undefined,
-                          ) as {[key: string]: number} | undefined,
+                          ...formFieldInfos,
+                          aggregatedValues,
+                          countDistinct,
                           formFieldScore: round(formFieldScore?.mean),
                           stdDevFormFieldScores: round(formFieldScore?.stdDev),
                         };
@@ -128,18 +128,17 @@ export const calcReport = (
       .filter((val) => val)
       .sort((a, b) => sort(a, b, 'formTitle')) as any[],
     jobRequirementResults: jobRequiremnts.map(
-      ({jobRequirementId, requirementLabel, minValue}) => ({
-        jobRequirementId,
-        jobRequirementScore: round(
-          _.get(
-            report.jobRequirements,
-            `${applicantId}.${jobRequirementId}`,
-            0,
-          ) as number,
-        ),
-        requirementLabel,
-        minValue: minValue ? +minValue : undefined,
-      }),
+      ({jobRequirementId, requirementLabel, minValue}) => {
+        const path = `jobRequirements.${applicantId}.${jobRequirementId}`;
+        const jobRequirementScore = round(_.get(report, path, 0) as number);
+
+        return {
+          jobRequirementId,
+          jobRequirementScore,
+          requirementLabel,
+          minValue: minValue ? +minValue : undefined,
+        };
+      },
     ),
   };
 

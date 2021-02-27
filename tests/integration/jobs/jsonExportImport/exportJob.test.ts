@@ -46,19 +46,15 @@ describe('jobs', () => {
         .expect(200, done);
     });
 
-    it('Drops ids of job and jobRequirements', async () => {
+    it('Drops tenantId of job', async () => {
       const {body} = await request(app)
         .get(`/jobs/${job.jobId}/export`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200);
 
-      expect(body.jobId).toBeUndefined();
       expect(body.tenantId).toBeUndefined();
       expect(body.jobRequirements.length).toBe(job.jobRequirements.length);
-      body.jobRequirements.forEach((req: JobRequirement) =>
-        expect(req.jobRequirementId).toBeUndefined(),
-      );
     });
 
     it('Returns all forms', async () => {
@@ -71,7 +67,7 @@ describe('jobs', () => {
       expect(body.forms.length).toBe(forms.length);
     });
 
-    it('Removes all ids from form and formField', async () => {
+    it('Removes tenantId, formFieldId, jobId', async () => {
       const {body} = await request(app)
         .get(`/jobs/${job.jobId}/export`)
         .set('Accept', 'application/json')
@@ -79,12 +75,10 @@ describe('jobs', () => {
         .expect(200);
 
       body.forms.forEach((form: Form) => {
-        expect(form.formId).toBeUndefined();
-        expect(form.tenantId).toBeUndefined();
         expect(form.jobId).toBeUndefined();
+        expect(form.tenantId).toBeUndefined();
         form.formFields.forEach((formField) => {
           expect(formField.formFieldId).toBeUndefined();
-          expect(formField.jobRequirementId).toBeUndefined();
         });
       });
     });
