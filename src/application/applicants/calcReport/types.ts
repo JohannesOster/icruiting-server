@@ -25,7 +25,7 @@ export type Forms = {
   };
 };
 
-type Score = {mean: number; stdDev: number};
+export type Score = {mean: number; stdDev: number};
 export type ReportBuilderReturnType = {
   formFieldScores: {
     [applicantId: string]: {[formId: string]: {[formFieldId: string]: Score}};
