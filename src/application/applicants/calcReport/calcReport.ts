@@ -68,7 +68,9 @@ export const calcReport = (
               };
             })
             .sort((a, b) => sort(a, b, 'rowIndex')) as any[],
-          ...(formScore.replicas
+          ...(formScore.replicas &&
+          (formScore.replicas.legnth > 1 ||
+            formScore.replicas[0].formId !== formId)
             ? {
                 replicas: Object.entries(
                   formScore.replicas as {[key: string]: any},
