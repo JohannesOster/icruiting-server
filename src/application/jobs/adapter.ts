@@ -1,9 +1,11 @@
 import db from 'infrastructure/db';
 import storageService from 'infrastructure/storageService';
 import {BaseError, httpReqHandler} from 'application/errorHandling';
-import {createForm, createJob, Form, Job} from 'domain/entities';
+import {createForm, createJob, Form} from 'domain/entities';
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
+import {v4 as uuidv4} from 'uuid';
+import {deepReplace} from './utils';
 
 export const JobsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {
@@ -87,24 +89,35 @@ export const JobsAdapter = () => {
 
     const forms = await db.forms.list(tenantId, {jobId});
 
+    const replace = {} as {[key: string]: string};
     const body = {
       jobTitle: job.jobTitle,
-      jobRequirements: job.jobRequirements.map(
-        ({jobRequirementId, jobId, ...requirement}) => requirement,
-      ),
-      forms: forms.map((form) => ({
-        formCategory: form.formCategory,
-        formTitle: form.formTitle,
-        replicaOf: form.replicaOf,
-        formFields: form.formFields.map(
-          ({jobRequirementId, formId, formFieldId, ...formField}) => ({
-            ...formField,
-          }),
-        ),
-      })),
+      jobRequirements: job.jobRequirements.map(({jobId, ...requirement}) => {
+        replace[requirement.jobRequirementId] = uuidv4();
+        return requirement;
+      }),
+      forms: forms.map((form) => {
+        replace[form.formId] = uuidv4();
+        return {
+          formId: form.formId,
+          formCategory: form.formCategory,
+          formTitle: form.formTitle,
+          replicaOf: form.replicaOf,
+          // only add formFields to non replicas, otherwise formfields would be duplicated
+          ...(form.replicaOf
+            ? {formFields: []}
+            : {
+                formFields: form.formFields.map(
+                  ({formId, formFieldId, ...formField}) => ({
+                    ...formField,
+                  }),
+                ),
+              }),
+        };
+      }),
     };
 
-    return {body};
+    return {body: deepReplace(body, replace)};
   });
 
   const importJob = httpReqHandler(async (req) => {
@@ -136,14 +149,34 @@ export const JobsAdapter = () => {
           const {forms, ...job} = json;
           const _job = await db.jobs.create(createJob({tenantId, ...job}));
 
-          const _forms = await Promise.all(
-            (forms as Form[])
-              .filter((form) => !form.replicaOf)
-              .map((form) =>
+          const formsMap = (forms as Form[]).reduce(
+            (acc, curr) => {
+              if (!curr.replicaOf) acc.primaries.push(curr);
+              else acc.replicas.push(curr);
+              return acc;
+            },
+            {primaries: [], replicas: []} as {
+              primaries: Form[];
+              replicas: Form[];
+            },
+          );
+
+          let _forms = await Promise.all(
+            formsMap.primaries.map((form) =>
+              db.forms.create(
+                createForm({...form, tenantId, jobId: _job.jobId}),
+              ),
+            ),
+          );
+
+          _forms = _forms.concat(
+            await Promise.all(
+              formsMap.replicas.map((form) =>
                 db.forms.create(
                   createForm({...form, tenantId, jobId: _job.jobId}),
                 ),
               ),
+            ),
           );
 
           const body = {..._job, forms: _forms};

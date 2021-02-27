@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import {Forms, ReportBuilderReturnType} from './types';
 import * as calc from './calculator';
+import {inspect} from 'util';
 
 export const mergeReplicas = (
   report: ReportBuilderReturnType,
@@ -26,7 +27,9 @@ export const mergeReplicas = (
   Object.values(report.formFieldScores).forEach((forms) => {
     Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
       replicaIds.forEach((id) => {
+        if (!forms[id]) return; // formField is not submitted
         const {replicas, ...formFieldScores} = forms[id];
+
         _.set(forms, `${formId}.replicas.${id}`, _.cloneDeep(formFieldScores)); // cloneDeep, since otherwise primary form replica will  be overwritten down below (at forms[formId][formFieldId].mean = mean;)
         if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
       });
@@ -48,8 +51,8 @@ export const mergeReplicas = (
 
       Object.entries(replicaMeans).forEach(([formFieldId, values]) => {
         const [mean, stdDev] = calc.score(values);
-        forms[formId][formFieldId].mean = mean;
-        forms[formId][formFieldId].stdDev = stdDev;
+        _.set(forms, `${formId}.${formFieldId}.mean`, mean);
+        _.set(forms, `${formId}.${formFieldId}.stdDev`, stdDev);
       });
     });
   });
@@ -57,6 +60,7 @@ export const mergeReplicas = (
   Object.values(report.formScores).forEach((forms) => {
     Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
       replicaIds.forEach((id) => {
+        if (!forms[id]) return; // formField is not submitted
         const {replicas, ...score} = forms[id] as any;
         _.set(forms, `${formId}.replicas.${id}`, _.cloneDeep(score)); // cloneDeep, since otherwise primary form replica will  be overwritten down below (at forms[formId][formFieldId].mean = mean;)
         if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
@@ -78,6 +82,7 @@ export const mergeReplicas = (
     Object.values(report.aggregates).forEach((forms) => {
       Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
         replicaIds.forEach((id) => {
+          if (!forms[id]) return; // formField is not submitted
           const {replicas, ...aggregates} = forms[id];
           _.set(forms, `${formId}.replicas.${id}`, _.cloneDeep(aggregates)); // cloneDeep, since otherwise primary form replica will  be overwritten down below
           if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay

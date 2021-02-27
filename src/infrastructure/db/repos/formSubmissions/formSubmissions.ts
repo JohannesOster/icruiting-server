@@ -97,8 +97,12 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const prepareReport = (
     tenantId: string,
     formCategory: FormCategory,
+    jobId: string,
   ): Promise<ReportPrepareRow[]> => {
-    return db.any(sql.prepareReport, decamelizeKeys({tenantId, formCategory}));
+    return db.any(
+      sql.prepareReport,
+      decamelizeKeys({tenantId, formCategory, jobId}),
+    );
   };
 
   return {create, retrieve, update, prepareReport};
