@@ -1,4 +1,4 @@
-import {FormCategory, FormFieldIntent} from 'domain/entities';
+import {FormFieldIntent} from 'domain/entities';
 
 export type Submissions = {
   [submitterId: string]: {
@@ -45,42 +45,4 @@ export type ReportBuilderReturnType = {
   jobRequirements: {
     [applicantId: string]: {[jobRequirementId: string]: number};
   };
-};
-
-type ReportFormFieldResult = {
-  formFieldId: string;
-  jobRequirementId?: string;
-  rowIndex: number;
-  intent: FormFieldIntent;
-  label: string;
-  aggregatedValues: string[];
-  countDistinct?: {[key: string]: number};
-  formFieldScore: number;
-  stdDevFormFieldScores: number;
-};
-
-export type Report = {
-  rank: number;
-  formCategory: FormCategory;
-  formCategoryScore: number;
-  formResults: {
-    formId: string;
-    formTitle: string;
-    formScore: number;
-    stdDevFormScore: number;
-    formFieldScores: ReportFormFieldResult[];
-    replicas?: {
-      formId: string;
-      formTitle: string;
-      formScore: number;
-      stdDevFormScore: number;
-      formFieldScores: ReportFormFieldResult[];
-    }[];
-  }[];
-  jobRequirementResults: {
-    jobRequirementId: string;
-    jobRequirementScore: number;
-    requirementLabel: string;
-    minValue?: number;
-  }[];
 };

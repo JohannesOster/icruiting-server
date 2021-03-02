@@ -125,6 +125,10 @@ export const createReport = (
 
   if (!formResults.length) return {rank};
 
+  const jobRequirementResults = Object.entries(
+    scores.jobRequirements?.[applicantId] || {},
+  );
+
   const report: Report = {
     rank,
     formCategory,
@@ -217,19 +221,19 @@ export const createReport = (
       })
       .filter((val) => val)
       .sort((a, b) => sort(a, b, 'formTitle')) as any[],
-    jobRequirementResults: Object.entries(
-      scores.jobRequirements[applicantId] || {},
-    ).map(([jobRequirementId, score]) => {
-      const jobRequirementScore = round(score);
-      const {requirementLabel, minValue} = jobRequirements[jobRequirementId];
+    jobRequirementResults: jobRequirementResults.map(
+      ([jobRequirementId, score]) => {
+        const jobRequirementScore = round(score);
+        const {requirementLabel, minValue} = jobRequirements[jobRequirementId];
 
-      return {
-        jobRequirementId,
-        jobRequirementScore,
-        requirementLabel,
-        ...(minValue ? {minValue: +minValue} : {}),
-      };
-    }),
+        return {
+          jobRequirementId,
+          jobRequirementScore,
+          requirementLabel,
+          ...(minValue ? {minValue: +minValue} : {}),
+        };
+      },
+    ),
   };
 
   return report;
