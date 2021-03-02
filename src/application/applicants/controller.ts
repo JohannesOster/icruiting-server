@@ -235,5 +235,14 @@ export const ApplicantsAdapter = () => {
     return {};
   });
 
-  return {retrieve, list, update, getReport, del};
+  const confirm = httpReqHandler(async (req) => {
+    const {applicantId} = req.params;
+    const {tenantId} = req.user;
+
+    const applicant = await db.applicants.confirm(tenantId, applicantId);
+
+    return {body: applicant};
+  });
+
+  return {retrieve, list, update, getReport, del, confirm};
 };
