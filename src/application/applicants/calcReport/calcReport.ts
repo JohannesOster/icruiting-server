@@ -29,7 +29,5 @@ export const calcReport = (
     {} as any,
   );
 
-  console.log(_forms, _jobRequirements);
-
   return createReport(applicantId, report, _forms, _jobRequirements);
 };
