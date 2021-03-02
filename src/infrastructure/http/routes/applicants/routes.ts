@@ -17,5 +17,6 @@ router.use(requireAdmin);
 router.get('/:applicantId/report', getReportRules, validate, adapter.getReport);
 router.put('/:applicantId', adapter.update);
 router.delete('/:applicantId', adapter.del);
+router.put('/:applicantId/confirm', adapter.confirm);
 
 export {router as routes};
