@@ -116,6 +116,7 @@ export const ApplicantsAdapter = () => {
 
             // !> filter out non submitted values
             const isFile = item.component === 'file_upload';
+
             if (!fields[item.formFieldId] && !isFile) {
               if (!item.required) return acc;
               return reject(
@@ -127,9 +128,10 @@ export const ApplicantsAdapter = () => {
               const file = files[item.formFieldId];
 
               const oldFile = oldFiles?.find(
-                ({key}: any) => key === item.label,
+                ({formFieldId}) => formFieldId === item.formFieldId,
               );
-              const fileExists = file && file.size;
+
+              const fileExists = !!(file && file.size);
               if (!fileExists) {
                 if (!oldFile) return acc;
                 const oldFileAttribute = {
