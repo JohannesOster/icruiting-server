@@ -214,6 +214,7 @@ export const ApplicantsAdapter = () => {
       formCategory,
       job.jobId,
     );
+
     const report = calcReport(data, applicantId, job.jobRequirements);
 
     return {body: report};

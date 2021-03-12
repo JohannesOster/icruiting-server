@@ -40,6 +40,7 @@ describe('preprocessor', () => {
       expect(field.rowIndex).toEqual(mockRow.rowIndex);
 
       expect(form[mockRow.formId].formTitle).toEqual(mockRow.formTitle);
+      expect(form[mockRow.formId].formCategory).toEqual(mockRow.formCategory);
     });
   });
   describe('reduceSubmissions', () => {

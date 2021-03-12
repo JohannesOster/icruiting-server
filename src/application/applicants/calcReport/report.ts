@@ -15,9 +15,9 @@ type ReportFormFieldResult = {
 };
 
 export type Report = {
-  rank: number;
+  rank?: number;
   formCategory?: FormCategory;
-  formCategoryScore: number;
+  formCategoryScore?: number;
   formResults: {
     formId: string;
     formTitle: string;
@@ -130,9 +130,9 @@ export const createReport = (
   );
 
   const report: Report = {
-    rank,
+    ...(formCategory !== 'onboarding' ? {rank} : {}),
+    ...(formCategory !== 'onboarding' ? {formCategoryScore} : {}),
     formCategory,
-    formCategoryScore,
     formResults: formResults
       .map(([formId, {formTitle, replicaOf, formFields}]) => {
         if (replicaOf) return null;
