@@ -13,7 +13,7 @@ describe('mergereplicas', () => {
       countDistinct: {applicant1: {form1: {formField2: {}}}},
       jobRequirements: {applicant1: {jobRequirement1: 1}},
     };
-    const forms = {form1: {formTitle: 'form1'}};
+    const forms = {form1: {formTitle: 'form1', formCategory: 'onboarding'}};
     const expected = _.cloneDeep(report); // otherwise expected will be modified as well, therefore test would always pass
 
     expect(mergeReplicas(report, forms)).toStrictEqual(expected);
@@ -41,8 +41,12 @@ describe('mergereplicas', () => {
       jobRequirements: {},
     };
     const forms = {
-      form1: {formTitle: 'formTitle'},
-      form2: {formTitle: 'formTitle2', replicaOf: 'form1'},
+      form1: {formTitle: 'formTitle', formCategory: 'onboarding'},
+      form2: {
+        formTitle: 'formTitle2',
+        formCategory: 'onboarding',
+        replicaOf: 'form1',
+      },
     };
     const expected = {
       ..._.cloneDeep(report),
@@ -96,8 +100,12 @@ describe('mergereplicas', () => {
       jobRequirements: {},
     };
     const forms = {
-      form1: {formTitle: 'formTitle'},
-      form2: {formTitle: 'formTitle2', replicaOf: 'form1'},
+      form1: {formTitle: 'formTitle', formCategory: 'onboarding'},
+      form2: {
+        formTitle: 'formTitle2',
+        formCategory: 'onboarding',
+        replicaOf: 'form1',
+      },
     };
     const expected = {
       ...report,
@@ -138,8 +146,12 @@ describe('mergereplicas', () => {
       jobRequirements: {},
     };
     const forms = {
-      form1: {formTitle: 'formTitle'},
-      form2: {formTitle: 'formTitle2', replicaOf: 'form1'},
+      form1: {formTitle: 'formTitle', formCategory: 'onboarding'},
+      form2: {
+        formTitle: 'formTitle2',
+        formCategory: 'onboarding',
+        replicaOf: 'form1',
+      },
     };
     const expected = {
       ...report,
@@ -189,8 +201,12 @@ describe('mergereplicas', () => {
     };
 
     const forms = {
-      form1: {formTitle: 'formTitle1'},
-      form2: {formTitle: 'formTitle2', replicaOf: 'form1'},
+      form1: {formTitle: 'formTitle1', formCategory: 'onboarding'},
+      form2: {
+        formTitle: 'formTitle2',
+        formCategory: 'onboarding',
+        replicaOf: 'form1',
+      },
     };
 
     const expected = {
