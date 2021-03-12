@@ -2,7 +2,7 @@ import _ from 'lodash';
 import {ReportPrepareRow} from 'infrastructure/db/repos/formSubmissions/types';
 import {Forms, FormFields, Submissions} from './types';
 
-// Separate informations about formfields from submission data
+// Separate informations about formFields from submission data
 export const filterFormData = (rows: ReportPrepareRow[]) => {
   const formFields = rows.reduce((acc, curr) => {
     if (!!acc[curr.formId]?.[curr.formFieldId]) return acc;
@@ -12,11 +12,14 @@ export const filterFormData = (rows: ReportPrepareRow[]) => {
     return acc;
   }, {} as FormFields);
 
-  const forms = rows.reduce((acc, {formId, formTitle, replicaOf}) => {
-    if (!!acc[formId]) return acc;
-    _.set(acc, `${formId}`, {formTitle, replicaOf});
-    return acc;
-  }, {} as Forms);
+  const forms = rows.reduce(
+    (acc, {formId, formTitle, formCategory, replicaOf}) => {
+      if (!!acc[formId]) return acc;
+      _.set(acc, `${formId}`, {formTitle, formCategory, replicaOf});
+      return acc;
+    },
+    {} as Forms,
+  );
 
   return [forms, formFields] as const;
 };

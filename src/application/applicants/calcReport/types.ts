@@ -21,6 +21,7 @@ export type FormFields = {
 export type Forms = {
   [formId: string]: {
     formTitle: string;
+    formCategory: string;
     replicaOf?: string;
   };
 };
