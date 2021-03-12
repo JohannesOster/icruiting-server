@@ -131,8 +131,186 @@ describe('CreateReport', () => {
     const forms = {};
     const jobRequirements = {};
 
-    Object.entries(scores.jobRequirements);
     const report = createReport(applicantId, scores, forms, jobRequirements);
     expect(report).toStrictEqual({rank: 0});
+  });
+
+  it('separates replicas correctly', () => {
+    const applicantId = 'applicant';
+
+    const formFields = {
+      formField1: {label: 'formField', intent: 'sum_up', rowIndex: 0},
+      formField2: {label: 'formField', intent: 'count_distinct', rowIndex: 1},
+      formField3: {label: 'formField', intent: 'aggregate', rowIndex: 2},
+    };
+
+    const forms = {
+      form1: {formCategory: 'onboarding', formTitle: 'formTitle', formFields},
+      form2: {
+        formCategory: 'onboarding',
+        formTitle: 'formTitle2',
+        formFields,
+        replicaOf: 'form1',
+      },
+    };
+    const jobRequirements = {};
+
+    const scores = {
+      formFieldScores: {
+        [applicantId]: {
+          form1: {
+            formField1: {mean: 6, stdDev: 2},
+            replicas: {
+              form1: {formField1: {mean: 2, stdDev: 0}},
+              form2: {formField1: {mean: 8, stdDev: 0}},
+            } as any,
+          },
+        },
+      },
+      aggregates: {
+        [applicantId]: {
+          form1: {
+            formField2: ['a', 'b'],
+            replicas: {
+              form1: {formField2: ['a']},
+              form2: {formField2: ['b']},
+            } as any,
+          },
+        },
+      },
+      countDistinct: {
+        [applicantId]: {
+          form1: {
+            formField3: {a: 1, b: 3},
+            replicas: {
+              form1: {formField3: {a: 1}},
+              form2: {formField3: {a: 1, b: 2}},
+            } as any,
+          },
+        },
+      },
+      formScores: {
+        [applicantId]: {
+          form1: {
+            mean: 6,
+            stdDev: 2,
+            replicas: {
+              form1: {mean: 2, stdDev: 0},
+              form2: {mean: 8, stdDev: 0},
+            },
+          },
+        },
+      },
+      formCategoryScores: {[applicantId]: 6},
+      jobRequirements: {},
+    };
+
+    const report = createReport(applicantId, scores, forms, jobRequirements);
+    expect(report).toStrictEqual({
+      rank: 1,
+      formCategory: 'onboarding',
+      formCategoryScore: 6,
+      formResults: [
+        {
+          formId: 'form1',
+          formTitle: forms.form1.formTitle,
+          formScore: 6,
+          stdDevFormScore: 2,
+          formFieldScores: [
+            {
+              formFieldId: 'formField1',
+              ...formFields.formField1,
+              formFieldScore: 6,
+              stdDevFormFieldScore: 2,
+              aggregatedValues: [],
+              countDistinct: {},
+            },
+            {
+              formFieldId: 'formField2',
+              ...formFields.formField2,
+              formFieldScore: null,
+              stdDevFormFieldScore: null,
+              aggregatedValues: ['a', 'b'],
+              countDistinct: {},
+            },
+            {
+              formFieldId: 'formField3',
+              ...formFields.formField3,
+              formFieldScore: null,
+              stdDevFormFieldScore: null,
+              aggregatedValues: [],
+              countDistinct: {a: 1, b: 3},
+            },
+          ],
+          replicas: [
+            {
+              formId: 'form1',
+              formTitle: forms.form1.formTitle,
+              formScore: 2,
+              stdDevFormScore: 0,
+              formFieldScores: [
+                {
+                  formFieldId: 'formField1',
+                  ...formFields.formField1,
+                  formFieldScore: 2,
+                  stdDevFormFieldScore: 0,
+                  aggregatedValues: [],
+                  countDistinct: {},
+                },
+                {
+                  formFieldId: 'formField2',
+                  ...formFields.formField2,
+                  aggregatedValues: ['a'],
+                  countDistinct: {},
+                  formFieldScore: null,
+                  stdDevFormFieldScore: null,
+                },
+                {
+                  formFieldId: 'formField3',
+                  ...formFields.formField3,
+                  formFieldScore: null,
+                  stdDevFormFieldScore: null,
+                  aggregatedValues: [],
+                  countDistinct: {a: 1},
+                },
+              ],
+            },
+            {
+              formId: 'form2',
+              formTitle: forms.form2.formTitle,
+              formScore: 8,
+              stdDevFormScore: 0,
+              formFieldScores: [
+                {
+                  formFieldId: 'formField1',
+                  ...formFields.formField1,
+                  formFieldScore: 8,
+                  stdDevFormFieldScore: 0,
+                  aggregatedValues: [],
+                  countDistinct: {},
+                },
+                {
+                  formFieldId: 'formField2',
+                  ...formFields.formField2,
+                  aggregatedValues: ['b'],
+                  countDistinct: {},
+                  formFieldScore: null,
+                  stdDevFormFieldScore: null,
+                },
+                {
+                  formFieldId: 'formField3',
+                  ...formFields.formField3,
+                  formFieldScore: null,
+                  stdDevFormFieldScore: null,
+                  aggregatedValues: [],
+                  countDistinct: {a: 1, b: 2},
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      jobRequirementResults: [],
+    });
   });
 });

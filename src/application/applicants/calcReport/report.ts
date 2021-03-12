@@ -23,7 +23,7 @@ export type Report = {
     formTitle: string;
     formScore: number;
     stdDevFormScore: number;
-    formFieldScores: ReportFormFieldResult[];
+    formFieldScore: ReportFormFieldResult[];
     replicas?: {
       formId: string;
       formTitle: string;
@@ -50,7 +50,7 @@ type FormFieldAggregates = {[formFieldId: string]: Aggregate};
 type CountDistinct = {[label: string]: number};
 type FormFieldCountDistincts = {[formFieldId: string]: CountDistinct};
 
-type ReportScores = {
+export type ReportScores = {
   formFieldScores: {
     [applicantId: string]: {
       [formId: string]: {
@@ -155,7 +155,7 @@ export const createReport = (
           formFieldScores: Object.entries(formFields)
             .map(([formFieldId, formFieldInfo]) => {
               const formFields = scores.formFieldScores[applicantId][formId];
-              const formFieldScore = formFields[formFieldId];
+              const {mean, stdDev} = formFields[formFieldId] || {};
 
               let path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
               const aggregatedValues = _.get(scores, path, []) as string[];
@@ -170,8 +170,9 @@ export const createReport = (
                 ...formFieldInfo,
                 aggregatedValues,
                 countDistinct,
-                formFieldScore: round(formFieldScore?.mean),
-                stdDevFormFieldScore: round(formFieldScore?.stdDev),
+                formFieldScore: mean !== undefined ? round(mean) : null,
+                stdDevFormFieldScore:
+                  stdDev !== undefined ? round(stdDev) : null,
               };
             })
             .sort((a, b) => sort(a, b, 'rowIndex')) as any[],
@@ -188,28 +189,31 @@ export const createReport = (
                     stdDevFormScore: round(stdDev),
                     formFieldScores: Object.entries(formFields)
                       .map(([formFieldId, formFieldInfos]) => {
-                        let path = `formFieldScores.${applicantId}.${formId}.replicas.${replicaFormId}.${formFieldId}`;
-                        const formFieldScore = _.get(scores, path) as Score;
+                        const basePath = `${applicantId}.${formId}.replicas.${replicaFormId}.${formFieldId}`;
+                        let path = `formFieldScores.${basePath}`;
+                        const {mean, stdDev} = _.get(scores, path, {}) as Score;
 
-                        path = `aggregates.${applicantId}.${replicaFormId}.${formFieldId}`;
+                        path = `aggregates.${basePath}`;
                         const aggregatedValues = _.get(
                           scores,
                           path,
                           [],
                         ) as string[];
 
-                        path = `countDistinct.${applicantId}.${replicaFormId}.${formFieldId}`;
-                        const countDistinct = _.get(scores, path, undefined) as
-                          | {[key: string]: number}
-                          | undefined;
+                        path = `countDistinct.${basePath}`;
+                        const countDistinct = _.get(scores, path, {}) as {
+                          [key: string]: number;
+                        };
 
                         return {
                           formFieldId,
                           ...formFieldInfos,
                           aggregatedValues,
                           countDistinct,
-                          formFieldScore: round(formFieldScore?.mean),
-                          stdDevFormFieldScores: round(formFieldScore?.stdDev),
+                          formFieldScore:
+                            mean !== undefined ? round(mean) : null,
+                          stdDevFormFieldScore:
+                            stdDev !== undefined ? round(stdDev) : null,
                         };
                       })
                       .sort((a, b) => sort(a, b, 'rowIndex')) as any[],
