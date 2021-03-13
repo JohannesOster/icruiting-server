@@ -9,7 +9,20 @@ describe('createForm', () => {
         tenantId: uuid(),
         jobId: uuid(),
         formCategory: 'application',
-        formFields: [],
+        formFields: [
+          {
+            component: 'input',
+            label: 'E-Mail-Adresse',
+            rowIndex: 0,
+            required: true,
+          },
+          {
+            component: 'input',
+            label: 'Vollständiger Name',
+            rowIndex: 1,
+            required: true,
+          },
+        ],
       });
 
       const updateTitle = () => (form.formCategory = 'screening');
@@ -25,7 +38,20 @@ describe('createForm', () => {
           jobId: uuid(),
           formCategory: 'application',
           formTitle: 'Application Form',
-          formFields: [],
+          formFields: [
+            {
+              component: 'input',
+              label: 'E-Mail-Adresse',
+              rowIndex: 0,
+              required: true,
+            },
+            {
+              component: 'input',
+              label: 'Vollständiger Name',
+              rowIndex: 1,
+              required: true,
+            },
+          ],
         });
       };
 
@@ -65,6 +91,19 @@ describe('createForm', () => {
           tenantId: uuid(),
           jobId: uuid(),
           formCategory: 'onboarding',
+          formFields: [],
+        });
+      };
+
+      expect(create).toThrowError(ValidationError);
+    });
+
+    it('requires email and name field for application form', () => {
+      const create = () => {
+        createForm({
+          tenantId: uuid(),
+          jobId: uuid(),
+          formCategory: 'application',
           formFields: [],
         });
       };
