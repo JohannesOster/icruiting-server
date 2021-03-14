@@ -87,8 +87,12 @@ export const AuthService = () => {
     return new Promise(async (resolve) => {
       const params = {
         UserPoolId: cognitoUserPoolId,
-        Filter: 'cognito:user_status="CONFIRMED"',
-        AttributesToGet: ['email', 'custom:user_role', 'custom:tenant_id'],
+        AttributesToGet: [
+          'email',
+          'custom:user_role',
+          'custom:tenant_id',
+          'cognito:user_status',
+        ],
       };
 
       const {Users} = await cIdp.listUsers(params).promise();
