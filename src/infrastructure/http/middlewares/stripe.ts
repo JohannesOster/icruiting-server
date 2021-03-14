@@ -6,7 +6,7 @@ export const requireSubscription = catchAsync(async (req, res, next) => {
   let tenantId;
   if (req.user) tenantId = req.user.tenantId;
   if (!tenantId) tenantId = req.params.tenantId;
-  if (!tenantId) throw new BaseError(422, 'Missing tenant_id');
+  if (!tenantId) throw new BaseError(422, 'Missing tenantId');
 
   const tenant = await db.tenants.retrieve(tenantId);
   if (!tenant) throw new BaseError(404, 'Authorized tenant Not Found.');
