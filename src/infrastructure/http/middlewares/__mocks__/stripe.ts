@@ -1,5 +1,5 @@
-import {catchAsync} from 'application/errorHandling';
+import {catchAsync} from 'infrastructure/http/httpReqHandler';
 
-export const requireSubscription = catchAsync(async (req, res, next) => {
+export const requireSubscription = catchAsync((req, res, next) => {
   next();
 });

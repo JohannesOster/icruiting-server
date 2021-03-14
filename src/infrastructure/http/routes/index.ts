@@ -18,6 +18,8 @@ router.use('/forms', forms);
 router.use('/form-submissions', formSubmissions);
 router.use('/applicants', applicants);
 router.use('/rankings', rankings);
+
+// This route exists for easier development of email .pug templates
 router.get('/mail', (req, res, next) => {
   res.render('application-confirmation-email');
 });

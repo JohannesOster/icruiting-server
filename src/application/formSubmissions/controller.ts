@@ -1,6 +1,7 @@
-import {BaseError, httpReqHandler} from 'application/errorHandling';
+import {BaseError} from 'application/errorHandling';
 import {createFormSubmission} from 'domain/entities';
 import db from 'infrastructure/db';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 
 export const FormSubmissionsAdapter = () => {
   const create = httpReqHandler(async (req) => {

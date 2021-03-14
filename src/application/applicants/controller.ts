@@ -1,11 +1,12 @@
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
-import {BaseError, httpReqHandler} from 'application/errorHandling';
+import {BaseError} from 'application/errorHandling';
 import storageService from 'infrastructure/storageService';
 import {getApplicantFileURLs} from './utils';
 import db from 'infrastructure/db';
 import {calcReport} from './calcReport';
 import {FormCategory} from 'domain/entities';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 
 export const ApplicantsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {

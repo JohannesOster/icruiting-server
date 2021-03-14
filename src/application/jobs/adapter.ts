@@ -1,11 +1,12 @@
 import db from 'infrastructure/db';
 import storageService from 'infrastructure/storageService';
-import {BaseError, httpReqHandler} from 'application/errorHandling';
+import {BaseError} from 'application/errorHandling';
 import {createForm, createJob, Form} from 'domain/entities';
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {v4 as uuidv4} from 'uuid';
 import {deepReplace} from './utils';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 
 export const JobsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {

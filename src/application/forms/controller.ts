@@ -1,6 +1,6 @@
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
-import {httpReqHandler, BaseError} from 'application/errorHandling';
+import {BaseError} from 'application/errorHandling';
 import db from 'infrastructure/db';
 import config from 'config';
 import {validateSubscription} from './utils';
@@ -9,6 +9,7 @@ import {sendMail} from 'infrastructure/mailService';
 import storageService from 'infrastructure/storageService';
 import {createForm} from 'domain/entities';
 import {v4 as uuid4} from 'uuid';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 
 export const FormsAdapter = () => {
   const create = httpReqHandler(async (req) => {

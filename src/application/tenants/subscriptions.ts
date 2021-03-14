@@ -1,4 +1,5 @@
-import {BaseError, httpReqHandler} from 'application/errorHandling';
+import {BaseError} from 'application/errorHandling';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 import paymentService from 'infrastructure/paymentService';
 
 export const SubscriptionsAdapter = () => {

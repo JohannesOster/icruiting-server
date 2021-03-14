@@ -1,4 +1,4 @@
-import {RequestHandler} from 'express';
+import {RequestHandler as ExpressRequestHandler} from 'express';
 import {IncomingMessage} from 'http';
 
 type HTTPRequest = {
@@ -13,16 +13,14 @@ type HTTPResponse = {
   status?: number;
   body?: any;
   view?: string;
-  file?: {name: string; data: any};
 };
 
-export const httpReqHandler = (
-  fn: (req: HTTPRequest) => Promise<HTTPResponse>,
-): RequestHandler => {
+type RequestHandler = (req: HTTPRequest) => Promise<HTTPResponse>;
+export const httpReqHandler = (fn: RequestHandler): ExpressRequestHandler => {
   return async (req, res, next) => {
     await fn(req)
       .then((response) => {
-        const {status, body, view, file} = response;
+        const {status, body, view} = response;
         if (view) return res.render(view, body);
         res.status(status || 200).json(body);
       })
@@ -30,10 +28,12 @@ export const httpReqHandler = (
   };
 };
 
-export const catchAsync = (fn: RequestHandler): RequestHandler => {
-  return async (req, res, next) => {
+export const catchAsync = (
+  fn: ExpressRequestHandler,
+): ExpressRequestHandler => {
+  return (req, res, next) => {
     try {
-      await fn(req, res, next);
+      fn(req, res, next);
     } catch (e) {
       next(e);
     }
