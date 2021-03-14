@@ -13,7 +13,6 @@ type HTTPResponse = {
   status?: number;
   body?: any;
   view?: string;
-  file?: {name: string; data: any};
 };
 
 export const httpReqHandler = (
@@ -22,7 +21,7 @@ export const httpReqHandler = (
   return async (req, res, next) => {
     await fn(req)
       .then((response) => {
-        const {status, body, view, file} = response;
+        const {status, body, view} = response;
         if (view) return res.render(view, body);
         res.status(status || 200).json(body);
       })
