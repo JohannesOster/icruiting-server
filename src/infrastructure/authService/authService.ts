@@ -125,11 +125,18 @@ export const AuthService = () => {
     return cIdp.adminDeleteUser(params).promise();
   };
 
+  const retrieve = (email: string) => {
+    const cIdp = new CognitoIdentityServiceProvider();
+    const params = {UserPoolId: cognitoUserPoolId, Username: email};
+    return cIdp.adminGetUser(params).promise();
+  };
+
   return {
     validateToken,
     createUser,
     signUpUser,
     listUsers,
+    retrieve,
     deleteUser,
     updateUserRole,
   };
