@@ -9,7 +9,7 @@ export const mapCognitoUser = (
   keyModifier?: (key: string) => string,
 ) => {
   const attributes: KeyValuePair<string> = {};
-  attributes.status = user.UserStatus || 'DISABLED';
+  if (user.UserStatus) attributes.status = user.UserStatus;
   if (!user.Attributes?.length) return attributes;
   return {
     ...attributes,
