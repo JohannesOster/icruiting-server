@@ -112,5 +112,12 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     );
   };
 
-  return {create, retrieve, update, del, prepareReport};
+  const bulkDel = (tenantId: string, submitterId: string) => {
+    return db.none(
+      'DELETE FROM form_submission WHERE tenant_id=${tenant_id} AND submitter_id=${submitter_id}',
+      decamelizeKeys({tenantId, submitterId}),
+    );
+  };
+
+  return {create, retrieve, update, del, bulkDel, prepareReport};
 };

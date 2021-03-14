@@ -1,5 +1,6 @@
 import {httpReqHandler} from 'application/errorHandling';
 import authService from 'infrastructure/authService';
+import db from 'infrastructure/db';
 
 export const MembersAdapter = () => {
   const create = httpReqHandler(async (req) => {
@@ -32,7 +33,10 @@ export const MembersAdapter = () => {
   });
 
   const del = httpReqHandler(async (req) => {
+    const {tenantId} = req.user;
     const {username: email} = req.params;
+    const {Username} = await authService.retrieve(email);
+    await db.formSubmissions.bulkDel(tenantId, Username);
     await authService.deleteUser(email);
     return {};
   });
