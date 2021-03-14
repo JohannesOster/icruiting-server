@@ -28,7 +28,6 @@
   "dependencies": {
     "amazon-cognito-identity-js": "^4.5.10",
     "aws-sdk": "^2.841.0",
-    "body-parser": "^1.19.0",
     "cognito-express": "^2.0.18",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",

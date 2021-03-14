@@ -1,13 +1,11 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import cors from 'cors';
-import {notFound, errorHandler, monitor} from './middlewares';
 import {routes} from './routes';
+import {notFound, errorHandler} from './middlewares';
 
 const app = express();
 
-app.use(monitor);
-app.use(bodyParser.json());
+app.use(express.json());
 app.use(cors());
 
 app.set('views', __dirname + '/views');

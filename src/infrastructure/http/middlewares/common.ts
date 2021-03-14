@@ -7,8 +7,8 @@ export const notFound: RequestHandler = (req) => {
 };
 
 export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  let statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-  if (err.statusCode) statusCode = err.statusCode;
+  const isOK = res.statusCode === 200;
+  let statusCode = !isOK ? res.statusCode : err.statusCode || 500;
   if (statusCode === 500) console.log(err);
   res.status(statusCode).json({
     statusCode,
@@ -21,17 +21,4 @@ export const validate: RequestHandler = (req, res, next) => {
   const errors = validationResult(req);
   if (errors.isEmpty()) return next();
   res.status(422).json({statusCode: 422, errors: errors.array()});
-};
-
-// source: http://www.sheshbabu.com/posts/measuring-response-times-of-express-route-handlers/
-export const monitor: RequestHandler = (req, res, next) => {
-  const startHrTime = process.hrtime();
-
-  res.on('finish', () => {
-    const elapsedHrTime = process.hrtime(startHrTime);
-    const elapsedTimeInMs = elapsedHrTime[0] * 1000 + elapsedHrTime[1] / 1e6;
-    // console.log('%s : %fms', req.path, elapsedTimeInMs);
-  });
-
-  next();
 };
