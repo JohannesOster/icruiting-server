@@ -12,7 +12,8 @@ router.use(requireAuth);
 router.use(requireSubscription);
 router.use(requireAdmin);
 router.post('/', retrieveRules, validate, adapter.create);
-router.get('/', adapter.retrieve);
+router.get('/', adapter.list);
 router.put('/:username', updateRules, validate, adapter.update);
+router.delete('/:username', adapter.del);
 
 export {router as routes};

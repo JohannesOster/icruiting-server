@@ -14,7 +14,7 @@ export const MembersAdapter = () => {
     return {status: 201, body: resp};
   });
 
-  const retrieve = httpReqHandler(async (req) => {
+  const list = httpReqHandler(async (req) => {
     const {tenantId, email} = req.user;
     const users = await authService.listUsers(tenantId);
     const withoutMe = users?.filter((user) => user.email !== email);
@@ -31,5 +31,11 @@ export const MembersAdapter = () => {
     return {body: user};
   });
 
-  return {create, retrieve, update};
+  const del = httpReqHandler(async (req) => {
+    const {username: email} = req.params;
+    await authService.deleteUser(email);
+    return {};
+  });
+
+  return {create, list, update, del};
 };
