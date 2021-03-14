@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
-import {BaseError, catchAsync} from 'application/errorHandling';
+import {BaseError} from 'application/errorHandling';
 import authService from 'infrastructure/authService';
+import {catchAsync} from '../httpReqHandler';
 
 dotenv.config();
 

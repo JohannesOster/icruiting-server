@@ -1,6 +1,6 @@
-import {httpReqHandler} from 'application/errorHandling';
 import authService from 'infrastructure/authService';
 import db from 'infrastructure/db';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 
 export const MembersAdapter = () => {
   const create = httpReqHandler(async (req) => {

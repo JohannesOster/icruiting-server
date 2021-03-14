@@ -1,6 +1,7 @@
-import {BaseError, catchAsync} from 'application/errorHandling';
+import {BaseError} from 'application/errorHandling';
 import db from 'infrastructure/db';
 import paymentService from 'infrastructure/paymentService';
+import {catchAsync} from '../httpReqHandler';
 
 export const requireSubscription = catchAsync(async (req, res, next) => {
   let tenantId;

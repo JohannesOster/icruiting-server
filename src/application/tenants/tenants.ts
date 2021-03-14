@@ -1,11 +1,11 @@
 import db from 'infrastructure/db';
-import {httpReqHandler} from 'application/errorHandling';
 import {BaseError} from 'application/errorHandling';
 import paymentService from 'infrastructure/paymentService';
 import authService from 'infrastructure/authService';
 import storageService from 'infrastructure/storageService';
 import {createTenant} from 'domain/entities';
 import {filterNotNullAndDefined} from 'utils/filterNotNullAndDefined';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 
 export const TenantsAdapter = () => {
   const create = httpReqHandler(async (req) => {

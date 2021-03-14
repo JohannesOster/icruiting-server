@@ -1,19 +1,23 @@
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import db from 'infrastructure/db';
-import {BaseError, httpReqHandler} from 'application/errorHandling';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {BaseError} from 'application/errorHandling';
 import storageService from 'infrastructure/storageService';
 
 export const ThemesAdapter = () => {
-  const upload = httpReqHandler(async (req) => {
+  const upload = httpReqHandler((req) => {
     const {tenantId} = req.user;
+
     return new Promise((resolve, reject) => {
       const formidable = new IncomingForm();
       formidable.parse(req, async (error, fields, files) => {
         if (error) return reject(new BaseError(500, error));
+
         const file = files.theme;
         if (Array.isArray(file))
           return reject(new BaseError(422, 'Multifile no supported.'));
+
         const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
         if (extension !== 'css')
           return reject(new BaseError(422, `Invalid fileformat ${extension}`));
