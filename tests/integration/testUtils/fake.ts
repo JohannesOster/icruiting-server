@@ -56,7 +56,7 @@ const fake = {
         },
         {
           component: 'input',
-          label: 'Vollständiger-Name',
+          label: 'Vollständiger Name',
           placeholder: faker.random.word(),
           rowIndex: 1,
           required: true,

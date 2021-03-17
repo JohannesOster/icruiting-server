@@ -1,4 +1,6 @@
 import {RequestHandler as ExpressRequestHandler} from 'express';
+import {BaseError, ValidationError} from 'domain/entities/error';
+import {BaseError as HTTPError} from 'application/errorHandling';
 import {IncomingMessage} from 'http';
 
 type HTTPRequest = {
@@ -35,7 +37,14 @@ export const catchAsync = (
     try {
       fn(req, res, next);
     } catch (e) {
-      next(e);
+      next(mapDomainErrors(e));
     }
   };
+};
+
+const mapDomainErrors = (error: BaseError) => {
+  const map = {
+    [typeof ValidationError]: new HTTPError(422, error.message),
+  };
+  return map[typeof error] || error;
 };
