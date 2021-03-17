@@ -1,5 +1,5 @@
-import {httpReqHandler} from 'application/errorHandling';
 import db from 'infrastructure/db';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 
 export const RankingsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {

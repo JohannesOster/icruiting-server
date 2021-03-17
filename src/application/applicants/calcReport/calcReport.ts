@@ -5,7 +5,6 @@ import {ReportBuilder} from './reportBuilder';
 import {JobRequirement} from 'domain/entities';
 import {mergeReplicas} from './mergeReplicas';
 import {createReport} from './report';
-import {inspect} from 'util';
 
 export const calcReport = (
   rows: ReportPrepareRow[],

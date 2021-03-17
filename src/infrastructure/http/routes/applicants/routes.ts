@@ -12,9 +12,9 @@ router.use(requireAuth);
 router.use(requireSubscription);
 router.get('/', listRules, validate, adapter.list);
 router.get('/:applicantId', adapter.retrieve);
-router.get('/:applicantId/report', getReportRules, validate, adapter.getReport);
 
 router.use(requireAdmin);
+router.get('/:applicantId/report', getReportRules, validate, adapter.getReport);
 router.put('/:applicantId', adapter.update);
 router.delete('/:applicantId', adapter.del);
 router.put('/:applicantId/confirm', adapter.confirm);
