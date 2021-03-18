@@ -1,7 +1,12 @@
-ALTER TABLE applicant 
-ADD COLUMN IF NOT EXISTS confirmed  BOOLEAN NOT NULL DEFAULT FALSE;
-
 DROP VIEW applicant_view;
+
+ALTER TABLE form_field
+  DROP CONSTRAINT options_conditional_not_null,
+  DROP CONSTRAINT section_header_no_intent,
+  ALTER COLUMN component TYPE TEXT;
+
+DROP TYPE form_field_component;
+
 CREATE OR REPLACE VIEW applicant_view AS
 SELECT applicant.*,
   array_agg(json_build_object(

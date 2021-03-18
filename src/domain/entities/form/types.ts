@@ -1,5 +1,3 @@
-import {v4 as uuidv4} from 'uuid';
-
 export type FormFieldIntent = 'sum_up' | 'aggregate' | 'count_distinct';
 export type FormFieldComponent =
   | 'input'
@@ -11,7 +9,7 @@ export type FormFieldComponent =
   | 'rating_group'
   | 'section_header';
 
-type BaseFormField = {
+export type BaseFormField = {
   rowIndex: number;
   component: FormFieldComponent;
   label: string;
@@ -33,7 +31,8 @@ export type FormCategory =
   | 'screening'
   | 'assessment'
   | 'onboarding';
-type BaseForm = {
+
+export type BaseForm = {
   tenantId: string;
   jobId: string;
   formCategory: FormCategory;
@@ -42,21 +41,3 @@ type BaseForm = {
 };
 
 export type Form = {formId: string; formFields: FormField[]} & BaseForm;
-
-export const createForm = (
-  form: BaseForm & {
-    formId?: string;
-    formFields: (BaseFormField & {formFieldId?: string})[];
-  },
-): Form => {
-  const formId = form.formId || uuidv4();
-  return Object.freeze({
-    ...form,
-    formId,
-    formFields: form.formFields.map((field) => ({
-      ...field,
-      formId,
-      formFieldId: field.formFieldId || uuidv4(),
-    })),
-  });
-};
