@@ -124,7 +124,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
           [
             {name: 'form_id', cast: 'uuid'},
             {name: 'job_requirement_id', def: null, cast: 'uuid'},
-            {name: 'component', cast: 'form_field_component'},
+            'component',
             'row_index',
             'label',
             {name: 'intent', def: null, cast: 'form_field_intent'},
@@ -156,7 +156,7 @@ export const FormsRepository = (db: IDatabase<any>, pgp: IMain) => {
           [
             '?form_field_id',
             {name: 'job_requirement_id', def: null, cast: 'uuid'},
-            {name: 'component', cast: 'form_field_component'},
+            'component',
             'row_index',
             'label',
             {name: 'intent', def: null, cast: 'form_field_intent'},
