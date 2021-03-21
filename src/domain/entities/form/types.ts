@@ -23,7 +23,7 @@ export type BaseFormField = {
   editable?: boolean;
   deletable?: boolean;
   jobRequirementId?: string;
-  FormFieldVisibility: FormFieldVisibility;
+  visibility: FormFieldVisibility;
 };
 
 export type FormField = {formFieldId: string; formId: string} & BaseFormField;
