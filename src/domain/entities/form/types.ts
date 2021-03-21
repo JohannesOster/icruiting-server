@@ -8,6 +8,7 @@ export type FormFieldComponent =
   | 'file_upload'
   | 'rating_group'
   | 'section_header';
+export type FormFieldVisibility = 'all' | 'authenticated' | 'admin';
 
 export type BaseFormField = {
   rowIndex: number;
@@ -22,6 +23,7 @@ export type BaseFormField = {
   editable?: boolean;
   deletable?: boolean;
   jobRequirementId?: string;
+  FormFieldVisibility: FormFieldVisibility;
 };
 
 export type FormField = {formFieldId: string; formId: string} & BaseFormField;
