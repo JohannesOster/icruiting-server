@@ -53,6 +53,7 @@ const fake = {
           rowIndex: 0,
           required: true,
           description: faker.random.words(),
+          visibility: 'all',
         },
         {
           component: 'input',
@@ -61,6 +62,7 @@ const fake = {
           rowIndex: 1,
           required: true,
           description: faker.random.words(),
+          visibility: 'all',
         },
         {
           component: 'checkbox',
@@ -74,6 +76,7 @@ const fake = {
           ],
           editable: true,
           deletable: true,
+          visibility: 'all',
         },
         {
           component: 'file_upload',
@@ -82,6 +85,7 @@ const fake = {
           description: faker.random.words(),
           editable: true,
           deletable: true,
+          visibility: 'all',
         },
       ],
     }),
@@ -108,6 +112,7 @@ const fake = {
           ],
           editable: true,
           deletable: true,
+          visibility: 'all',
         },
         {
           component: 'rating_group',
@@ -126,6 +131,7 @@ const fake = {
           ],
           editable: true,
           deletable: true,
+          visibility: 'all',
         },
       ],
     }),
@@ -152,6 +158,7 @@ const fake = {
           ],
           editable: true,
           deletable: true,
+          visibility: 'all',
         },
         {
           component: 'rating_group',
@@ -169,6 +176,7 @@ const fake = {
           ],
           editable: true,
           deletable: true,
+          visibility: 'all',
         },
       ],
     }),
@@ -199,6 +207,7 @@ const fake = {
                 ],
                 editable: true,
                 deletable: true,
+                visibility: 'all',
               },
               {
                 component: 'rating_group',
@@ -216,6 +225,7 @@ const fake = {
                 ],
                 editable: true,
                 deletable: true,
+                visibility: 'all',
               },
             ],
           }),

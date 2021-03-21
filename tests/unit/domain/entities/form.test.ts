@@ -15,12 +15,14 @@ describe('createForm', () => {
             label: 'E-Mail-Adresse',
             rowIndex: 0,
             required: true,
+            visibility: 'all',
           },
           {
             component: 'input',
             label: 'Vollständiger Name',
             rowIndex: 1,
             required: true,
+            visibility: 'all',
           },
         ],
       });
@@ -44,12 +46,14 @@ describe('createForm', () => {
               label: 'E-Mail-Adresse',
               rowIndex: 0,
               required: true,
+              visibility: 'all',
             },
             {
               component: 'input',
               label: 'Vollständiger Name',
               rowIndex: 1,
               required: true,
+              visibility: 'all',
             },
           ],
         });
