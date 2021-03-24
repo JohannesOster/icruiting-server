@@ -225,8 +225,8 @@ export const createReport = (
       })
       .filter((val) => val)
       .sort((a, b) => sort(a, b, 'formTitle')) as any[],
-    jobRequirementResults: jobRequirementResults.map(
-      ([jobRequirementId, score]) => {
+    jobRequirementResults: jobRequirementResults
+      .map(([jobRequirementId, score]) => {
         const jobRequirementScore = round(score);
         const {requirementLabel, minValue} = jobRequirements[jobRequirementId];
 
@@ -236,8 +236,8 @@ export const createReport = (
           requirementLabel,
           ...(minValue ? {minValue: +minValue} : {}),
         };
-      },
-    ),
+      })
+      .sort((a, b) => sort(a, b, 'requirementLabel')),
   };
 
   return report;
