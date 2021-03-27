@@ -5,7 +5,7 @@ export const StorageService = () => {
   const bucket = process.env.S3_BUCKET || '';
 
   const getUrl = (path: string) => {
-    const urlParams = {Bucket: bucket, Key: path, Expires: 100};
+    const urlParams = {Bucket: bucket, Key: path, Expires: 3600};
     return new S3().getSignedUrlPromise('getObject', urlParams);
   };
 
