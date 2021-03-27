@@ -17,6 +17,8 @@ describe('CreateReport', () => {
       form1: {
         formCategory: 'assessment',
         formTitle: 'formTitle',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 4,
         formFields: {
           formField1: {label: 'formField', intent: 'sum_up', rowIndex: 0},
         },
@@ -37,6 +39,8 @@ describe('CreateReport', () => {
           formTitle: 'formTitle',
           formScore: 0.12,
           stdDevFormScore: 0.43,
+          possibleMinFormScore: 0,
+          possibleMaxFormScore: 4,
           formFieldScores: [
             {
               formFieldId: 'formField1',
@@ -73,6 +77,8 @@ describe('CreateReport', () => {
       form1: {
         formCategory: 'assessment',
         formTitle: 'formTitle',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 4,
         formFields: {
           formField1: {label: 'formField', intent: 'sum_up', rowIndex: 0},
         },
@@ -94,6 +100,8 @@ describe('CreateReport', () => {
           formTitle: 'formTitle',
           formScore: 3.25,
           stdDevFormScore: 0.43,
+          possibleMinFormScore: 0,
+          possibleMaxFormScore: 4,
           formFieldScores: [
             {
               formFieldId: 'formField1',
@@ -145,12 +153,20 @@ describe('CreateReport', () => {
     };
 
     const forms = {
-      form1: {formCategory: 'onboarding', formTitle: 'formTitle', formFields},
+      form1: {
+        formCategory: 'onboarding',
+        formTitle: 'formTitle',
+        formFields,
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 4,
+      },
       form2: {
         formCategory: 'onboarding',
         formTitle: 'formTitle2',
         formFields,
         replicaOf: 'form1',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 4,
       },
     };
     const jobRequirements = {};
@@ -214,6 +230,8 @@ describe('CreateReport', () => {
           formTitle: forms.form1.formTitle,
           formScore: 6,
           stdDevFormScore: 2,
+          possibleMinFormScore: 0,
+          possibleMaxFormScore: 4,
           formFieldScores: [
             {
               formFieldId: 'formField1',
@@ -246,6 +264,8 @@ describe('CreateReport', () => {
               formTitle: forms.form1.formTitle,
               formScore: 2,
               stdDevFormScore: 0,
+              possibleMinFormScore: 0,
+              possibleMaxFormScore: 4,
               formFieldScores: [
                 {
                   formFieldId: 'formField1',
@@ -278,6 +298,8 @@ describe('CreateReport', () => {
               formTitle: forms.form2.formTitle,
               formScore: 8,
               stdDevFormScore: 0,
+              possibleMinFormScore: 0,
+              possibleMaxFormScore: 4,
               formFieldScores: [
                 {
                   formFieldId: 'formField1',
@@ -328,6 +350,8 @@ describe('CreateReport', () => {
       form1: {
         formCategory: 'onboarding',
         formTitle: 'formTitle',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 4,
         formFields: {
           formField1: {label: 'formField', intent: 'sum_up', rowIndex: 0},
         },
@@ -354,6 +378,8 @@ describe('CreateReport', () => {
           formScore: 5,
           formTitle: 'formTitle',
           stdDevFormScore: 0,
+          possibleMinFormScore: 0,
+          possibleMaxFormScore: 4,
         },
       ],
       jobRequirementResults: [],
@@ -390,6 +416,8 @@ describe('CreateReport', () => {
       form1: {
         formCategory: 'onboarding',
         formTitle: 'formTitle',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 4,
         formFields: {
           formField1: {label: 'formField', intent: 'sum_up', rowIndex: 0},
         },
@@ -397,6 +425,8 @@ describe('CreateReport', () => {
       form2: {
         formCategory: 'onboarding',
         formTitle: 'formTitle',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 4,
         formFields: {
           formField2: {label: 'formField', intent: 'sum_up', rowIndex: 0},
         },
@@ -423,6 +453,8 @@ describe('CreateReport', () => {
           formScore: 5,
           formTitle: 'formTitle',
           stdDevFormScore: 0,
+          possibleMinFormScore: 0,
+          possibleMaxFormScore: 4,
         },
       ],
       jobRequirementResults: [],
