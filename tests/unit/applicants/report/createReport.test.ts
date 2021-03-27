@@ -359,4 +359,73 @@ describe('CreateReport', () => {
       jobRequirementResults: [],
     });
   });
+
+  it('filters missing formSubmissions', () => {
+    const applicantId = 'applicant';
+    const applicantId2 = 'applicantId2';
+    const scores = {
+      formFieldScores: {
+        [applicantId]: {
+          form1: {formField1: {mean: 5, stdDev: 0}},
+          form2: {formField2: {mean: 5, stdDev: 0}},
+        },
+        [applicantId2]: {
+          form1: {formField1: {mean: 5, stdDev: 0}},
+          // Note form 2 is missing
+        },
+      },
+      formScores: {
+        [applicantId]: {
+          form1: {mean: 5, stdDev: 0},
+          form2: {mean: 5, stdDev: 0},
+        },
+        [applicantId2]: {form1: {mean: 5, stdDev: 0}},
+      },
+      formCategoryScores: {[applicantId]: 10, [applicantId2]: 5},
+      aggregates: {},
+      countDistinct: {},
+      jobRequirements: {},
+    };
+    const forms = {
+      form1: {
+        formCategory: 'onboarding',
+        formTitle: 'formTitle',
+        formFields: {
+          formField1: {label: 'formField', intent: 'sum_up', rowIndex: 0},
+        },
+      },
+      form2: {
+        formCategory: 'onboarding',
+        formTitle: 'formTitle',
+        formFields: {
+          formField2: {label: 'formField', intent: 'sum_up', rowIndex: 0},
+        },
+      },
+    };
+    const jobRequirements = {};
+
+    const report = createReport(applicantId2, scores, forms, jobRequirements);
+    expect(report).toStrictEqual({
+      formCategory: 'onboarding',
+      formResults: [
+        {
+          formFieldScores: [
+            {
+              formFieldId: 'formField1',
+              ...forms.form1.formFields.formField1,
+              formFieldScore: 5,
+              stdDevFormFieldScore: 0,
+              aggregatedValues: [],
+              countDistinct: {},
+            },
+          ],
+          formId: 'form1',
+          formScore: 5,
+          formTitle: 'formTitle',
+          stdDevFormScore: 0,
+        },
+      ],
+      jobRequirementResults: [],
+    });
+  });
 });

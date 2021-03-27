@@ -138,6 +138,9 @@ export const createReport = (
         if (replicaOf) return null;
 
         const formScore = scores.formScores[applicantId][formId];
+
+        if (!formScore) return null;
+
         const {mean, stdDev} = formScore;
 
         type ReplicaEntry = [string, {mean: number; stdDev: number}];

@@ -278,4 +278,49 @@ describe('ReportBuilder', () => {
       expect(report.formScores).toEqual(expected);
     });
   });
+
+  describe('missing form_submissions', () => {
+    const options = ['0', '1', '2', '3', '4'].map((s) => ({
+      label: s,
+      value: s,
+    }));
+
+    const sumUp = 'sum_up' as 'sum_up';
+    const countDistinct = 'count_distinct' as 'count_distinct';
+    const aggregate = 'aggregate' as 'aggregate';
+    const forms = {
+      form1: {
+        formField1: {intent: sumUp, rowIndex: 0, options, label: ''},
+        formField2: {intent: aggregate, rowIndex: 1, label: ''},
+        formField3: {intent: countDistinct, options, rowIndex: 1, label: ''},
+      },
+      form2: {
+        formField4: {intent: sumUp, rowIndex: 0, options, label: ''},
+        formField5: {intent: aggregate, rowIndex: 1, label: ''},
+        formField6: {intent: countDistinct, options, rowIndex: 1, label: ''},
+      },
+    };
+    const submissions = {
+      applicant1: {
+        submitter1: {
+          form1: {formField1: '0', formField2: '1', formField3: '2'},
+          form2: {formField4: '0', formField5: '1', formField6: '2'},
+        },
+      },
+      applicant2: {
+        submitter1: {
+          form1: {formField1: '0', formField2: '1', formField3: '2'},
+          // note: nobody submitted form_2 for applicant 2
+        },
+      },
+    };
+    it('only uses intent = sum_up formScore', () => {
+      const report = ReportBuilder(forms, submissions);
+      const expected = {
+        applicant1: {form1: {mean: 0, stdDev: 0}, form2: {mean: 0, stdDev: 0}},
+        applicant2: {form1: {mean: 0, stdDev: 0}},
+      };
+      expect(report.formScores).toEqual(expected);
+    });
+  });
 });
