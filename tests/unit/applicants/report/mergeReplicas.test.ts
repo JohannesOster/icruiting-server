@@ -13,7 +13,14 @@ describe('mergereplicas', () => {
       countDistinct: {applicant1: {form1: {formField2: {}}}},
       jobRequirements: {applicant1: {jobRequirement1: 1}},
     };
-    const forms = {form1: {formTitle: 'form1', formCategory: 'onboarding'}};
+    const forms = {
+      form1: {
+        formTitle: 'form1',
+        formCategory: 'onboarding',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 4,
+      },
+    };
     const expected = _.cloneDeep(report); // otherwise expected will be modified as well, therefore test would always pass
 
     expect(mergeReplicas(report, forms)).toStrictEqual(expected);
@@ -41,10 +48,17 @@ describe('mergereplicas', () => {
       jobRequirements: {},
     };
     const forms = {
-      form1: {formTitle: 'formTitle', formCategory: 'onboarding'},
+      form1: {
+        formTitle: 'formTitle',
+        formCategory: 'onboarding',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 8,
+      },
       form2: {
         formTitle: 'formTitle2',
         formCategory: 'onboarding',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 8,
         replicaOf: 'form1',
       },
     };
@@ -100,11 +114,18 @@ describe('mergereplicas', () => {
       jobRequirements: {},
     };
     const forms = {
-      form1: {formTitle: 'formTitle', formCategory: 'onboarding'},
+      form1: {
+        formTitle: 'formTitle',
+        formCategory: 'onboarding',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 0,
+      },
       form2: {
         formTitle: 'formTitle2',
         formCategory: 'onboarding',
         replicaOf: 'form1',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 0,
       },
     };
     const expected = {
@@ -146,11 +167,18 @@ describe('mergereplicas', () => {
       jobRequirements: {},
     };
     const forms = {
-      form1: {formTitle: 'formTitle', formCategory: 'onboarding'},
+      form1: {
+        formTitle: 'formTitle',
+        formCategory: 'onboarding',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 0,
+      },
       form2: {
         formTitle: 'formTitle2',
         formCategory: 'onboarding',
         replicaOf: 'form1',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 0,
       },
     };
     const expected = {
@@ -201,11 +229,18 @@ describe('mergereplicas', () => {
     };
 
     const forms = {
-      form1: {formTitle: 'formTitle1', formCategory: 'onboarding'},
+      form1: {
+        formTitle: 'formTitle1',
+        formCategory: 'onboarding',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 0,
+      },
       form2: {
         formTitle: 'formTitle2',
         formCategory: 'onboarding',
         replicaOf: 'form1',
+        possibleMinFormScore: 0,
+        possibleMaxFormScore: 0,
       },
     };
 

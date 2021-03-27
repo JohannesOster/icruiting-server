@@ -23,6 +23,8 @@ export type Report = {
     formTitle: string;
     formScore: number;
     stdDevFormScore: number;
+    possibleMinFormScore: number;
+    possibleMaxFormScore: number;
     formFieldScore: ReportFormFieldResult[];
     replicas?: {
       formId: string;
@@ -155,6 +157,8 @@ export const createReport = (
           formTitle,
           formScore: round(mean),
           stdDevFormScore: round(stdDev),
+          possibleMaxScore: 0,
+          possibleMinScore: 0,
           formFieldScores: Object.entries(formFields)
             .map(([formFieldId, formFieldInfo]) => {
               const formFields = scores.formFieldScores[applicantId][formId];

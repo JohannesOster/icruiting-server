@@ -42,6 +42,36 @@ describe('preprocessor', () => {
       expect(form[mockRow.formId].formTitle).toEqual(mockRow.formTitle);
       expect(form[mockRow.formId].formCategory).toEqual(mockRow.formCategory);
     });
+    it('calculates possible min-max form scores', () => {
+      const {uuid, number, word, words} = random;
+      const mockRow = {
+        submitterId: uuid(),
+        applicantId: uuid(),
+        submissionValue: number().toString(),
+        formFieldId: uuid(),
+        intent: 'sum_up' as FormFieldIntent,
+        rowIndex: 0,
+        label: words(),
+        options: [
+          {label: '0', value: '0'},
+          {label: '1', value: '1'},
+          {label: '2', value: '2'},
+          {label: '3', value: '3'},
+          {label: '4', value: '4'},
+        ],
+        formId: uuid(),
+        formTitle: word(),
+        formCategory: 'assessment' as FormCategory,
+        jobTitle: word(),
+        requirementLabel: word(),
+        jobRequirementId: uuid(),
+      };
+
+      const data = [mockRow, {...mockRow, rowIndex: 1, formFieldId: uuid()}];
+      const [form] = filterFormData(data);
+      expect(form[mockRow.formId].possibleMinFormScore).toEqual(0);
+      expect(form[mockRow.formId].possibleMaxFormScore).toEqual(8); // 2*4
+    });
   });
   describe('reduceSubmissions', () => {
     it('transforms submission row to nested object', () => {

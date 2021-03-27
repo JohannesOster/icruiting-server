@@ -22,6 +22,8 @@ export type Forms = {
   [formId: string]: {
     formTitle: string;
     formCategory: string;
+    possibleMaxFormScore: number;
+    possibleMinFormScore: number;
     replicaOf?: string;
   };
 };
