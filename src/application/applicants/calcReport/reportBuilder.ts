@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import * as calc from './calculator';
-import {Forms, Submissions, ReportBuilderReturnType, FormFields} from './types';
+import {Submissions, ReportBuilderReturnType, FormFields} from './types';
 
 export const ReportBuilder = (
   formFields: FormFields,

@@ -23,6 +23,8 @@ export type Report = {
     formTitle: string;
     formScore: number;
     stdDevFormScore: number;
+    possibleMinFormScore: number;
+    possibleMaxFormScore: number;
     formFieldScore: ReportFormFieldResult[];
     replicas?: {
       formId: string;
@@ -86,6 +88,8 @@ type Forms = {
     formTitle: string;
     formCategory: string;
     replicaOf?: string;
+    possibleMaxFormScore: number;
+    possibleMinFormScore: number;
     formFields: {
       [formFieldId: string]: {
         intent: string;
@@ -134,7 +138,14 @@ export const createReport = (
     ...(formCategory !== 'onboarding' ? {formCategoryScore} : {}),
     formCategory,
     formResults: formResults
-      .map(([formId, {formTitle, replicaOf, formFields}]) => {
+      .map(([formId, form]) => {
+        const {
+          formTitle,
+          replicaOf,
+          formFields,
+          possibleMaxFormScore,
+          possibleMinFormScore,
+        } = form;
         if (replicaOf) return null;
 
         const formScore = scores.formScores[applicantId][formId];
@@ -155,6 +166,8 @@ export const createReport = (
           formTitle,
           formScore: round(mean),
           stdDevFormScore: round(stdDev),
+          possibleMaxFormScore,
+          possibleMinFormScore,
           formFieldScores: Object.entries(formFields)
             .map(([formFieldId, formFieldInfo]) => {
               const formFields = scores.formFieldScores[applicantId][formId];
@@ -182,7 +195,11 @@ export const createReport = (
           ...(addReplicas
             ? {
                 replicas: replicas.map(([replicaFormId, formScore]) => {
-                  const {formTitle} = forms[replicaFormId];
+                  const {
+                    formTitle,
+                    possibleMaxFormScore,
+                    possibleMinFormScore,
+                  } = forms[replicaFormId];
                   const {mean, stdDev} = formScore;
 
                   return {
@@ -190,6 +207,8 @@ export const createReport = (
                     formTitle,
                     formScore: round(mean),
                     stdDevFormScore: round(stdDev),
+                    possibleMaxFormScore,
+                    possibleMinFormScore,
                     formFieldScores: Object.entries(formFields)
                       .map(([formFieldId, formFieldInfos]) => {
                         const basePath = `${applicantId}.${formId}.replicas.${replicaFormId}.${formFieldId}`;
