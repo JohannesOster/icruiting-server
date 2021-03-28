@@ -88,6 +88,7 @@ export const AuthService = () => {
       const params = {
         UserPoolId: cognitoUserPoolId,
         AttributesToGet: [
+          'sub',
           'email',
           'custom:user_role',
           'custom:tenant_id',
