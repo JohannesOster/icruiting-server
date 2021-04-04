@@ -92,32 +92,14 @@ export const ReportBuilder = (
         jobRequirements[formField.jobRequirementId].push(kv);
       });
 
-      applicantIds.forEach((applicantId) => {
-        const submission = Object.values(submissions[applicantId]).find(
-          (val) => !!val[formId],
-        );
-        if (!submission) return;
+      if (!acc.formFieldScores) return acc;
 
-        const formSubmissionScores = Object.values(submissions[applicantId])
-          .map((submissions) => {
-            if (!submissions[formId]) return;
-            const submissionValues = Object.entries(submissions[formId])
-              .filter(([key]) => formFields[key].intent === 'sum_up')
-              .map(([, val]) => +val)
-              .filter((val) => !isNaN(val));
-            if (!submissionValues.length) return;
-
-            return calc.sum(submissionValues);
-          })
-          .filter((val) => val !== undefined) as number[];
-        if (formSubmissionScores.length) {
-          const [formMean, formStdDev] = calc.score(formSubmissionScores);
-
-          _.set(acc, `formScores.${applicantId}.${formId}`, {
-            mean: formMean,
-            stdDev: formStdDev,
-          });
-        }
+      Object.entries(acc.formFieldScores).forEach(([applicantId, forms]) => {
+        Object.entries(forms).forEach(([formId, formFields]) => {
+          const scores = Object.values(formFields).map(({mean}) => mean);
+          const formScore = calc.sum(scores);
+          _.set(acc, `formScores.${applicantId}.${formId}`, {mean: formScore});
+        });
       });
 
       return acc;

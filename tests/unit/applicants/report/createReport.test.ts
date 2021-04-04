@@ -7,7 +7,7 @@ describe('CreateReport', () => {
       formFieldScores: {
         applicant: {form1: {formField1: {mean: 0.123, stdDev: 0.425}}},
       },
-      formScores: {applicant: {form1: {mean: 0.123, stdDev: 0.425}}},
+      formScores: {applicant: {form1: {mean: 0.123}}},
       formCategoryScores: {applicant: 0.123},
       aggregates: {},
       countDistinct: {},
@@ -38,7 +38,6 @@ describe('CreateReport', () => {
           formId: 'form1',
           formTitle: 'formTitle',
           formScore: 0.12,
-          stdDevFormScore: 0.43,
           possibleMinFormScore: 0,
           possibleMaxFormScore: 4,
           formFieldScores: [
@@ -65,7 +64,7 @@ describe('CreateReport', () => {
       formFieldScores: {
         applicant: {form1: {formField1: {mean: 3.245, stdDev: 0.425}}},
       },
-      formScores: {applicant: {form1: {mean: 3.245, stdDev: 0.425}}},
+      formScores: {applicant: {form1: {mean: 3.245}}},
       formCategoryScores: {applicant: 3.245},
       aggregates: {},
       countDistinct: {},
@@ -99,7 +98,6 @@ describe('CreateReport', () => {
           formId: 'form1',
           formTitle: 'formTitle',
           formScore: 3.25,
-          stdDevFormScore: 0.43,
           possibleMinFormScore: 0,
           possibleMaxFormScore: 4,
           formFieldScores: [
@@ -211,8 +209,8 @@ describe('CreateReport', () => {
             mean: 6,
             stdDev: 2,
             replicas: {
-              form1: {mean: 2, stdDev: 0},
-              form2: {mean: 8, stdDev: 0},
+              form1: {mean: 2},
+              form2: {mean: 8},
             },
           },
         },
@@ -229,7 +227,6 @@ describe('CreateReport', () => {
           formId: 'form1',
           formTitle: forms.form1.formTitle,
           formScore: 6,
-          stdDevFormScore: 2,
           possibleMinFormScore: 0,
           possibleMaxFormScore: 4,
           formFieldScores: [
@@ -263,7 +260,6 @@ describe('CreateReport', () => {
               formId: 'form1',
               formTitle: forms.form1.formTitle,
               formScore: 2,
-              stdDevFormScore: 0,
               possibleMinFormScore: 0,
               possibleMaxFormScore: 4,
               formFieldScores: [
@@ -297,7 +293,6 @@ describe('CreateReport', () => {
               formId: 'form2',
               formTitle: forms.form2.formTitle,
               formScore: 8,
-              stdDevFormScore: 0,
               possibleMinFormScore: 0,
               possibleMaxFormScore: 4,
               formFieldScores: [
@@ -340,7 +335,7 @@ describe('CreateReport', () => {
       formFieldScores: {
         [applicantId]: {form1: {formField1: {mean: 5, stdDev: 0}}},
       },
-      formScores: {[applicantId]: {form1: {mean: 5, stdDev: 0}}},
+      formScores: {[applicantId]: {form1: {mean: 5}}},
       formCategoryScores: {[applicantId]: 5},
       aggregates: {},
       countDistinct: {},
@@ -377,7 +372,6 @@ describe('CreateReport', () => {
           formId: 'form1',
           formScore: 5,
           formTitle: 'formTitle',
-          stdDevFormScore: 0,
           possibleMinFormScore: 0,
           possibleMaxFormScore: 4,
         },
@@ -402,10 +396,10 @@ describe('CreateReport', () => {
       },
       formScores: {
         [applicantId]: {
-          form1: {mean: 5, stdDev: 0},
-          form2: {mean: 5, stdDev: 0},
+          form1: {mean: 5},
+          form2: {mean: 5},
         },
-        [applicantId2]: {form1: {mean: 5, stdDev: 0}},
+        [applicantId2]: {form1: {mean: 5}},
       },
       formCategoryScores: {[applicantId]: 10, [applicantId2]: 5},
       aggregates: {},
@@ -444,7 +438,7 @@ describe('CreateReport', () => {
               formFieldId: 'formField1',
               ...forms.form1.formFields.formField1,
               formFieldScore: 5,
-              stdDevFormFieldScore: 0,
+              stdDevFormFieldScore: 0, //asdf
               aggregatedValues: [],
               countDistinct: {},
             },
@@ -452,7 +446,6 @@ describe('CreateReport', () => {
           formId: 'form1',
           formScore: 5,
           formTitle: 'formTitle',
-          stdDevFormScore: 0,
           possibleMinFormScore: 0,
           possibleMaxFormScore: 4,
         },

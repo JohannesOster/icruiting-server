@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import {round} from './calculator';
 import {FormCategory, FormFieldIntent} from 'domain/entities';
+import {Score} from './types';
 
 type ReportFormFieldResult = {
   formFieldId: string;
@@ -22,7 +23,6 @@ export type Report = {
     formId: string;
     formTitle: string;
     formScore: number;
-    stdDevFormScore: number;
     possibleMinFormScore: number;
     possibleMaxFormScore: number;
     formFieldScore: ReportFormFieldResult[];
@@ -42,7 +42,6 @@ export type Report = {
   }[];
 };
 
-export type Score = {mean: number; stdDev: number};
 type FormFieldScores = {[formFieldId: string]: Score};
 type FormScores = {[formId: string]: Score};
 
@@ -152,9 +151,7 @@ export const createReport = (
 
         if (!formScore) return null;
 
-        const {mean, stdDev} = formScore;
-
-        type ReplicaEntry = [string, {mean: number; stdDev: number}];
+        type ReplicaEntry = [string, Score];
         const formScoreReplicas = (formScore as any).replicas || {};
         const replicas = Object.entries(formScoreReplicas) as ReplicaEntry[];
 
@@ -164,8 +161,7 @@ export const createReport = (
         return {
           formId,
           formTitle,
-          formScore: round(mean),
-          stdDevFormScore: round(stdDev),
+          formScore: round(formScore.mean),
           possibleMaxFormScore,
           possibleMinFormScore,
           formFieldScores: Object.entries(formFields)
@@ -200,13 +196,11 @@ export const createReport = (
                     possibleMaxFormScore,
                     possibleMinFormScore,
                   } = forms[replicaFormId];
-                  const {mean, stdDev} = formScore;
 
                   return {
                     formId: replicaFormId,
                     formTitle,
-                    formScore: round(mean),
-                    stdDevFormScore: round(stdDev),
+                    formScore: round(formScore.mean),
                     possibleMaxFormScore,
                     possibleMinFormScore,
                     formFieldScores: Object.entries(formFields)
