@@ -8,7 +8,7 @@ export const StorageService = () => {
     const urlParams = {Bucket: bucket, Key: path, Expires: 3600};
     return new S3()
       .getSignedUrlPromise('getObject', urlParams)
-      .catch((err) => path); // if object does not exist UriParameterError is thrown
+      .catch((err) => ''); // if object does not exist UriParameterError is thrown
   };
 
   type UploadParams = {path: string; contentType: string; data: Body};
