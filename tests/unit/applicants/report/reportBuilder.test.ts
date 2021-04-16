@@ -67,8 +67,8 @@ describe('ReportBuilder', () => {
     it('calculates formScores correctly', () => {
       const report = ReportBuilder(forms, submissions);
       expect(report.formScores).toStrictEqual({
-        applicant1: {form1: {mean: 5, stdDev: 1}, form2: {mean: 1, stdDev: 0}},
-        applicant2: {form1: {mean: 4, stdDev: 0}},
+        applicant1: {form1: {mean: 5}, form2: {mean: 1}},
+        applicant2: {form1: {mean: 4}},
       });
     });
 
@@ -274,7 +274,7 @@ describe('ReportBuilder', () => {
     };
     it('only uses intent = sum_up formScore', () => {
       const report = ReportBuilder(forms, submissions);
-      const expected = {applicant1: {form1: {mean: 0, stdDev: 0}}};
+      const expected = {applicant1: {form1: {mean: 0}}};
       expect(report.formScores).toEqual(expected);
     });
   });
@@ -317,8 +317,8 @@ describe('ReportBuilder', () => {
     it('only uses intent = sum_up formScore', () => {
       const report = ReportBuilder(forms, submissions);
       const expected = {
-        applicant1: {form1: {mean: 0, stdDev: 0}, form2: {mean: 0, stdDev: 0}},
-        applicant2: {form1: {mean: 0, stdDev: 0}},
+        applicant1: {form1: {mean: 0}, form2: {mean: 0}},
+        applicant2: {form1: {mean: 0}},
       };
       expect(report.formScores).toEqual(expected);
     });
