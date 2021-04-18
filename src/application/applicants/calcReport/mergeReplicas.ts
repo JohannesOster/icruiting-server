@@ -114,6 +114,7 @@ export const mergeReplicas = (
     Object.values(report.countDistinct).forEach((forms) => {
       Object.entries(replicasMap).forEach(([formId, replicaIds]) => {
         replicaIds.forEach((id) => {
+          if (!forms[id]) return; // formField is not submitted
           const {replicas, ...counts} = forms[id];
           _.set(forms, `${formId}.replicas.${id}`, _.cloneDeep(counts)); // cloneDeep, since otherwise primary form replica will  be overwritten down below
           if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
