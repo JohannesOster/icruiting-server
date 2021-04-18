@@ -66,7 +66,7 @@ export const mergeReplicas = (
         if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
       });
 
-      const replicas = ((forms[formId] as any).replicas as unknown) as {
+      const replicas = ((forms[formId] as any)?.replicas as unknown) as {
         [formId: string]: {mean: number; stdDev: number};
       };
       if (!replicas) return;
