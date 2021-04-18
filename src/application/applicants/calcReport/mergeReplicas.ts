@@ -34,7 +34,7 @@ export const mergeReplicas = (
         if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
       });
 
-      const replicas = (forms[formId].replicas as unknown) as {
+      const replicas = (forms[formId]?.replicas as unknown) as {
         [formId: string]: {
           [formFieldId: string]: {mean: number; stdDev: number};
         };
@@ -88,7 +88,7 @@ export const mergeReplicas = (
           if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
         });
 
-        const replicas = (forms[formId].replicas as unknown) as {
+        const replicas = (forms[formId]?.replicas as unknown) as {
           [formId: string]: {[formFieldId: string]: string[]};
         };
         if (!replicas) return;
@@ -119,7 +119,7 @@ export const mergeReplicas = (
           if (id !== formId) delete forms[id]; // delete replicas form normal formFieldScores, primary must stay
         });
 
-        const replicas = (forms[formId].replicas as unknown) as {
+        const replicas = (forms[formId]?.replicas as unknown) as {
           [formId: string]: {[formFieldId: string]: {[key: string]: number}};
         };
         if (!replicas) return;
