@@ -64,6 +64,7 @@ describe('ReportBuilder', () => {
 
       expect(report.formFieldScores).toStrictEqual(expected);
     });
+
     it('calculates formScores correctly', () => {
       const report = ReportBuilder(forms, submissions);
       expect(report.formScores).toStrictEqual({
@@ -80,6 +81,7 @@ describe('ReportBuilder', () => {
       });
     });
   });
+
   describe('aggregation', () => {
     const forms = {
       form1: {
@@ -135,6 +137,7 @@ describe('ReportBuilder', () => {
       expect(report.aggregates).toEqual(expected);
     });
   });
+
   describe('jobRequirementResults', () => {
     const forms = {
       form1: {
@@ -190,6 +193,7 @@ describe('ReportBuilder', () => {
       expect(report.jobRequirements).toEqual(expected);
     });
   });
+
   describe('count_distinct', () => {
     const options = ['0', '1', '2', '3', '4'].map((s) => ({
       label: `Option ${s}`,
@@ -238,6 +242,7 @@ describe('ReportBuilder', () => {
       expect(report.countDistinct).toEqual(expected);
     });
   });
+
   describe('formScore', () => {
     const options = ['0', '1', '2', '3', '4'].map((s) => ({
       label: s,
@@ -314,6 +319,7 @@ describe('ReportBuilder', () => {
         },
       },
     };
+
     it('only uses intent = sum_up formScore', () => {
       const report = ReportBuilder(forms, submissions);
       const expected = {
@@ -321,6 +327,39 @@ describe('ReportBuilder', () => {
         applicant2: {form1: {mean: 0}},
       };
       expect(report.formScores).toEqual(expected);
+    });
+  });
+
+  describe('handles optional form_fields', () => {
+    const options = ['0', '1', '2', '3', '4'].map((s) => ({
+      label: s,
+      value: s,
+    }));
+
+    const sumUp = 'sum_up' as 'sum_up';
+    const forms = {
+      form1: {
+        formField1: {intent: sumUp, rowIndex: 0, options, label: ''},
+        formField2: {intent: sumUp, rowIndex: 1, options, label: ''},
+      },
+    };
+    const submissions = {
+      applicant1: {submitter1: {form1: {formField1: '0'}}},
+      // applicant2: {submitter1: {form1: {formField1: '0', formField2: '1'}}},
+    };
+
+    it('does not use 0 for optional fields', () => {
+      const report = ReportBuilder(forms, submissions);
+      const expected = {
+        applicant1: {form1: {formField1: {mean: 0, stdDev: 0}}},
+        applicant2: {
+          form1: {
+            formField1: {mean: 0, stdDev: 0},
+            formField2: {mean: 0, stdDev: 0},
+          },
+        },
+      };
+      expect(report.formFieldScores).toEqual(expected);
     });
   });
 });

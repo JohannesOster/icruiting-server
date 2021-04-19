@@ -2,6 +2,7 @@ import _ from 'lodash';
 import {round} from './calculator';
 import {FormCategory, FormFieldIntent} from 'domain/entities';
 import {Score} from './types';
+import {filterNotNullAndDefined} from 'utils/filterNotNullAndDefined';
 
 type ReportFormFieldResult = {
   formFieldId: string;
@@ -25,7 +26,7 @@ export type Report = {
     formScore?: number;
     possibleMinFormScore?: number;
     possibleMaxFormScore?: number;
-    formFieldScore: ReportFormFieldResult[];
+    formFieldScores: ReportFormFieldResult[];
     replicas?: {
       formId: string;
       formTitle: string;
@@ -191,6 +192,14 @@ export const createReport = (
                 [key: string]: number;
               };
 
+              // if there is no submission return null
+              if (
+                mean === undefined &&
+                !aggregatedValues.length &&
+                !Object.keys(countDistinct).length
+              )
+                return null;
+
               return {
                 formFieldId,
                 ...formFieldInfo,
@@ -201,6 +210,7 @@ export const createReport = (
                   stdDev !== undefined ? round(stdDev) : null,
               };
             })
+            .filter(filterNotNullAndDefined)
             .sort((a, b) => sort(a, b, 'rowIndex')) as any[],
           ...(addReplicas
             ? {
@@ -235,6 +245,14 @@ export const createReport = (
                           [key: string]: number;
                         };
 
+                        // if there is no submission return null
+                        if (
+                          mean === undefined &&
+                          !aggregatedValues.length &&
+                          !Object.keys(countDistinct).length
+                        )
+                          return null;
+
                         return {
                           formFieldId,
                           ...formFieldInfos,
@@ -246,6 +264,7 @@ export const createReport = (
                             stdDev !== undefined ? round(stdDev) : null,
                         };
                       })
+                      .filter((val) => val)
                       .sort((a, b) => sort(a, b, 'rowIndex')) as any[],
                   };
                 }),
@@ -253,7 +272,7 @@ export const createReport = (
             : {}),
         };
       })
-      .filter((val) => val)
+      .filter(filterNotNullAndDefined)
       .sort((a, b) => sort(a, b, 'formTitle')) as any[],
     jobRequirementResults: jobRequirementResults
       .map(([jobRequirementId, score]) => {

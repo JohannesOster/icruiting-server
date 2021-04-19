@@ -79,7 +79,14 @@ export const ReportBuilder = (
           );
           if (!submission) return;
           let path = `${formId}.${formFieldId}`;
-          const [mean, stdDev] = calc.deepScore(submissions[applicantId], path);
+
+          // check if there are submissions for this field
+          const data = Object.values(submissions[applicantId])
+            .map((sub) => +_.get(sub, path))
+            .filter((val) => !isNaN(val));
+          if (!data.length) return;
+
+          const [mean, stdDev] = calc.score(data);
           path = `${applicantId}.${path}`;
           _.set(acc, `formFieldScores.${path}`, {mean, stdDev});
         });
