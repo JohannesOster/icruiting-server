@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import {Forms, ReportBuilderReturnType} from './types';
 import * as calc from './calculator';
-import {inspect} from 'util';
 
 export const mergeReplicas = (
   report: ReportBuilderReturnType,
