@@ -22,15 +22,15 @@ export type Report = {
   formResults: {
     formId: string;
     formTitle: string;
-    formScore: number;
-    possibleMinFormScore: number;
-    possibleMaxFormScore: number;
+    formScore?: number;
+    possibleMinFormScore?: number;
+    possibleMaxFormScore?: number;
     formFieldScore: ReportFormFieldResult[];
     replicas?: {
       formId: string;
       formTitle: string;
-      formScore: number;
-      stdDevFormScore: number;
+      formScore?: number;
+      stdDevFormScore?: number;
       formFieldScores: ReportFormFieldResult[];
     }[];
   }[];
@@ -114,11 +114,13 @@ export const createReport = (
     return a[prop] < b[prop] ? 1 : -1;
   };
 
+  /* NOTE: if form does not include any sum_up values sorted will be empty.
+  Therefore each rank will be -1 + 1 = 0 */
   const sorted = Object.entries(scores.formCategoryScores)
     .map(([applicantId, score]) => ({applicantId, score}))
     .sort((a, b) => sort(a, b, 'score', false));
-
   const rank = sorted.findIndex((elem) => elem.applicantId === applicantId) + 1;
+
   const formCategory = Object.values(forms)[0]?.formCategory as
     | FormCategory
     | undefined;
@@ -134,7 +136,9 @@ export const createReport = (
 
   const report: Report = {
     ...(formCategory !== 'onboarding' ? {rank} : {}),
-    ...(formCategory !== 'onboarding' ? {formCategoryScore} : {}),
+    ...(formCategory !== 'onboarding' && formCategoryScore
+      ? {formCategoryScore}
+      : {}),
     formCategory,
     formResults: formResults
       .map(([formId, form]) => {
@@ -147,12 +151,22 @@ export const createReport = (
         } = form;
         if (replicaOf) return null;
 
-        const formScore = scores.formScores[applicantId][formId];
+        const formScore = scores.formScores[applicantId]?.[formId];
 
-        if (!formScore) return null;
+        // filter empty form submissions
+        let path = `aggregates.${applicantId}.${formId}`;
+        const aggregateFileds = _.get(scores, path, {});
+        const hasAggregateFields = !!Object.keys(aggregateFileds).length;
+
+        path = `countDistinct.${applicantId}.${formId}`;
+        const countDistinctFileds = _.get(scores, path, {});
+        const hasCDFileds = !!Object.keys(countDistinctFileds).length;
+
+        const hasEntries = hasAggregateFields || hasCDFileds || formScore;
+        if (!hasEntries) return null;
 
         type ReplicaEntry = [string, Score];
-        const formScoreReplicas = (formScore as any).replicas || {};
+        const formScoreReplicas = (formScore as any)?.replicas || {};
         const replicas = Object.entries(formScoreReplicas) as ReplicaEntry[];
 
         const hasNonPrimaryReplica = replicas[0] && replicas[0][0] !== formId;
@@ -161,13 +175,13 @@ export const createReport = (
         return {
           formId,
           formTitle,
-          formScore: round(formScore.mean),
+          ...(formScore ? {formScore: round(formScore.mean)} : {}),
           possibleMaxFormScore,
           possibleMinFormScore,
           formFieldScores: Object.entries(formFields)
             .map(([formFieldId, formFieldInfo]) => {
-              const formFields = scores.formFieldScores[applicantId][formId];
-              const {mean, stdDev} = formFields[formFieldId] || {};
+              const formFields = scores.formFieldScores[applicantId]?.[formId];
+              const {mean, stdDev} = formFields?.[formFieldId] || {};
 
               let path = `aggregates.${applicantId}.${formId}.${formFieldId}`;
               const aggregatedValues = _.get(scores, path, []) as string[];
@@ -200,7 +214,7 @@ export const createReport = (
                   return {
                     formId: replicaFormId,
                     formTitle,
-                    formScore: round(formScore.mean),
+                    ...(formScore ? {formScore: round(formScore.mean)} : {}),
                     possibleMaxFormScore,
                     possibleMinFormScore,
                     formFieldScores: Object.entries(formFields)
