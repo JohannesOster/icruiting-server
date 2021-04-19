@@ -329,4 +329,29 @@ describe('ReportBuilder', () => {
       expect(report.formScores).toEqual(expected);
     });
   });
+
+  describe('missing field in form_submissions', () => {
+    const options = ['0', '1', '2', '3', '4'].map((s) => ({
+      label: s,
+      value: s,
+    }));
+
+    const sumUp = 'sum_up' as 'sum_up';
+    const forms = {
+      form1: {
+        formField1: {intent: sumUp, rowIndex: 0, options, label: ''},
+        formField2: {intent: sumUp, rowIndex: 0, options, label: ''},
+      },
+    };
+    const submissions = {
+      applicant1: {submitter1: {form1: {formField1: '2', formField2: null}}},
+    } as any;
+
+    it('only uses intent = sum_up formScore', () => {
+      const report = ReportBuilder(forms, submissions);
+      expect(report.formFieldScores).toStrictEqual({
+        applicant1: {form1: {formField1: {mean: 2, stdDev: 0}}},
+      });
+    });
+  });
 });

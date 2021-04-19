@@ -82,7 +82,7 @@ export const ReportBuilder = (
 
           // check if there are submissions for this field
           const data = Object.values(submissions[applicantId])
-            .map((sub) => +_.get(sub, path))
+            .map((sub) => parseInt(_.get(sub, path, '') as string, 10))
             .filter((val) => !isNaN(val));
           if (!data.length) return;
 

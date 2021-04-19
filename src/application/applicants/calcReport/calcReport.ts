@@ -15,17 +15,7 @@ export const calcReport = (
   const [forms, formFields] = filterFormData(rows);
   const submissions = reduceSubmissions(rows);
   const raw = ReportBuilder(formFields, submissions);
-  console.log(
-    inspect(raw.formFieldScores['f7c1f581-70c9-4056-a5f3-3cebe977a171'], {
-      depth: null,
-    }),
-  );
   const report = mergeReplicas(raw, forms);
-  console.log(
-    inspect(report.formFieldScores['f7c1f581-70c9-4056-a5f3-3cebe977a171'], {
-      depth: null,
-    }),
-  );
 
   const _forms = Object.entries(forms).reduce((acc, [formId, form]) => {
     acc[formId] = {...form, formFields: formFields[formId]};
