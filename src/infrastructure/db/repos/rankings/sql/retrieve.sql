@@ -2,7 +2,7 @@ SELECT
 	form_score.applicant_id,
   ROW_NUMBER() OVER (ORDER BY AVG(form_score) DESC) AS rank,
 	ROUND(AVG(form_score), 2) AS score,
-	count(DISTINCT form_submission_id) AS submissions_count
+	COUNT(DISTINCT form_submission_id) AS submissions_count
 FROM
 	(SELECT
 		applicant_id,

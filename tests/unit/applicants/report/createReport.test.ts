@@ -124,6 +124,59 @@ describe('CreateReport', () => {
     });
   });
 
+  it('displays results even if not sum_up fields are included', () => {
+    const applicantId = 'applicant';
+    const scores = {
+      formFieldScores: {},
+      formScores: {},
+      formCategoryScores: {},
+      aggregates: {applicant: {form1: {formField1: ['This is my comment']}}},
+      countDistinct: {},
+      jobRequirements: {},
+    };
+    const forms = {
+      form1: {
+        formCategory: 'assessment',
+        formTitle: 'formTitle',
+        possibleMaxFormScore: 0,
+        possibleMinFormScore: 0,
+        formFields: {
+          formField1: {label: 'formField', intent: 'aggregate', rowIndex: 0},
+        },
+      },
+    };
+    const jobRequirements = {
+      jobRequirement1: {requirementLabel: 'requirement1'},
+    };
+
+    const report = createReport(applicantId, scores, forms, jobRequirements);
+    expect(report).toStrictEqual({
+      rank: 0, // since there are no sum_up_fields
+      formCategory: 'assessment',
+      formResults: [
+        {
+          formId: 'form1',
+          formTitle: 'formTitle',
+          possibleMaxFormScore: 0,
+          possibleMinFormScore: 0,
+          formFieldScores: [
+            {
+              formFieldId: 'formField1',
+              label: 'formField',
+              intent: 'aggregate',
+              rowIndex: 0,
+              formFieldScore: null,
+              stdDevFormFieldScore: null,
+              aggregatedValues: ['This is my comment'],
+              countDistinct: {},
+            },
+          ],
+        },
+      ],
+      jobRequirementResults: [],
+    });
+  });
+
   it('does nothing with empty scores', () => {
     const applicantId = 'applicant';
     const scores = {
@@ -438,7 +491,7 @@ describe('CreateReport', () => {
               formFieldId: 'formField1',
               ...forms.form1.formFields.formField1,
               formFieldScore: 5,
-              stdDevFormFieldScore: 0, //asdf
+              stdDevFormFieldScore: 0,
               aggregatedValues: [],
               countDistinct: {},
             },
