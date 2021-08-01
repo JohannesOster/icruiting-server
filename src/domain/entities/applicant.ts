@@ -2,8 +2,9 @@ import {v4 as uuidv4} from 'uuid';
 
 export type Attribute = {formFieldId: string; value: string};
 export type File = {formFieldId: string; uri: string};
+export type UserStatus = 'applied' | 'confirmed';
 type BaseApplicant = {
-  confirmed: boolean;
+  userStatus: UserStatus;
   tenantId: string;
   jobId: string;
   attributes: Attribute[];
