@@ -105,19 +105,34 @@ export const FormSubmissionsRepository = (db: IDatabase<any>, pgp: IMain) => {
     );
   };
 
-  const del = (tenantId: string, formSubmissionId: string) => {
+  const del = (tenantId: string, formSubmissionId: string): Promise<null> => {
     return db.none(
       'DELETE FROM form_submission WHERE tenant_id=${tenant_id} AND form_submission_id=${form_submission_id}',
       decamelizeKeys({tenantId, formSubmissionId}),
     );
   };
 
-  const bulkDel = (tenantId: string, submitterId: string) => {
+  const bulkDel = (tenantId: string, submitterId: string): Promise<null> => {
     return db.none(
       'DELETE FROM form_submission WHERE tenant_id=${tenant_id} AND submitter_id=${submitter_id}',
       decamelizeKeys({tenantId, submitterId}),
     );
   };
 
-  return {create, retrieve, update, del, bulkDel, prepareReport};
+  const list = (
+    tenantId: string,
+    jobId: string,
+    formCategory: string,
+  ): Promise<FormSubmission[]> => {
+    return db
+      .any(sql.list, decamelizeKeys({tenantId, jobId, formCategory}))
+      .then((rows) => {
+        return rows.map((row) => ({
+          ...row,
+          submission: reduceSubmission(row.submission),
+        }));
+      });
+  };
+
+  return {create, retrieve, update, del, bulkDel, prepareReport, list};
 };
