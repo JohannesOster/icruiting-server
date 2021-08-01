@@ -1,6 +1,5 @@
 import {BaseError} from 'application/errorHandling';
 import {createFormSubmission} from 'domain/entities';
-import {header} from 'express-validator';
 import db from 'infrastructure/db';
 import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 

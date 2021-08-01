@@ -96,8 +96,21 @@ export const AuthService = () => {
         ],
       };
 
-      const {Users} = await cIdp.listUsers(params).promise();
-      if (!Users) return resolve([]);
+      const filterConfirmed = {Filter: 'cognito:user_status = "CONFIRMED"'};
+      const filterPending = {
+        Filter: 'cognito:user_status = "FORCE_CHANGE_PASSWORD"',
+      };
+
+      const {Users: confirmed = []} = await cIdp
+        .listUsers({...params, ...filterConfirmed})
+        .promise();
+      const {Users: pending = []} = await cIdp
+        .listUsers({...params, ...filterPending})
+        .promise();
+
+      const Users = confirmed.concat(pending);
+
+      if (!Users.length) return resolve([]);
 
       const keyModifier = (key: string) => removePrefix(key, 'custom:');
       const userMaps = Users.map((user) => mapCognitoUser(user, keyModifier));
