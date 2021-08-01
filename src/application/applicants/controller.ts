@@ -243,7 +243,11 @@ export const ApplicantsAdapter = () => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
 
-    const applicant = await db.applicants.confirm(tenantId, applicantId);
+    const applicant = await db.applicants.updateUserStatus(
+      tenantId,
+      applicantId,
+      'confirmed',
+    );
 
     return {body: applicant};
   });

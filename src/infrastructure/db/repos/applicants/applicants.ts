@@ -116,14 +116,18 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     });
   };
 
-  const confirm = async (tenantId: string, applicantId: string) => {
+  const updateUserStatus = async (
+    tenantId: string,
+    applicantId: string,
+    applicant_status: string,
+  ) => {
     await db.none(
-      'UPDATE applicant SET confirmed=TRUE WHERE tenant_id=${tenant_id} AND applicant_id=${applicant_id}',
-      decamelizeKeys({tenantId, applicantId}),
+      'UPDATE applicant SET applicant_status=${applicant_status} WHERE tenant_id=${tenant_id} AND applicant_id=${applicant_id}',
+      decamelizeKeys({tenantId, applicantId, applicant_status}),
     );
 
     return retrieve(tenantId, applicantId);
   };
 
-  return {create, retrieve, update, del, list, confirm};
+  return {create, retrieve, update, del, list, updateUserStatus};
 };
