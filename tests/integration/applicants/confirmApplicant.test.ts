@@ -50,7 +50,7 @@ describe('applicants', () => {
     });
 
     beforeEach(async () => {
-      await db.none('UPDATE applicant SET confirmed=FALSE');
+      await db.none('UPDATE applicant SET applicant_status=NULL');
     });
 
     it('returns json 200 response', (done) => {
@@ -68,12 +68,12 @@ describe('applicants', () => {
         .expect('Content-Type', /json/)
         .expect(200);
 
-      const {confirmed} = await db.one(
-        'SELECT confirmed FROM applicant WHERE applicant_id=$1',
+      const {applicantStatus} = await db.one(
+        'SELECT applicant_status FROM applicant WHERE applicant_id=$1',
         applicant.applicantId,
       );
 
-      expect(confirmed).toBeTruthy();
+      expect(applicantStatus).toBe('confirmed');
     });
   });
 });

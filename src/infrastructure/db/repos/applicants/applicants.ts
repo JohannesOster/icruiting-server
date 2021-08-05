@@ -11,22 +11,41 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     orderBy?: string;
     offset?: number;
     limit?: number;
-    filter?: string;
+    filter?: {[attribute: string]: {eq: string}};
   }): Promise<{applicants: Applicant[]; totalCount: string}> => {
     const limitQuery = (val?: number) => ({
       rawType: true,
       toPostgres: () => val ?? 'ALL',
     });
 
-    const vals = decamelizeKeys(params) as any;
+    let filter_overall = '';
+    if (params.filter && params.filter['Bewerber:innenstatus']) {
+      filter_overall = pgp.as.format(
+        'AND applicant.applicant_status::TEXT = $1',
+        params.filter['Bewerber:innenstatus'].eq,
+      );
+
+      delete params.filter['Bewerber:innenstatus'];
+    }
+
+    let filter_attributes = '';
+    Object.entries(params.filter || {}).forEach(([attribute, {eq}], idx) => {
+      if (idx === 0) filter_attributes = 'WHERE ';
+      else filter_attributes += ' AND ';
+      filter_attributes += pgp.as.format(
+        `LOWER(attributes->>'$1:value') LIKE CONCAT('%',LOWER('$2:value'),'%')`,
+        [attribute, eq],
+      );
+    });
 
     return db
       .any(sql.list, {
-        ...vals,
+        ...decamelizeKeys(params),
         limit: limitQuery(params.limit),
         offset: params.offset || 0,
-        order_by: vals.order_by || null,
-        filter: !vals.filter ? null : vals.filter,
+        order_by: params.orderBy || null,
+        filter_attributes,
+        filter_overall,
       })
       .then((applicants) => {
         if (!applicants?.length) return {applicants: [], totalCount: 0};

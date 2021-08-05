@@ -7,6 +7,7 @@ import db from 'infrastructure/db';
 import {calcReport} from './calcReport';
 import {FormCategory} from 'domain/entities';
 import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {filter} from 'lodash';
 
 export const ApplicantsAdapter = () => {
   const retrieve = httpReqHandler(async (req) => {
@@ -49,7 +50,8 @@ export const ApplicantsAdapter = () => {
   });
 
   const list = httpReqHandler(async (req) => {
-    const {jobId, offset, limit, orderBy, filter} = req.query as any;
+    const {jobId, offset, limit, orderBy, ...filter} = req.query as any;
+
     const {tenantId, userId} = req.user;
     const params = {tenantId, jobId, userId, offset, limit, orderBy, filter};
     const data = await db.applicants.list(params);
