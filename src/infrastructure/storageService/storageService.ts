@@ -1,7 +1,9 @@
 import {S3} from 'aws-sdk';
+import dotenv from 'dotenv';
 import {Body} from 'aws-sdk/clients/s3';
 
 export const StorageService = () => {
+  dotenv.config();
   const bucket = process.env.S3_BUCKET || '';
 
   const getUrl = (path: string) => {
