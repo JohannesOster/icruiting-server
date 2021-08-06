@@ -16,7 +16,10 @@ type BaseFormSubmission = {
   submission: {[formFieldId: string]: string};
 };
 
-export type FormSubmission = {formSubmissionId: string} & BaseFormSubmission;
+export type FormSubmission = {
+  /** A unique id */
+  formSubmissionId: string;
+} & BaseFormSubmission;
 
 export const createFormSubmission = (
   formSubmission: BaseFormSubmission & {formSubmissionId?: string},
