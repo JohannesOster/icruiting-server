@@ -35,9 +35,9 @@ const score = (data: number[]) => {
   return [_mean, stdDev] as const;
 };
 
-const round = (number: number, digitst: number = 2) => {
-  if (digitst <= 0) return Math.round(number);
-  const factor = Math.pow(10, digitst);
+const round = (number: number, digits: number = 2) => {
+  if (digits <= 0) return Math.round(number);
+  const factor = Math.pow(10, digits);
   return Math.round(factor * number) / factor;
 };
 
