@@ -19,7 +19,7 @@ export type BaseFormField = {
   description?: string;
   defaultValue?: string;
   required?: boolean;
-  options?: {label: string; value: string}[];
+  options?: {optionId: string; label: string; value: string}[];
   editable?: boolean;
   deletable?: boolean;
   jobRequirementId?: string;
