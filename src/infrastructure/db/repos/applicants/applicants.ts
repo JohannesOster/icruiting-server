@@ -135,7 +135,7 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     });
   };
 
-  const updateUserStatus = async (
+  const updateApplicantStatus = async (
     tenantId: string,
     applicantId: string,
     applicant_status: string,
@@ -148,5 +148,5 @@ export const ApplicantsRepository = (db: IDatabase<any>, pgp: IMain) => {
     return retrieve(tenantId, applicantId);
   };
 
-  return {create, retrieve, update, del, list, updateUserStatus};
+  return {create, retrieve, update, del, list, updateApplicantStatus};
 };

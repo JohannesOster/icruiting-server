@@ -245,7 +245,7 @@ export const ApplicantsAdapter = () => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
 
-    const applicant = await db.applicants.updateUserStatus(
+    const applicant = await db.applicants.updateApplicantStatus(
       tenantId,
       applicantId,
       'confirmed',
