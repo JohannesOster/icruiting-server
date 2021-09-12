@@ -1,4 +1,4 @@
 export * from './tenantsAdapter';
-export * from './paymentMethods';
-export * from './subscriptions';
+export * from './paymentMethodsAdapter';
+export * from './subscriptionsAdapter';
 export * from './themesAdapter';
