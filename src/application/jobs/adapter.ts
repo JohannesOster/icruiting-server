@@ -132,6 +132,9 @@ export const JobsAdapter = () => {
           const file = files.job;
           if (Array.isArray(file))
             return reject(new BaseError(422, 'Multifile no supported.'));
+          if (!file.name)
+            return reject(new BaseError(500, 'Missing file name'));
+
           const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
           if (extension !== 'json')
             return reject(
