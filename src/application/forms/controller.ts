@@ -106,7 +106,7 @@ export const FormsAdapter = () => {
     }
 
     const formidable = new IncomingForm();
-    formidable.maxFileSize = 500 * 1024 * 1024;
+    // formidable.maxFileSize = 500 * 1024 * 1024;
     return new Promise((resolve, reject) => {
       formidable.parse(req, async (error, fields, files) => {
         if (error) return resolve({view: 'form-submission', body: {error}});
@@ -150,6 +150,10 @@ export const FormsAdapter = () => {
                 attributeValue: value,
               });
             } else if (item.component === 'file_upload') {
+              if (!file.name)
+                throw new BaseError(500, 'Incoming file has no name');
+              if (!file.type)
+                throw new BaseError(500, 'Incoming file has no type');
               const extension = file.name.substr(
                 file.name.lastIndexOf('.') + 1,
               );

@@ -22,6 +22,7 @@ const initOptions: IInitOptions<IExtensions> = {
     obj.rankings = RankingsRepository(obj, pgp);
   },
   receive(data, result) {
+    if (!result) return result;
     result.rows = data.map((obj) => humps.camelizeKeys(obj));
   },
 };
