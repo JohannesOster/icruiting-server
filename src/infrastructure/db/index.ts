@@ -1,5 +1,5 @@
 import pgPromise from 'pg-promise';
-import {IInitOptions} from 'pg-promise';
+import {IInitOptions, IDatabase, IMain} from 'pg-promise';
 import {
   IExtensions,
   TenantsRepository,
@@ -11,6 +11,11 @@ import {
 } from './repos';
 import config from './config';
 import humps from 'humps';
+
+export interface DBAccess {
+  db: IDatabase<any>;
+  pgp: IMain;
+}
 
 const initOptions: IInitOptions<IExtensions> = {
   extend(obj) {

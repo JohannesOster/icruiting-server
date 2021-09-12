@@ -1,16 +1,17 @@
 import express from 'express';
 import {routes as applicants} from './applicants';
 import {routes as forms} from './forms';
-import {routes as tenants} from './tenants';
 import {routes as jobs} from './jobs';
 import {routes as members} from './members';
 import {routes as formSubmissions} from './formSubmissions';
 import {routes as rankings} from './rankings';
 import {routes as subscriptions} from './subscriptions';
+import {TenantsRouter} from 'modules/tenants/infrastructure/http';
+import db, {pgp} from 'infrastructure/db';
 
 const router = express.Router();
 
-router.use('/tenants', tenants);
+router.use('/tenants', TenantsRouter({db, pgp}));
 router.use('/members', members);
 router.use('/subscriptions', subscriptions);
 router.use('/jobs', jobs);

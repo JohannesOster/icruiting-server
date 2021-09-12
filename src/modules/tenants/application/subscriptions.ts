@@ -3,6 +3,11 @@ import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 import paymentService from 'infrastructure/paymentService';
 
 export const SubscriptionsAdapter = () => {
+  const listAvailable = httpReqHandler(async (req) => {
+    const resp = await paymentService.subscriptions.list();
+    return {status: 201, body: resp};
+  });
+
   const create = httpReqHandler(async (req) => {
     const {stripeCustomerId} = req.user;
     const {priceId} = req.body;
@@ -36,5 +41,5 @@ export const SubscriptionsAdapter = () => {
     return {};
   });
 
-  return {create, retrieve, del};
+  return {create, retrieve, del, listAvailable};
 };
