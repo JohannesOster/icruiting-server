@@ -26,14 +26,25 @@ export const FormsAdapter = (db: DB) => {
     const {formId} = req.params;
     const resp = await db.forms.retrieve(tenantId, formId);
     if (!resp) throw new BaseError(404, 'Not Found');
-    return {body: resp};
+    return {body: formsMapper.toDTO(resp)};
   });
 
   const update = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
-    const params = {...req.body, tenantId};
-    const resp = await db.forms.update(params);
-    return {body: resp};
+    const {formId} = req.params;
+
+    const form = await db.forms.retrieve(tenantId, formId);
+    if (!form) throw new BaseError(404, 'Not Found');
+
+    const updatedForm = createForm(
+      {tenantId, jobId: form.jobId, ...req.body},
+      formId,
+    );
+    const params = formsMapper.toPersistance(updatedForm);
+    const raw = await db.forms.update(params);
+    const body = formsMapper.toDTO(raw);
+
+    return {body};
   });
 
   const del = httpReqHandler(async (req) => {
@@ -46,8 +57,8 @@ export const FormsAdapter = (db: DB) => {
   const list = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const jobId = req.query.jobId as string;
-    const resp = await db.forms.list(tenantId, {jobId});
-    return {body: resp};
+    const forms = await db.forms.list(tenantId, {jobId});
+    return {body: forms.map(formsMapper.toDTO)};
   });
 
   const exportForm = httpReqHandler(async (req) => {

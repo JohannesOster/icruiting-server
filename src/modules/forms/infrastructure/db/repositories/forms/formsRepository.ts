@@ -17,14 +17,18 @@ export const FormsRepository = ({db, pgp}: DBAccess) => {
     if (!params.jobId) params.jobId = null;
     if (!params.formCategory) params.formCategory = null;
 
-    return db.any(sql.list, decamelizeKeys(params));
+    return db
+      .any(sql.list, decamelizeKeys(params))
+      .then((forms) => forms.map(formsMapper.toDomain));
   };
 
   const retrieve = (
     tenantId: string | null,
     formId: string,
   ): Promise<Form | null> => {
-    return db.oneOrNone(sql.retrieve, {tenant_id: tenantId, form_id: formId});
+    return db
+      .oneOrNone(sql.retrieve, {tenant_id: tenantId, form_id: formId})
+      .then((form) => (form ? formsMapper.toDomain(form) : null));
   };
 
   const create = async (
@@ -40,7 +44,9 @@ export const FormsRepository = ({db, pgp}: DBAccess) => {
     const insertedForm = await db.one(formStmt);
 
     if (!formFields.length) {
-      return Promise.resolve({...insertedForm, formFields: []});
+      return Promise.resolve({...insertedForm, formFields: []}).then(
+        formsMapper.toDomain,
+      );
     }
 
     // - insert formFields
@@ -76,10 +82,13 @@ export const FormsRepository = ({db, pgp}: DBAccess) => {
         cs,
       ) + ' RETURNING *';
 
-    return db.any(stmt).then((formFields) => ({
-      ...insertedForm,
-      formFields,
-    }));
+    return db
+      .any(stmt)
+      .then((formFields) => ({
+        ...insertedForm,
+        formFields,
+      }))
+      .then(formsMapper.toDomain);
   };
 
   const update = async (params: DBForm): Promise<Form> => {

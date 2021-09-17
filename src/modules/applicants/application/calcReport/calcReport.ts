@@ -2,9 +2,9 @@ import _ from 'lodash';
 import {ReportPrepareRow} from 'infrastructure/db/repos/formSubmissions/types';
 import {filterFormData, reduceSubmissions} from './preprocessor';
 import {ReportBuilder} from './reportBuilder';
-import {JobRequirement} from 'domain/entities';
 import {mergeReplicas} from './mergeReplicas';
 import {createReport} from './report';
+import {JobRequirement} from 'modules/jobs/domain';
 
 export const calcReport = (
   rows: ReportPrepareRow[],
@@ -22,8 +22,8 @@ export const calcReport = (
   }, {} as any);
 
   const _jobRequirements = jobRequirements.reduce(
-    (acc, {jobRequirementId, ...requirement}) => {
-      acc[jobRequirementId] = requirement;
+    (acc, {id, ...requirement}) => {
+      acc[id] = requirement;
       return acc;
     },
     {} as any,

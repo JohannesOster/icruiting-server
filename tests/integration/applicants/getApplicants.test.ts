@@ -36,7 +36,7 @@ describe('applicants', () => {
     let applicants: Applicant[];
     beforeAll(async () => {
       const {tenantId} = mockUser;
-      const {jobId} = await dataGenerator.insertJob(tenantId);
+      const {id: jobId} = await dataGenerator.insertJob(tenantId);
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
@@ -73,7 +73,7 @@ describe('applicants', () => {
 
     it('isloates applicants of tenant', async () => {
       const {tenantId} = await dataGenerator.insertTenant(random.uuid());
-      const {jobId} = await dataGenerator.insertJob(tenantId);
+      const {id: jobId} = await dataGenerator.insertJob(tenantId);
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
@@ -91,7 +91,7 @@ describe('applicants', () => {
     });
 
     it('filters by jobId using query', async () => {
-      const {jobId} = await dataGenerator.insertJob(mockUser.tenantId);
+      const {id: jobId} = await dataGenerator.insertJob(mockUser.tenantId);
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
@@ -116,7 +116,7 @@ describe('applicants', () => {
 
     it('isloates tenant applicants even if foreign jobId is queried', async () => {
       const {tenantId} = await dataGenerator.insertTenant(random.uuid());
-      const {jobId} = await dataGenerator.insertJob(tenantId);
+      const {id: jobId} = await dataGenerator.insertJob(tenantId);
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,

@@ -19,7 +19,7 @@ let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
   const job = await dataGenerator.insertJob(mockUser.tenantId);
-  jobId = job.jobId;
+  jobId = job.id;
 });
 
 afterAll(async () => {

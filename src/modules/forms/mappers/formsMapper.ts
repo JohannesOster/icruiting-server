@@ -18,12 +18,7 @@ const toDomain = (raw: DBForm): FormEntity => {
 };
 
 const toDTO = (form: FormEntity) => {
-  const {id: formId, formFields: _formFields, ..._form} = form;
-  const formFields = _formFields.map(({id: formFieldId, ...formField}) => {
-    return {formFieldId, ...formField};
-  });
-
-  return Object.freeze({formId, ..._form, formFields});
+  return toPersistance(form);
 };
 
 export const formsMapper = {toPersistance, toDomain, toDTO};

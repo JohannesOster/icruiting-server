@@ -38,7 +38,7 @@ describe('applicants', () => {
     let form: Form;
     beforeAll(async () => {
       const {tenantId} = mockUser;
-      const {jobId} = await dataGenerator.insertJob(tenantId);
+      const {id: jobId} = await dataGenerator.insertJob(tenantId);
       form = await dataGenerator.insertForm(tenantId, jobId, 'application');
 
       const _applicant = {

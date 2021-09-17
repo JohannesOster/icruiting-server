@@ -18,7 +18,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).id;
 });
 
 afterAll(async () => {
@@ -35,7 +35,7 @@ describe('forms', () => {
         'application',
       );
       await request(app)
-        .put(`/forms/${form.formId}`)
+        .put(`/forms/${form.id}`)
         .set('Accept', 'application/json')
         .send({...form})
         .expect('Content-Type', /json/)
@@ -55,7 +55,7 @@ describe('forms', () => {
         placeholder,
       }));
       const resp = await request(app)
-        .put(`/forms/${form.formId}`)
+        .put(`/forms/${form.id}`)
         .set('Accept', 'application/json')
         .send(updateVals)
         .expect(200);
@@ -68,11 +68,11 @@ describe('forms', () => {
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
         jobId,
-        'application',
+        'assessment',
       );
       const updateVals = {...form, formTitle: random.words()};
       const resp = await request(app)
-        .put(`/forms/${form.formId}`)
+        .put(`/forms/${form.id}`)
         .set('Accept', 'application/json')
         .send(updateVals)
         .expect(200);

@@ -19,7 +19,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).id;
 });
 
 afterAll(async () => {

@@ -3,8 +3,10 @@ import fake from './fake';
 import {random} from 'faker';
 import {Form, FormCategory} from 'domain/entities';
 import {JobssRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
+import {FormsRepository} from 'modules/forms/infrastructure/db/repositories';
 
 const jobsRepo = JobssRepository({db, pgp});
+const formsRepo = FormsRepository({db, pgp});
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {
     const tenant = fake.tenant(tenantId);
@@ -40,7 +42,7 @@ const dataGenerator = {
       }
     }
 
-    return db.forms.create(form);
+    return formsRepo.create(form);
   },
   insertApplicant: (
     tenantId: string,

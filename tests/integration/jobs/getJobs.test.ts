@@ -44,7 +44,7 @@ describe('jobs', () => {
         .set('Accept', 'application/json')
         .expect(200);
       expect(Array.isArray(resp.body));
-      expect(resp.body[0].jobId).toBeDefined();
+      expect(resp.body[0].id).toBeDefined();
       expect(resp.body[0].jobRequirements).toBeDefined();
     });
 

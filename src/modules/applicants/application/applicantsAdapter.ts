@@ -3,13 +3,12 @@ import {IncomingForm} from 'formidable';
 import {BaseError} from 'application/errorHandling';
 import storageService from 'infrastructure/storageService';
 import {getApplicantFileURLs} from './utils';
-import db from 'infrastructure/db';
 import {calcReport} from './calcReport';
 import {FormCategory} from 'domain/entities';
 import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
-import {filter} from 'lodash';
+import {DB} from '../infrastructure/repositories';
 
-export const ApplicantsAdapter = () => {
+export const ApplicantsAdapter = (db: DB) => {
   const retrieve = httpReqHandler(async (req) => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
@@ -32,7 +31,7 @@ export const ApplicantsAdapter = () => {
 
     if (!form) throw new BaseError(404, 'Application form Not Found');
     const formFields = form.formFields.reduce((acc, curr) => {
-      acc[curr.formFieldId] = curr.label;
+      acc[curr.id] = curr.label;
       return acc;
     }, {} as any);
 
@@ -72,7 +71,7 @@ export const ApplicantsAdapter = () => {
 
     if (!form) throw new BaseError(404, 'Application form Not Found');
     const formFields = form.formFields.reduce((acc, curr) => {
-      acc[curr.formFieldId] = curr.label;
+      acc[curr.id] = curr.label;
       return acc;
     }, {} as any);
 
@@ -115,12 +114,12 @@ export const ApplicantsAdapter = () => {
 
         const map = await form.formFields.reduce(
           async (acc, item) => {
-            if (!item.formFieldId) throw new BaseError(500, '');
+            if (!item.id) throw new BaseError(500, '');
 
             // !> filter out non submitted values
             const isFile = item.component === 'file_upload';
 
-            if (!fields[item.formFieldId] && !isFile) {
+            if (!fields[item.id] && !isFile) {
               if (!item.required) return acc;
               return reject(
                 new BaseError(422, `Missing required field: ${item.label}`),
@@ -128,17 +127,17 @@ export const ApplicantsAdapter = () => {
             }
 
             if (isFile) {
-              const file = files[item.formFieldId];
+              const file = files[item.id];
 
               const oldFile = oldFiles?.find(
-                ({formFieldId}) => formFieldId === item.formFieldId,
+                ({formFieldId}) => formFieldId === item.id,
               );
 
               const fileExists = !!(file && file.size);
               if (!fileExists) {
                 if (!oldFile) return acc;
                 const oldFileAttribute = {
-                  formFieldId: item.formFieldId,
+                  formFieldId: item.id,
                   attributeValue: oldFile.uri,
                 };
                 (await acc).attributes.push(oldFileAttribute);
@@ -171,7 +170,7 @@ export const ApplicantsAdapter = () => {
               });
 
               (await acc).attributes.push({
-                formFieldId: item.formFieldId,
+                formFieldId: item.id,
                 attributeValue: fileKey,
               });
 
@@ -179,8 +178,8 @@ export const ApplicantsAdapter = () => {
             }
 
             (await acc).attributes.push({
-              formFieldId: item.formFieldId,
-              attributeValue: fields[item.formFieldId],
+              formFieldId: item.id,
+              attributeValue: fields[item.id],
             });
 
             return acc;
@@ -215,7 +214,7 @@ export const ApplicantsAdapter = () => {
     const data = await db.formSubmissions.prepareReport(
       tenantId,
       formCategory,
-      job.jobId,
+      job.id,
     );
 
     const report = calcReport(data, applicantId, job.jobRequirements);

@@ -36,7 +36,7 @@ describe('applicants', () => {
     let applicant: Applicant;
     beforeAll(async () => {
       const {tenantId} = mockUser;
-      const {jobId} = await dataGenerator.insertJob(tenantId);
+      const {id: jobId} = await dataGenerator.insertJob(tenantId);
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
@@ -75,7 +75,7 @@ describe('applicants', () => {
 
     it('isloates tenant', async () => {
       const {tenantId} = await dataGenerator.insertTenant(random.uuid());
-      const {jobId} = await dataGenerator.insertJob(tenantId);
+      const {id: jobId} = await dataGenerator.insertJob(tenantId);
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
