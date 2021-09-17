@@ -1,14 +1,25 @@
 import {BaseError} from 'application/errorHandling';
-import {createFormSubmission} from 'domain/entities';
-import db from 'infrastructure/db';
+import {createFormSubmission} from '../domain';
 import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {DB} from '../infrastructure/repositories';
+import {formSubmissionsMapper} from '../mappers';
 
-export const FormSubmissionsAdapter = () => {
+export const FormSubmissionsAdapter = (db: DB) => {
   const create = httpReqHandler(async (req) => {
     const {userId, tenantId} = req.user;
-    const params = {...req.body, submitterId: userId, tenantId};
-    const resp = await db.formSubmissions.create(params);
-    return {status: 201, body: resp};
+    const formSubmission = createFormSubmission({
+      ...req.body,
+      submitterId: userId,
+    });
+    const params = formSubmissionsMapper.toPersistance(
+      tenantId,
+      formSubmission,
+    );
+
+    const raw = await db.formSubmissions.create(params);
+    const body = formSubmissionsMapper.toDTO(tenantId, raw);
+
+    return {status: 201, body};
   });
 
   const retrieve = httpReqHandler(async (req) => {
@@ -17,24 +28,27 @@ export const FormSubmissionsAdapter = () => {
     const params = {formId, applicantId, submitterId: userId, tenantId};
     const resp = await db.formSubmissions.retrieve(params);
     if (!resp) throw new BaseError(404, 'Not Found');
-    return {body: resp};
+
+    return {body: formSubmissionsMapper.toDTO(tenantId, resp)};
   });
 
   const update = httpReqHandler(async (req) => {
     const {tenantId, userId} = req.user;
     const {formSubmissionId} = req.params;
-    const {submission, applicantId, formId} = req.body;
-    const resp = await db.formSubmissions.update(
-      createFormSubmission({
-        tenantId,
-        formId,
-        applicantId,
-        formSubmissionId,
-        submission,
-        submitterId: userId,
-      }),
+
+    const formSubmission = createFormSubmission(
+      {...req.body, submitterId: userId},
+      formSubmissionId,
     );
-    return {body: resp};
+    const params = formSubmissionsMapper.toPersistance(
+      tenantId,
+      formSubmission,
+    );
+
+    const raw = await db.formSubmissions.update(params);
+    const body = formSubmissionsMapper.toDTO(tenantId, raw);
+
+    return {body};
   });
 
   const del = httpReqHandler(async (req) => {
@@ -72,8 +86,7 @@ export const FormSubmissionsAdapter = () => {
         headerFormFields.push(formField.label);
 
         // update lookup table
-        formFieldIndexLookUp[formField.formFieldId] =
-          headerFormFields.length - 3; // 2 since it has 2 empty fields at the beginning, 1 since the idx is one lower than the current length, since element was already added
+        formFieldIndexLookUp[formField.id] = headerFormFields.length - 3; // 2 since it has 2 empty fields at the beginning, 1 since the idx is one lower than the current length, since element was already added
 
         if (headerForms.length > headerFormFields.length - 1) return;
         headerForms.push('');
@@ -94,7 +107,7 @@ export const FormSubmissionsAdapter = () => {
       return _row.concat(fill);
     });
 
-    const result = [headerForms, headerFormFields, ...rows].map((row) =>
+    const body = [headerForms, headerFormFields, ...rows].map((row) =>
       row.map(
         (col) =>
           `"${col
@@ -104,7 +117,7 @@ export const FormSubmissionsAdapter = () => {
       ),
     );
 
-    return {body: result};
+    return {body};
   });
 
   return {create, retrieve, update, del, exportFormSubmission};

@@ -1,2 +1,2 @@
-export * from './forms';
-export * from './applicants';
+export * from './formsAdapter';
+export * from './applicantsAdapter';

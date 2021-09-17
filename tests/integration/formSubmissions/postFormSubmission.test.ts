@@ -85,6 +85,7 @@ describe('form-submissions', () => {
         .set('Accept', 'application/json')
         .send(formSubmission);
 
+      expect(resp.body.formSubmissionId).toBeDefined();
       expect(resp.body.formId).toBe(formSubmission.formId);
       expect(resp.body.applicantId).toBe(formSubmission.applicantId);
       expect(resp.body.submitterId).toBe(formSubmission.submitterId);

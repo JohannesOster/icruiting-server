@@ -42,7 +42,7 @@ describe('createForm', () => {
         unknownProp: 'unknownProp',
       } as any; // any to mimic runtime type error
 
-      const form = createFormField(params) as any;
+      const form = createForm(params) as any;
       expect(form.unknownProp).toBeUndefined();
     });
   });
