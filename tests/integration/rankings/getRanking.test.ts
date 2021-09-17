@@ -5,7 +5,10 @@ import db from 'infrastructure/db';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Applicant, createFormSubmission, Form} from 'domain/entities';
+import {Applicant} from 'domain/entities';
+import {Form} from 'modules/forms/domain';
+import {createFormSubmission} from 'modules/formSubmissions/domain';
+import {formSubmissionsMapper} from 'modules/formSubmissions/mappers';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -44,7 +47,7 @@ describe('rankings', () => {
         jobId,
         'application',
       );
-      const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
+      const formFieldIds = form.formFields.map(({id}) => id);
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
@@ -66,20 +69,21 @@ describe('rankings', () => {
           const screening = createFormSubmission({
             applicantId: appl.applicantId!,
             submitterId: mockUser.userId,
-            tenantId: mockUser.tenantId,
-            formId: form.formId!,
+            formId: form.id,
             submission: form.formFields.reduce(
               (acc: {[formFieldId: string]: string}, item) => {
-                acc[item.formFieldId!] = faker.random
-                  .number({min: 0, max: 5})
-                  .toString();
+                acc[item.id] = faker.random.number({min: 0, max: 5}).toString();
                 return acc;
               },
               {},
             ),
           });
 
-          promises.push(db.formSubmissions.create(screening));
+          promises.push(
+            db.formSubmissions.create(
+              formSubmissionsMapper.toPersistance(mockUser.tenantId, screening),
+            ),
+          );
         });
 
         await Promise.all(promises);
@@ -133,7 +137,7 @@ describe('rankings', () => {
         'application',
       );
 
-      const formFieldIds = form.formFields.map(({formFieldId}) => formFieldId!);
+      const formFieldIds = form.formFields.map(({id}) => id);
 
       applicantsCount = faker.random.number({min: 5, max: 20});
       Array(applicantsCount)
@@ -155,20 +159,24 @@ describe('rankings', () => {
           const assessment = createFormSubmission({
             applicantId: appl.applicantId!,
             submitterId: mockUser.userId,
-            tenantId: mockUser.tenantId,
-            formId: form.formId!,
+            formId: form.id,
             submission: form.formFields.reduce(
               (acc: {[formFieldId: string]: string}, item) => {
-                acc[item.formFieldId!] = faker.random
-                  .number({min: 0, max: 5})
-                  .toString();
+                acc[item.id] = faker.random.number({min: 0, max: 5}).toString();
                 return acc;
               },
               {},
             ),
           });
 
-          promises.push(db.formSubmissions.create(assessment));
+          promises.push(
+            db.formSubmissions.create(
+              formSubmissionsMapper.toPersistance(
+                mockUser.tenantId,
+                assessment,
+              ),
+            ),
+          );
         });
 
         await Promise.all(promises);

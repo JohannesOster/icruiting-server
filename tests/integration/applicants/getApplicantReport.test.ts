@@ -39,7 +39,7 @@ describe('applicants', () => {
       applicant = await dataGenerator.insertApplicant(
         mockUser.tenantId,
         jobId,
-        form.formFields.map(({formFieldId}) => formFieldId),
+        form.formFields.map(({id}) => id),
       );
 
       const screeningForm = await dataGenerator.insertForm(
@@ -52,8 +52,8 @@ describe('applicants', () => {
         mockUser.tenantId,
         applicant.applicantId!,
         mockUser.userId,
-        screeningForm.formId,
-        screeningForm.formFields.map(({formFieldId}) => formFieldId),
+        screeningForm.id,
+        screeningForm.formFields.map(({id}) => id),
       );
     });
 

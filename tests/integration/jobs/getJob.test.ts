@@ -44,7 +44,7 @@ describe('jobs', () => {
         .get(`/jobs/${job.id}`)
         .set('Accept', 'application/json')
         .expect(200);
-      expect(resp.body.id).toEqual(job.id);
+      expect(resp.body.jobId).toEqual(job.id);
     });
 
     it('returns 404 if job does not exist', (done) => {

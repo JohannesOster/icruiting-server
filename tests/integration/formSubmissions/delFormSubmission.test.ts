@@ -3,8 +3,9 @@ import app from 'infrastructure/http';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Form, FormSubmission} from 'domain/entities';
 import db from 'infrastructure/db';
+import {FormSubmission} from 'modules/formSubmissions/domain';
+import {Form} from 'modules/forms/domain';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -43,9 +44,7 @@ describe('form-submissions', () => {
         jobId,
         'application',
       );
-      const formFieldIds = applForm.formFields.map(
-        ({formFieldId}) => formFieldId!,
-      );
+      const formFieldIds = applForm.formFields.map(({id}) => id!);
 
       const applicant = await dataGenerator.insertApplicant(
         tenantId,
@@ -62,14 +61,14 @@ describe('form-submissions', () => {
         tenantId,
         applicantId,
         userId,
-        screeningForm.formId,
-        screeningForm.formFields.map(({formFieldId}) => formFieldId),
+        screeningForm.id,
+        screeningForm.formFields.map(({id}) => id),
       );
     });
 
     it('returns 200 json response', (done) => {
       request(app)
-        .del(`/form-submissions/${formSubmission.formSubmissionId}`)
+        .del(`/form-submissions/${formSubmission.id}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -77,7 +76,7 @@ describe('form-submissions', () => {
 
     it('deletes formSubmission', async () => {
       await request(app)
-        .del(`/form-submissions/${formSubmission.formSubmissionId}`)
+        .del(`/form-submissions/${formSubmission.id}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200);

@@ -35,9 +35,7 @@ describe('jobs', () => {
         jobId,
         'application',
       );
-      const formFields = applicationForm.formFields.map(
-        ({formFieldId}) => formFieldId,
-      );
+      const formFields = applicationForm.formFields.map(({id}) => id);
       report = await db.jobs.createReport(mockUser.tenantId, jobId, formFields);
     });
 

@@ -5,7 +5,8 @@ import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
 import db from 'infrastructure/db';
-import {Applicant, Form} from 'domain/entities';
+import {Applicant} from 'domain/entities';
+import {Form} from 'modules/forms/domain';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -46,7 +47,7 @@ describe('applicants', () => {
         tenantId: mockUser.tenantId,
         attributes: [
           {
-            formFieldId: form.formFields[0].formFieldId,
+            formFieldId: form.formFields[0].id,
             attributeValue: random.word(),
           },
         ],
@@ -59,9 +60,9 @@ describe('applicants', () => {
       request(app)
         .put(`/applicants/${applicant.applicantId}`)
         .set('Accept', 'application/json')
-        .field('formId', form.formId)
-        .field(form.formFields[0].formFieldId, random.words())
-        .field(form.formFields[1].formFieldId, random.words())
+        .field('formId', form.id)
+        .field(form.formFields[0].id, random.words())
+        .field(form.formFields[1].id, random.words())
         .expect('Content-Type', /json/)
         .expect(200, done);
     });

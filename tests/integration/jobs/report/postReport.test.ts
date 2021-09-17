@@ -18,7 +18,7 @@ let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
   const job = await dataGenerator.insertJob(mockUser.tenantId);
-  jobId = job.jobId;
+  jobId = job.id;
 });
 
 afterAll(async () => {
@@ -35,7 +35,7 @@ describe('jobs', () => {
         jobId,
         'application',
       );
-      report = applicationForm.formFields.map(({formFieldId}) => formFieldId);
+      report = applicationForm.formFields.map(({id}) => id);
     });
 
     afterEach(async () => {

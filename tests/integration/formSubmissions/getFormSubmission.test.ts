@@ -3,7 +3,8 @@ import app from 'infrastructure/http';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {FormSubmission} from 'domain/entities';
+import {FormSubmission} from 'modules/formSubmissions/domain';
+import {formSubmissionsMapper} from 'modules/formSubmissions/mappers';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -40,9 +41,7 @@ describe('form-submissions', () => {
         jobId,
         'application',
       );
-      const formFieldIds = applForm.formFields.map(
-        ({formFieldId}) => formFieldId!,
-      );
+      const formFieldIds = applForm.formFields.map(({id}) => id);
 
       const {applicantId} = await dataGenerator.insertApplicant(
         tenantId,
@@ -54,8 +53,8 @@ describe('form-submissions', () => {
         tenantId,
         applicantId,
         userId,
-        screeningForm.formId,
-        screeningForm.formFields.map(({formFieldId}) => formFieldId),
+        screeningForm.id,
+        screeningForm.formFields.map(({id}) => id),
       );
     });
 
@@ -78,7 +77,9 @@ describe('form-submissions', () => {
         .expect('Content-Type', /json/)
         .expect(200);
 
-      expect(resp.body).toStrictEqual(formSubmission);
+      expect(resp.body).toStrictEqual(
+        formSubmissionsMapper.toDTO(mockUser.tenantId, formSubmission),
+      );
     });
   });
 });

@@ -41,9 +41,7 @@ describe('form-submissions', () => {
         jobId,
         'application',
       );
-      const formFieldIds = applForm.formFields.map(
-        ({formFieldId}) => formFieldId!,
-      );
+      const formFieldIds = applForm.formFields.map(({id}) => id);
 
       const {applicantId} = await dataGenerator.insertApplicant(
         tenantId,
@@ -55,12 +53,10 @@ describe('form-submissions', () => {
         tenantId,
         applicantId,
         submitterId: userId,
-        formId: screeningForm.formId!,
+        formId: screeningForm.id,
         submission: screeningForm.formFields.reduce(
           (acc: {[formFieldId: string]: string}, item) => {
-            acc[item.formFieldId!] = faker.random
-              .number({min: 0, max: 5})
-              .toString();
+            acc[item.id] = faker.random.number({min: 0, max: 5}).toString();
             return acc;
           },
           {},

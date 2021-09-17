@@ -45,7 +45,7 @@ describe('applicants', () => {
       applicant = await dataGenerator.insertApplicant(
         tenantId,
         jobId,
-        form.formFields.map(({formFieldId}) => formFieldId),
+        form.formFields.map(({id}) => id),
       );
     });
 
@@ -81,7 +81,7 @@ describe('applicants', () => {
         jobId,
         'application',
       );
-      const fieldIds = form.formFields.map(({formFieldId}) => formFieldId);
+      const fieldIds = form.formFields.map(({id}) => id);
       const {applicantId} = await dataGenerator.insertApplicant(
         tenantId,
         jobId,

@@ -4,7 +4,7 @@ import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import db from 'infrastructure/db';
 import dataGenerator from '../../testUtils/dataGenerator';
-import {Form} from 'domain/entities';
+import {Form} from 'modules/forms/domain';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -40,9 +40,7 @@ describe('jobs', () => {
 
     let report: any;
     beforeEach(async () => {
-      const formFields = applicationForm.formFields.map(
-        ({formFieldId}) => formFieldId,
-      );
+      const formFields = applicationForm.formFields.map(({id}) => id);
       report = await db.jobs.createReport(mockUser.tenantId, jobId, formFields);
     });
 

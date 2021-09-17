@@ -4,9 +4,11 @@ import {random} from 'faker';
 import {Form, FormCategory} from 'domain/entities';
 import {JobssRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
 import {FormsRepository} from 'modules/forms/infrastructure/db/repositories';
+import {FormSubmissionsRepository} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions';
 
 const jobsRepo = JobssRepository({db, pgp});
 const formsRepo = FormsRepository({db, pgp});
+const formSubmissionsRepo = FormSubmissionsRepository({db, pgp});
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {
     const tenant = fake.tenant(tenantId);
@@ -66,7 +68,7 @@ const dataGenerator = {
       formId,
       formFieldIds,
     );
-    return db.formSubmissions.create(formSubmission);
+    return formSubmissionsRepo.create(formSubmission);
   },
 };
 

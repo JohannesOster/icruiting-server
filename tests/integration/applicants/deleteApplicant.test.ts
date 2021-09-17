@@ -46,7 +46,7 @@ describe('applicants', () => {
       applicant = await dataGenerator.insertApplicant(
         mockUser.tenantId,
         jobId,
-        form.formFields.map(({formFieldId}) => formFieldId),
+        form.formFields.map(({id}) => id),
       );
     });
 

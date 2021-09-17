@@ -36,9 +36,7 @@ describe('jobs', () => {
         jobId,
         'application',
       );
-      formFields = applicationForm.formFields.map(
-        ({formFieldId}) => formFieldId,
-      );
+      formFields = applicationForm.formFields.map(({id}) => id);
     });
 
     beforeEach(async () => {
