@@ -27,7 +27,6 @@ export const TenantsRouter: RouterFactory = (dbAccess) => {
   const router = express.Router();
 
   router.post('/', tenantCreateRules, validate, tenantsAdapter.create);
-  router.get('/subscriptions', subsAdapter.listAvailable); // TODO: update frontend url previous /subscriptions now /tenants/subscriptions
 
   router.use(requireAuth);
   router.use(requireAdmin);

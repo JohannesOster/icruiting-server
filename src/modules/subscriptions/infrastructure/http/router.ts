@@ -6,7 +6,7 @@ export const SubscriptionsRouter: RouterFactory = (dbAccess) => {
   const adapter = SubscriptionsAdapter();
   const router = express.Router();
 
-  router.get('/', adapter.getSubscriptions);
+  router.get('/', adapter.list);
 
   return router;
 };
