@@ -1,4 +1,4 @@
-import {createEntity} from 'shared/domain';
+import {createEntity} from '.';
 
 describe('createTenant', () => {
   describe('immutability', () => {

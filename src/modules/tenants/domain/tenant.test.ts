@@ -1,4 +1,4 @@
-import {createTenant} from 'modules/tenants/domain';
+import {createTenant} from '.';
 
 describe('createTenant', () => {
   describe('immutability', () => {

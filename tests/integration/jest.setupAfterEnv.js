@@ -13,3 +13,4 @@ jest.mock('stripe', () =>
 );
 
 jest.mock('infrastructure/http/middlewares/stripe');
+jest.mock('infrastructure/authService/authService');

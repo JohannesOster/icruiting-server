@@ -1,0 +1,158 @@
+import fs from 'fs';
+import {IncomingForm} from 'formidable';
+import {v4 as uuid} from 'uuid';
+import {DB} from '../infrastructure/db';
+import {BaseError} from 'application/errorHandling';
+import templates, {Template} from 'infrastructure/mailService/templates';
+import {sendMail} from 'infrastructure/mailService';
+import storageService from 'infrastructure/storageService';
+import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {validateSubscription} from './utils';
+
+export const ApplicantsAdapter = (db: DB) => {
+  const create = httpReqHandler(async (req) => {
+    const {formId} = req.params;
+    const form = await db.forms.retrieve(null, formId);
+    if (!form) throw new BaseError(404, 'Not Found');
+    const tenant = await db.tenants.retrieve(form.tenantId);
+    if (!tenant) throw new BaseError(404, 'Tenant Not Found');
+
+    try {
+      await validateSubscription(form.tenantId);
+    } catch ({message}) {
+      return {view: 'form-submission', body: {error: message}};
+    }
+
+    if (form.formCategory !== 'application') {
+      const errorMsg =
+        'Only application form are allowed to be submitted via html';
+      throw new BaseError(402, errorMsg);
+    }
+
+    const formidable = new IncomingForm();
+    // formidable.maxFileSize = 500 * 1024 * 1024;
+    return new Promise((resolve, reject) => {
+      formidable.parse(req, async (error, fields, files) => {
+        if (error) return resolve({view: 'form-submission', body: {error}});
+
+        const promises = [];
+
+        type Attributes = {formFieldId: string; attributeValue: string}[];
+        let attributes: Attributes;
+        try {
+          attributes = form.formFields.reduce((acc, item) => {
+            // !> filter out non submitted values
+            const field = fields[item.id];
+            let file = files[item.id];
+            if (Array.isArray(file)) file = file[0];
+            const fileExists = file && file.size;
+            if (!field && !fileExists) {
+              if (item.required) {
+                throw new BaseError(
+                  402,
+                  `Missing required field: ${item.label}`,
+                );
+              }
+
+              return acc;
+            }
+
+            if (
+              ['input', 'textarea', 'select', 'radio'].includes(item.component)
+            ) {
+              acc.push({
+                formFieldId: item.id,
+                attributeValue: field as string,
+              });
+            } else if (item.component === 'checkbox') {
+              const value = Array.isArray(field)
+                ? (field as string[]).join(', ')
+                : (field as string);
+
+              acc.push({
+                formFieldId: item.id,
+                attributeValue: value,
+              });
+            } else if (item.component === 'file_upload') {
+              const extension = file.name?.substr(
+                file.name?.lastIndexOf('.') + 1,
+              );
+              const fileId = (Math.random() * 1e32).toString(36);
+              const fileKey = form.tenantId + '.' + fileId + '.' + extension;
+              const fileStream = fs.createReadStream(file.path);
+              const params = {
+                path: fileKey,
+                contentType: file.type || '',
+                data: fileStream,
+              };
+              promises.push(storageService.upload(params));
+
+              fs.unlink(file.path, console.error);
+
+              acc.push({
+                formFieldId: item.id,
+                attributeValue: fileKey,
+              });
+            }
+
+            return acc;
+          }, [] as Attributes);
+        } catch (error) {
+          return resolve({view: 'form-submission', body: {error}});
+        }
+
+        const applicant = {
+          applicantId: uuid(), // TODO: change sothat application layer is not responsable for creating ids
+          tenantId: form.tenantId,
+          jobId: form.jobId,
+          attributes,
+        };
+        promises.push(db.applicants.create(applicant));
+
+        try {
+          await Promise.all(promises);
+        } catch ({message}) {
+          return resolve({view: 'form-submission', body: {error: message}});
+        }
+
+        const {emailFieldId, fullNameFieldId} = form.formFields.reduce(
+          (acc, curr) => {
+            if (curr.label === 'E-Mail-Adresse') acc.emailFieldId = curr.id;
+            if (curr.label === 'Vollständiger Name')
+              acc.fullNameFieldId = curr.id;
+            return acc;
+          },
+          {} as any,
+        );
+        if (!emailFieldId)
+          return reject(new BaseError(500, 'E-Mail-Adresse field not found'));
+        if (!fullNameFieldId)
+          return reject(
+            new BaseError(500, 'Vollständiger-Name field not found'),
+          );
+
+        const {email, fullName} = attributes.reduce((acc, curr) => {
+          if (curr.formFieldId === emailFieldId)
+            acc.email = curr.attributeValue;
+          if (curr.formFieldId === fullNameFieldId)
+            acc.fullName = curr.attributeValue;
+          return acc;
+        }, {} as any);
+
+        if (!email)
+          return reject(new BaseError(500, 'Applicant has no email-adress'));
+        if (!fullName)
+          return reject(new BaseError(500, 'Applicant has no email-adress'));
+
+        const templateOptions = {tenantName: tenant.tenantName, fullName};
+        const html = templates(Template.EmailConfirmation, templateOptions);
+        const mailOptions = {to: email, subject: 'Bewerbungsbestätigung', html};
+        await sendMail(mailOptions).catch(console.error);
+
+        resolve({view: 'form-submission'});
+      });
+    });
+  });
+
+  return {create};
+};
