@@ -1,6 +1,6 @@
 import {createFormField} from '.';
 
-describe('createTenant', () => {
+describe('createFormField', () => {
   describe('immutability', () => {
     it('returns immutable object', () => {
       const formField = createFormField({
