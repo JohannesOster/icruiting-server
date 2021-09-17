@@ -1,9 +1,9 @@
+import {random} from 'faker';
+import {FormCategory, FormFieldIntent} from 'domain/entities';
 import {
   filterFormData,
   reduceSubmissions,
-} from 'application/applicants/calcReport/preprocessor';
-import {random} from 'faker';
-import {FormCategory, FormFieldIntent} from 'domain/entities';
+} from 'modules/applicants/application/calcReport/preprocessor';
 
 describe('preprocessor', () => {
   describe('filterFormData', () => {

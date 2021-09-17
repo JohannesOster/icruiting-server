@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {mergeReplicas} from 'application/applicants/calcReport/mergeReplicas';
+import {mergeReplicas} from 'modules/applicants/application/calcReport/mergeReplicas';
 
 describe('mergereplicas', () => {
   it('does nothing if there are not replicas', () => {

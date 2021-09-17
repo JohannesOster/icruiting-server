@@ -1,4 +1,4 @@
-import {deepReplace} from 'application/jobs/utils';
+import {deepReplace} from 'modules/jobs/application/utils';
 
 describe('deepReplace', () => {
   it('replaces values correctly', () => {
