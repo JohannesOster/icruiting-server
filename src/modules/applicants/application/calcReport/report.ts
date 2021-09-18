@@ -1,8 +1,8 @@
 import _ from 'lodash';
 import {round} from './calculator';
-import {FormCategory, FormFieldIntent} from 'domain/entities';
 import {Score} from './types';
 import {filterNotNullAndDefined} from 'utils/filterNotNullAndDefined';
+import {FormCategory, FormFieldIntent} from 'modules/forms/domain';
 
 type ReportFormFieldResult = {
   formFieldId: string;

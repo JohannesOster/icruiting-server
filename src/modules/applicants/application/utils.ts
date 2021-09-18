@@ -1,4 +1,4 @@
-import {File} from 'domain/entities';
+import {File} from 'modules/applicants/domain';
 import storageService from 'infrastructure/storageService';
 
 export const getApplicantFileURLs = async (files?: File[]) => {

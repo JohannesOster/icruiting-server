@@ -1,10 +1,8 @@
-import faker from 'faker';
 import request from 'supertest';
 import app from 'infrastructure/http';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Job} from 'domain/entities';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -76,7 +74,7 @@ describe('jobs', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      resp.body.forEach((job: Job) =>
+      resp.body.forEach((job: any) =>
         expect(job.tenantId).toBe(mockUser.tenantId),
       );
     });

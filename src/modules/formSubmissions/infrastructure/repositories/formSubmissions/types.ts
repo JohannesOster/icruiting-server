@@ -1,4 +1,4 @@
-import {FormCategory, FormFieldIntent} from 'domain/entities';
+import {FormCategory, FormFieldIntent} from 'modules/forms/domain';
 
 export interface FormSubmission {
   tenantId: string;

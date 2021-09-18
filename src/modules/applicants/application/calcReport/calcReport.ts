@@ -1,10 +1,10 @@
 import _ from 'lodash';
-import {ReportPrepareRow} from 'infrastructure/db/repos/formSubmissions/types';
 import {filterFormData, reduceSubmissions} from './preprocessor';
 import {ReportBuilder} from './reportBuilder';
 import {mergeReplicas} from './mergeReplicas';
 import {createReport} from './report';
 import {JobRequirement} from 'modules/jobs/domain';
+import {ReportPrepareRow} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions/types';
 
 export const calcReport = (
   rows: ReportPrepareRow[],
@@ -16,7 +16,7 @@ export const calcReport = (
   const raw = ReportBuilder(formFields, submissions);
   const report = mergeReplicas(raw, forms);
 
-  const _forms = Object.entries(forms).reduce((acc, [formId, form]) => {
+  const _forms = Object.entries(forms).reduce((acc, [formId, form]: any) => {
     acc[formId] = {...form, formFields: formFields[formId]};
     return acc;
   }, {} as any);

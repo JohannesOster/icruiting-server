@@ -1,8 +1,8 @@
 import authService from 'infrastructure/authService';
-import db from 'infrastructure/db';
 import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {DB} from '../infrastructure/repositories';
 
-export const MembersAdapter = () => {
+export const MembersAdapter = (db: DB) => {
   const create = httpReqHandler(async (req) => {
     const {emails} = req.body;
     const {tenantId} = req.user;

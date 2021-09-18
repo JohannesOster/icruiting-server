@@ -1,5 +1,5 @@
 import _, {max, min, sum} from 'lodash';
-import {ReportPrepareRow} from 'infrastructure/db/repos/formSubmissions/types';
+import {ReportPrepareRow} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions/types';
 import {Forms, FormFields, Submissions} from './types';
 
 // Separate informations about formFields from submission data

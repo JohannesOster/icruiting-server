@@ -1,4 +1,4 @@
-import {FormFieldIntent} from 'domain/entities';
+import {FormFieldIntent} from 'modules/forms/domain';
 
 export type Submissions = {
   [submitterId: string]: {

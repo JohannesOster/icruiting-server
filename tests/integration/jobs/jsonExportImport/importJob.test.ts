@@ -4,8 +4,8 @@ import app from 'infrastructure/http';
 import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../../testUtils/dataGenerator';
-import {Form} from 'domain/entities';
 import * as jsonJob from './files/job.json';
+import {Form} from 'modules/forms/domain';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -88,7 +88,7 @@ describe('jobs', () => {
         .expect('Content-Type', /json/)
         .expect(201);
 
-      const promises: Promise<any>[] = body.forms.map(({formId}: Form) => {
+      const promises: Promise<any>[] = body.forms.map(({formId}: any) => {
         return db
           .one('SELECT COUNT(*) FROM form WHERE form_id=$1', formId)
           .then(({count}) => count);

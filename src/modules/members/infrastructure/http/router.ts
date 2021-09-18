@@ -4,10 +4,12 @@ import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';
 import {requireSubscription} from 'infrastructure/http/middlewares/stripe';
 import {RouterFactory} from 'shared/infrastructure';
-import {MembersAdapter} from 'modules/members/application';
+import {initializeRepositories} from '../repositories';
+import {MembersAdapter} from 'modules/members/application/membersAdapter';
 
-export const MembersRouter: RouterFactory = () => {
-  const adapter = MembersAdapter();
+export const MembersRouter: RouterFactory = (dbAccess) => {
+  const db = initializeRepositories(dbAccess);
+  const adapter = MembersAdapter(db);
   const router = express.Router();
 
   router.use(requireAuth);
