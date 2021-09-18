@@ -3,7 +3,7 @@ import app from 'infrastructure/http';
 import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../../testUtils/dataGenerator';
-import {Form} from 'domain/entities';
+import {Form} from 'modules/forms/domain';
 import {Job} from 'modules/jobs/domain';
 
 const mockUser = fake.user();

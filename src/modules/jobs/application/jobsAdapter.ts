@@ -1,14 +1,17 @@
+import fs from 'fs';
 import storageService from 'infrastructure/storageService';
 import {BaseError} from 'application/errorHandling';
-import {createForm, Form} from 'domain/entities';
-import fs from 'fs';
-import {IncomingForm} from 'formidable';
-import {v4 as uuidv4} from 'uuid';
-import {deepReplace} from './utils';
+import {File, IncomingForm} from 'formidable';
 import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 import {DB} from '../infrastructure/repositories';
 import jobsMapper from '../mappers/jobsMapper';
 import {createJob, createJobRequirement} from '../domain';
+import {DBJob} from '../infrastructure/repositories/jobsRepository';
+import {Form as DBForm} from 'modules/forms/infrastructure/db/repositories/forms/types';
+import {formsMapper} from 'modules/forms/mappers';
+import {createForm} from 'modules/forms/domain';
+import {formFieldsMapper} from 'modules/forms/mappers/formFieldsMapper';
+import {createId} from 'shared/domain/id';
 
 export const JobsAdapter = (db: DB) => {
   const retrieve = httpReqHandler(async (req) => {
@@ -104,115 +107,145 @@ export const JobsAdapter = (db: DB) => {
   });
 
   const exportJob = httpReqHandler(async (req) => {
-    return {};
-    // const {tenantId} = req.user;
-    // const {jobId} = req.params;
-    // const job = await db.jobs.retrieve(tenantId, jobId);
-    // if (!job) throw new BaseError(404, 'Not Found');
+    const {tenantId} = req.user;
+    const {jobId} = req.params;
+    const job = await db.jobs.retrieve(tenantId, jobId);
+    if (!job) throw new BaseError(404, 'Not Found');
+    const jobDTO = jobsMapper.toDTO(tenantId, job);
 
-    // const forms = await db.forms.list(tenantId, {jobId});
+    const forms = await db.forms.list(tenantId, {jobId});
 
-    // const replace = {} as {[key: string]: string};
-    // const body = {
-    //   jobTitle: job.jobTitle,
-    //   jobRequirements: job.jobRequirements.map(({jobId, ...requirement}) => {
-    //     replace[requirement.jobRequirementId] = uuidv4();
-    //     return requirement;
-    //   }),
-    //   forms: forms.map((form) => {
-    //     replace[form.formId] = uuidv4();
-    //     return {
-    //       formId: form.formId,
-    //       formCategory: form.formCategory,
-    //       formTitle: form.formTitle,
-    //       replicaOf: form.replicaOf,
-    //       // only add formFields to non replicas, otherwise formfields would be duplicated
-    //       ...(form.replicaOf
-    //         ? {formFields: []}
-    //         : {
-    //             formFields: form.formFields.map(
-    //               ({formId, formFieldId, ...formField}) => ({
-    //                 ...formField,
-    //               }),
-    //             ),
-    //           }),
-    //     };
-    //   }),
-    // };
+    const body = {
+      // remove tenantId
+      jobId: jobDTO.jobId,
+      jobTitle: jobDTO.jobTitle,
+      jobRequirements: jobDTO.jobRequirements, // will be changed in import
+      forms: forms.map((form) => {
+        return {
+          formId: form.id,
+          formCategory: form.formCategory,
+          formTitle: form.formTitle,
+          replicaOf: form.replicaOf,
+          // only add formFields to non replicas, otherwise formFields would be duplicated
+          ...(form.replicaOf
+            ? {formFields: []}
+            : {
+                formFields: form.formFields.map((field) => {
+                  const {formFieldId, ...formField} = formFieldsMapper.toDTO(
+                    {formId: form.id},
+                    field,
+                  );
+                  return formField;
+                }),
+              }),
+        };
+      }),
+    };
 
-    // return {body: deepReplace(body, replace)};
+    return {body: body};
   });
 
+  const _validateJobFile = (file: File | File[]) => {
+    if (Array.isArray(file))
+      throw new BaseError(422, 'Multifile no supported.');
+    if (!file.name) throw new BaseError(500, 'Missing file name');
+
+    const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
+    if (extension !== 'json')
+      throw new BaseError(422, `Invalid fileformat ${extension}`);
+
+    return file;
+  };
+
+  const _readJSONFile = async (file: File) => {
+    const data = await new Promise<Buffer>((resolve, reject) => {
+      fs.readFile(file.path, (error, data) => {
+        if (error) return reject(new BaseError(500, error.message));
+        resolve(data);
+      });
+    });
+
+    return JSON.parse(data.toString());
+  };
+
+  const _insertJSONJob = (tenantId: string, params: DBJob) => {
+    const {jobRequirements, ..._job} = params;
+
+    const job = createJob({
+      ..._job,
+      jobRequirements: jobRequirements.map((req) => createJobRequirement(req)),
+    });
+
+    return db.jobs.create(jobsMapper.toPersistance(tenantId, job));
+  };
+
+  const _insertForms = (tenantId: string, jobId: string, forms: DBForm[]) => {
+    return Promise.all(
+      forms.map(({formFields: _formFields, ...form}) => {
+        const formFields = _formFields.map(
+          ({formFieldId, ...field}) =>
+            formFieldsMapper.toDomain({
+              formFieldId: createId(),
+              ...field,
+            }), // override id to prohibit db errors
+        );
+
+        const _form = createForm({...form, formFields, tenantId, jobId});
+        const params = formsMapper.toPersistance(_form);
+
+        return db.forms.create(params);
+      }),
+    );
+  };
+
   const importJob = httpReqHandler(async (req) => {
-    return {};
-    // const {tenantId} = req.user;
+    const {tenantId} = req.user;
+    return new Promise((resolve, reject) => {
+      const formidable = new IncomingForm();
+      formidable.parse(req, async (error, fields, files) => {
+        try {
+          if (error) return reject(new BaseError(500, error));
+          const file = _validateJobFile(files.job);
+          const json = await _readJSONFile(file);
+          const {forms: jsonForms, ...jsonJob} = json;
 
-    // return new Promise((resolve, reject) => {
-    //   const formidable = new IncomingForm();
-    //   formidable.parse(req, async (error, fields, files) => {
-    //     try {
-    //       if (error) return reject(new BaseError(500, error));
-    //       const file = files.job;
-    //       if (Array.isArray(file))
-    //         return reject(new BaseError(422, 'Multifile no supported.'));
-    //       if (!file.name)
-    //         return reject(new BaseError(500, 'Missing file name'));
+          const job = await _insertJSONJob(tenantId, json);
 
-    //       const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
-    //       if (extension !== 'json')
-    //         return reject(
-    //           new BaseError(422, `Invalid fileformat ${extension}`),
-    //         );
+          // split forms into replicas and primaries
+          type FormsMap = {primaries: DBForm[]; replicas: DBForm[]};
+          const formsMap = (jsonForms as DBForm[]).reduce(
+            (acc, curr) => {
+              if (!curr.replicaOf) acc.primaries.push(curr);
+              else acc.replicas.push(curr);
+              return acc;
+            },
+            {primaries: [], replicas: []} as FormsMap,
+          );
 
-    //       const rawData = (await new Promise((resolve, reject) => {
-    //         fs.readFile(file.path, (error, data) => {
-    //           if (error) return reject(new BaseError(500, error.message));
-    //           resolve(data);
-    //         });
-    //       })) as Buffer;
+          // insert forms
+          let primaries = await _insertForms(
+            tenantId,
+            job.id,
+            formsMap.primaries,
+          );
+          let replicas = await _insertForms(
+            tenantId,
+            job.id,
+            formsMap.replicas,
+          );
 
-    //       const json = JSON.parse(rawData.toString());
+          const forms = primaries.concat(replicas);
 
-    //       const {forms, ...job} = json;
-    //       const _job = await db.jobs.create(createJob({tenantId, ...job}));
-
-    //       const formsMap = (forms as Form[]).reduce(
-    //         (acc, curr) => {
-    //           if (!curr.replicaOf) acc.primaries.push(curr);
-    //           else acc.replicas.push(curr);
-    //           return acc;
-    //         },
-    //         {primaries: [], replicas: []} as {
-    //           primaries: Form[];
-    //           replicas: Form[];
-    //         },
-    //       );
-
-    //       let _forms = await Promise.all(
-    //         formsMap.primaries.map((form) =>
-    //           db.forms.create(
-    //             createForm({...form, tenantId, jobId: _job.jobId}),
-    //           ),
-    //         ),
-    //       );
-
-    //       _forms = _forms.concat(
-    //         await Promise.all(
-    //           formsMap.replicas.map((form) =>
-    //             db.forms.create(
-    //               createForm({...form, tenantId, jobId: _job.jobId}),
-    //             ),
-    //           ),
-    //         ),
-    //       );
-
-    //       const body = {..._job, forms: _forms};
-    //       resolve({status: 201, body});
-    //     } catch (error) {
-    //       reject(error);
-    //     }
-    //   });
-    // });
+          const body = {
+            ...jobsMapper.toDTO(tenantId, job),
+            forms: forms.map((form) => formsMapper.toDTO(form)),
+          };
+          resolve({status: 201, body});
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
   });
 
   return {
