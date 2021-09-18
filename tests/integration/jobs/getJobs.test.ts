@@ -68,7 +68,7 @@ describe('jobs', () => {
     // });
 
     it('isolates tenant jobs', async () => {
-      const {tenantId} = await dataGenerator.insertTenant();
+      const {id: tenantId} = await dataGenerator.insertTenant();
       await dataGenerator.insertJob(tenantId);
 
       const resp = await request(app)

@@ -4,7 +4,7 @@ import {Job} from 'domain/entities';
 import {compareArrays} from '../../utils';
 import sql from './sql';
 
-export const JobssRepository = (db: IDatabase<any>, pgp: IMain) => {
+export const JobsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const {ColumnSet} = pgp.helpers;
 
   const jrColumnSet = new ColumnSet(

@@ -2,17 +2,20 @@ import db, {pgp} from 'infrastructure/db';
 import fake from './fake';
 import {random} from 'faker';
 import {Form, FormCategory} from 'domain/entities';
-import {JobssRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
+import {JobsRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
 import {FormsRepository} from 'modules/forms/infrastructure/db/repositories';
 import {FormSubmissionsRepository} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions';
+import {TenantsRepository} from 'modules/tenants/infrastructure/repositories/tenantsRepository';
 
-const jobsRepo = JobssRepository({db, pgp});
+const tenantsRepo = TenantsRepository({db, pgp});
+const jobsRepo = JobsRepository({db, pgp});
 const formsRepo = FormsRepository({db, pgp});
 const formSubmissionsRepo = FormSubmissionsRepository({db, pgp});
+
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {
     const tenant = fake.tenant(tenantId);
-    return db.tenants.create(tenant);
+    return tenantsRepo.create(tenant);
   },
   insertJob: (tenantId: string) => {
     const job = fake.job(tenantId);

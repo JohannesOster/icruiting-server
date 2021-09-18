@@ -1,6 +1,6 @@
 import {IDatabase, IMain} from 'pg-promise';
 import {decamelizeKeys} from 'humps';
-import {Tenant} from 'domain/entities';
+import {Tenant} from 'modules/tenants/domain';
 
 export const TenantsRepository = (db: IDatabase<any>, pgp: IMain) => {
   const create = (params: Tenant): Promise<Tenant> => {

@@ -1,7 +1,7 @@
 import {RequestHandler as ExpressRequestHandler} from 'express';
-import {BaseError, ValidationError} from 'domain/entities/error';
 import {BaseError as HTTPError} from 'application/errorHandling';
 import {IncomingMessage} from 'http';
+import {BaseError, ValidationError} from 'shared/domain/error';
 
 type HTTPRequest = {
   user: User;

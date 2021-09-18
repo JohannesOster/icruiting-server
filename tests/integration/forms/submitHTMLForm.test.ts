@@ -13,7 +13,7 @@ jest.mock('infrastructure/mailService/mailService', () => ({
 let tenantId: string;
 let jobId: string;
 beforeAll(async () => {
-  tenantId = (await dataGenerator.insertTenant(random.uuid())).tenantId;
+  tenantId = (await dataGenerator.insertTenant(random.uuid())).id;
   jobId = (await dataGenerator.insertJob(tenantId)).id;
 });
 

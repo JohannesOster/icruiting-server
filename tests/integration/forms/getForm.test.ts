@@ -60,7 +60,7 @@ describe('forms', () => {
     });
 
     it('isolates tenant', async () => {
-      const {tenantId} = await dataGenerator.insertTenant(random.uuid());
+      const {id: tenantId} = await dataGenerator.insertTenant(random.uuid());
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,

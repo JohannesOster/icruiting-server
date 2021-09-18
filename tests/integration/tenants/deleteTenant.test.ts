@@ -79,7 +79,9 @@ describe('tenants', () => {
     });
 
     it('uses tenantId of jwt not parameter', async () => {
-      const {tenantId} = await dataGenerator.insertTenant(faker.random.uuid());
+      const {id: tenantId} = await dataGenerator.insertTenant(
+        faker.random.uuid(),
+      );
 
       await request(app)
         .del(`/tenants/${tenantId}`)

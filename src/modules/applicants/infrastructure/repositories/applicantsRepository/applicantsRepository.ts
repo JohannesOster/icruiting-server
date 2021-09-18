@@ -1,7 +1,15 @@
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
-import {Applicant} from 'domain/entities';
+import {Applicant} from '../../../domain';
 import {DBAccess} from 'infrastructure/db';
+
+export interface DBApplicant {
+  applicantId: string;
+  jobId: string;
+  attributes: {key: string; value: string}[];
+  files?: {key: string; uri: string}[];
+  createdAt: string;
+}
 
 export const ApplicantsRepository = ({db, pgp}: DBAccess) => {
   const list = (params: {

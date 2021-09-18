@@ -19,7 +19,7 @@ export interface DBJob {
   jobRequirements: DBJobRequirement[];
 }
 
-export const JobssRepository = ({db, pgp}: DBAccess) => {
+export const JobsRepository = ({db, pgp}: DBAccess) => {
   const {ColumnSet} = pgp.helpers;
 
   const jrColumnSet = new ColumnSet(

@@ -1,3 +1,4 @@
+import {Entity, EntityFactory, createEntity} from 'shared/domain';
 import {v4 as uuid} from 'uuid';
 
 export type Attribute = {
@@ -6,6 +7,7 @@ export type Attribute = {
   /** The actual attribute value */
   value: string;
 };
+
 export type File = {
   /** The unique id of the formField the file originates from */
   formFieldId: string;
@@ -14,9 +16,7 @@ export type File = {
 };
 export type ApplicantStatus = 'applied' | 'confirmed';
 
-type BaseApplicant = {
-  /** The unique id of the tenant the applicant belongs to */
-  tenantId: string;
+interface BaseApplicant {
   /** The current status the applicant is in
    * applied: The initial status of the applicant
    * confirmed: The applicant was confirmed by an administrator
@@ -28,15 +28,14 @@ type BaseApplicant = {
   attributes: Attribute[];
   /** A list of files the applicant has */
   files: File[];
-};
-export type Applicant = {
-  /** A unique id */
-  applicantId: string;
-} & BaseApplicant;
+}
+export interface Applicant extends BaseApplicant, Entity {}
 
-export const createApplicant = (
-  applicant: BaseApplicant & {applicantId?: string},
+export const createApplicant: EntityFactory<BaseApplicant, Applicant> = (
+  props,
+  id,
 ): Applicant => {
-  const applicantId = applicant.applicantId || uuid();
-  return Object.freeze({...applicant, applicantId});
+  const {applicantStatus, jobId, attributes, files} = props;
+  const applicant: BaseApplicant = {applicantStatus, jobId, attributes, files};
+  return createEntity(applicant, id);
 };

@@ -74,7 +74,7 @@ describe('applicants', () => {
     });
 
     it('isloates tenant', async () => {
-      const {tenantId} = await dataGenerator.insertTenant(random.uuid());
+      const {id: tenantId} = await dataGenerator.insertTenant(random.uuid());
       const {id: jobId} = await dataGenerator.insertJob(tenantId);
       const form = await dataGenerator.insertForm(
         tenantId,

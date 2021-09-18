@@ -3,9 +3,8 @@ import {IInitOptions, IDatabase, IMain} from 'pg-promise';
 import {
   IExtensions,
   TenantsRepository,
-  JobssRepository,
+  JobsRepository,
   ApplicantsRepository,
-  FormsRepository,
   FormSubmissionsRepository,
   RankingsRepository,
 } from './repos';
@@ -20,9 +19,8 @@ export interface DBAccess {
 const initOptions: IInitOptions<IExtensions> = {
   extend(obj) {
     obj.tenants = TenantsRepository(obj, pgp);
-    obj.jobs = JobssRepository(obj, pgp);
+    obj.jobs = JobsRepository(obj, pgp);
     obj.applicants = ApplicantsRepository(obj, pgp);
-    obj.forms = FormsRepository(obj, pgp);
     obj.formSubmissions = FormSubmissionsRepository(obj, pgp);
     obj.rankings = RankingsRepository(obj, pgp);
   },
