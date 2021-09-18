@@ -113,7 +113,7 @@ describe('applicants', () => {
       expect(res.body.applicants[0].applicantId).toBe(applicant.applicantId);
     });
 
-    it('isloates tenant applicants even if foreign jobId is queried', async () => {
+    it('isolates tenant applicants even if foreign jobId is queried', async () => {
       const {id: tenantId} = await dataGenerator.insertTenant(random.uuid());
       const {id: jobId} = await dataGenerator.insertJob(tenantId);
       const form = await dataGenerator.insertForm(
