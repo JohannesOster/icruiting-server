@@ -1,14 +1,15 @@
 import request from 'supertest';
 import faker from 'faker';
 import app from 'infrastructure/http';
-import db from 'infrastructure/db';
+import db, {pgp} from 'infrastructure/db';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Applicant} from 'domain/entities';
 import {Form} from 'modules/forms/domain';
 import {createFormSubmission} from 'modules/formSubmissions/domain';
 import {formSubmissionsMapper} from 'modules/formSubmissions/mappers';
+import {ApplicantsRepository} from 'modules/applicants/infrastructure/repositories/applicantsRepository';
+import {FormSubmissionsRepository} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -29,6 +30,9 @@ afterAll(async () => {
   await truncateAllTables();
   endConnection();
 });
+
+const applicantsRepo = ApplicantsRepository({db, pgp});
+const formSubmissionsRepo = FormSubmissionsRepository({db, pgp});
 
 describe('rankings', () => {
   describe('GET screening rankings', () => {
@@ -58,12 +62,12 @@ describe('rankings', () => {
             jobId,
             formFieldIds,
           );
-          promises.push(db.applicants.create(applicant));
+          promises.push(applicantsRepo.create(applicant));
         });
 
       await Promise.all(promises).then(async (data) => {
         const promises: Promise<any>[] = [];
-        const [form, ...applicants] = data as [Form, ...Applicant[]];
+        const [form, ...applicants] = data as [Form, ...any[]];
 
         applicants.forEach((appl) => {
           const screening = createFormSubmission({
@@ -80,7 +84,7 @@ describe('rankings', () => {
           });
 
           promises.push(
-            db.formSubmissions.create(
+            formSubmissionsRepo.create(
               formSubmissionsMapper.toPersistance(mockUser.tenantId, screening),
             ),
           );
@@ -148,12 +152,12 @@ describe('rankings', () => {
             jobId,
             formFieldIds,
           );
-          promises.push(db.applicants.create(applicant));
+          promises.push(applicantsRepo.create(applicant));
         });
 
       await Promise.all(promises).then(async (data) => {
         const promises: Promise<any>[] = [];
-        const [form, ...applicants] = data as [Form, ...Applicant[]];
+        const [form, ...applicants] = data as [Form, ...any[]];
 
         applicants.forEach((appl) => {
           const assessment = createFormSubmission({
@@ -170,7 +174,7 @@ describe('rankings', () => {
           });
 
           promises.push(
-            db.formSubmissions.create(
+            formSubmissionsRepo.create(
               formSubmissionsMapper.toPersistance(
                 mockUser.tenantId,
                 assessment,

@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import {BaseError} from 'application/errorHandling';
+import {BaseError} from 'application';
 import authService from 'infrastructure/authService';
 import {catchAsync} from '../httpReqHandler';
 

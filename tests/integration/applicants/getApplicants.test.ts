@@ -4,7 +4,6 @@ import app from 'infrastructure/http';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Applicant} from 'domain/entities';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -33,7 +32,7 @@ afterAll(async () => {
 
 describe('applicants', () => {
   describe('GET /applicants', () => {
-    let applicants: Applicant[];
+    let applicants: any[];
     beforeAll(async () => {
       const {tenantId} = mockUser;
       const {id: jobId} = await dataGenerator.insertJob(tenantId);
@@ -99,11 +98,11 @@ describe('applicants', () => {
       );
 
       const fieldIds = form.formFields.map(({id}) => id);
-      const applicant = await dataGenerator.insertApplicant(
+      const applicant = (await dataGenerator.insertApplicant(
         mockUser.tenantId,
         jobId,
         fieldIds,
-      );
+      )) as any;
 
       const res = await request(app)
         .get('/applicants?jobId=' + jobId)

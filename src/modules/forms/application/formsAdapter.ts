@@ -1,7 +1,7 @@
 import {v4 as uuid} from 'uuid';
 import config from 'config';
 import {DB} from '../infrastructure/db';
-import {BaseError} from 'application/errorHandling';
+import {BaseError} from 'application';
 import {validateSubscription} from './utils';
 import storageService from 'infrastructure/storageService';
 import {createForm} from 'modules/forms/domain/form';

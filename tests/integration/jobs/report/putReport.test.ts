@@ -2,8 +2,9 @@ import request from 'supertest';
 import app from 'infrastructure/http';
 import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
-import db from 'infrastructure/db';
+import db, {pgp} from 'infrastructure/db';
 import dataGenerator from '../../testUtils/dataGenerator';
+import {JobsRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -26,6 +27,8 @@ afterAll(async () => {
   endConnection();
 });
 
+const jobsRepo = JobsRepository({db, pgp});
+
 describe('jobs', () => {
   describe('PUT /jobs/:jobId/report', () => {
     let report: any;
@@ -40,7 +43,11 @@ describe('jobs', () => {
     });
 
     beforeEach(async () => {
-      report = await db.jobs.createReport(mockUser.tenantId, jobId, formFields);
+      report = await jobsRepo.createReport(
+        mockUser.tenantId,
+        jobId,
+        formFields,
+      );
     });
 
     afterEach(async () => {

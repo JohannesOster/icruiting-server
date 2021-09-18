@@ -4,9 +4,9 @@ import app from 'infrastructure/http';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
-import db from 'infrastructure/db';
-import {Applicant} from 'domain/entities';
+import db, {pgp} from 'infrastructure/db';
 import {Form} from 'modules/forms/domain';
+import {ApplicantsRepository} from 'modules/applicants/infrastructure/repositories/applicantsRepository';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -27,9 +27,11 @@ afterAll(async () => {
   endConnection();
 });
 
+const applicantsRepo = ApplicantsRepository({db, pgp});
+
 describe('applicants', () => {
   describe('PUT /applicants/:applicantId', () => {
-    let applicant: Applicant;
+    let applicant: any; // as long as mapper not implemented
     let form: Form;
     beforeAll(async () => {
       const {tenantId} = mockUser;
@@ -47,7 +49,7 @@ describe('applicants', () => {
         ],
       };
 
-      applicant = await db.applicants.create(_applicant);
+      applicant = await applicantsRepo.create(_applicant);
     });
 
     beforeEach(async () => {

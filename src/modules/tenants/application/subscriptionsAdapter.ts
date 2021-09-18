@@ -1,4 +1,4 @@
-import {BaseError} from 'application/errorHandling';
+import {BaseError} from 'application';
 import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 import paymentService from 'infrastructure/paymentService';
 

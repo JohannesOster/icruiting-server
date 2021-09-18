@@ -1,5 +1,5 @@
 import {RequestHandler as ExpressRequestHandler} from 'express';
-import {BaseError as HTTPError} from 'application/errorHandling';
+import {BaseError as HTTPError} from 'application';
 import {IncomingMessage} from 'http';
 import {BaseError, ValidationError} from 'shared/domain/error';
 

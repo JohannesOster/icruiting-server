@@ -2,9 +2,10 @@ import request from 'supertest';
 import app from 'infrastructure/http';
 import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
-import db from 'infrastructure/db';
+import db, {pgp} from 'infrastructure/db';
 import dataGenerator from '../../testUtils/dataGenerator';
 import {Form} from 'modules/forms/domain';
+import {JobsRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -27,6 +28,8 @@ afterAll(async () => {
   endConnection();
 });
 
+const jobsRepo = JobsRepository({db, pgp});
+
 describe('jobs', () => {
   describe('DELETE /jobs/:jobId/reports/:reportId', () => {
     let applicationForm: Form;
@@ -41,7 +44,11 @@ describe('jobs', () => {
     let report: any;
     beforeEach(async () => {
       const formFields = applicationForm.formFields.map(({id}) => id);
-      report = await db.jobs.createReport(mockUser.tenantId, jobId, formFields);
+      report = await jobsRepo.createReport(
+        mockUser.tenantId,
+        jobId,
+        formFields,
+      );
     });
 
     it('returns 200 json response', (done) => {
@@ -58,7 +65,7 @@ describe('jobs', () => {
         .set('Accept', 'application/json')
         .expect(200);
 
-      const report = await db.jobs.retrieveReport(mockUser.tenantId, jobId);
+      const report = await jobsRepo.retrieveReport(mockUser.tenantId, jobId);
       expect(report).toBeNull();
     });
   });

@@ -3,9 +3,10 @@ import app from 'infrastructure/http';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import db from 'infrastructure/db';
+import db, {pgp} from 'infrastructure/db';
 import {FormSubmission} from 'modules/formSubmissions/domain';
 import {Form} from 'modules/forms/domain';
+import {FormSubmissionsRepository} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -27,8 +28,10 @@ afterAll(async () => {
   endConnection();
 });
 
+const formSubmissionsRepo = FormSubmissionsRepository({db, pgp});
+
 describe('form-submissions', () => {
-  describe('DELETE /form-submissions/:formSubmissoinId', () => {
+  describe('DELETE /form-submissions/:formSubmissionId', () => {
     let formSubmission: FormSubmission;
     let screeningForm: Form;
     let applicantId: string;
@@ -46,11 +49,11 @@ describe('form-submissions', () => {
       );
       const formFieldIds = applForm.formFields.map(({id}) => id!);
 
-      const applicant = await dataGenerator.insertApplicant(
+      const applicant = (await dataGenerator.insertApplicant(
         tenantId,
         jobId,
         formFieldIds,
-      );
+      )) as any; // as long as mapper not implemented
 
       applicantId = applicant.applicantId;
     });
@@ -82,7 +85,7 @@ describe('form-submissions', () => {
         .expect(200);
 
       const {tenantId, userId: submitterId} = mockUser;
-      const submission = await db.formSubmissions.retrieve({
+      const submission = await formSubmissionsRepo.retrieve({
         tenantId,
         submitterId,
         formId: formSubmission.formId,

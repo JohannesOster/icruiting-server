@@ -3,7 +3,6 @@ import app from 'infrastructure/http';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Applicant} from 'domain/entities';
 
 const mockUser = fake.user();
 jest.mock('infrastructure/http/middlewares/auth', () => ({
@@ -28,7 +27,7 @@ afterAll(async () => {
 
 describe('applicants', () => {
   describe('GET applicants/:applicantId/report', () => {
-    let applicant: Applicant;
+    let applicant: any;
     beforeEach(async () => {
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,

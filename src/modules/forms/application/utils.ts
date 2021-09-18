@@ -1,10 +1,13 @@
 import db from 'infrastructure/db';
-import {BaseError} from 'application/errorHandling';
+import {BaseError} from 'application';
 import paymentService from 'infrastructure/paymentService';
 
 // TODO: should not access common db
 export const validateSubscription = async (tenantId: string) => {
-  const tenant = await db.tenants.retrieve(tenantId);
+  const tenant = await db.one(
+    'SELECT * FROM tenant WHERE tenant_id=$1',
+    tenantId,
+  ); // TODO: find better solution
   if (!tenant) throw new BaseError(404, 'Tenant Not Found');
   if (!tenant.stripeCustomerId)
     throw new BaseError(404, 'Stripe customer id not found');

@@ -2,7 +2,7 @@ import fs from 'fs';
 import {IncomingForm} from 'formidable';
 import {v4 as uuid} from 'uuid';
 import {DB} from '../infrastructure/db';
-import {BaseError} from 'application/errorHandling';
+import {BaseError} from 'application';
 import templates, {Template} from 'infrastructure/mailService/templates';
 import {sendMail} from 'infrastructure/mailService';
 import storageService from 'infrastructure/storageService';
