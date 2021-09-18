@@ -1,5 +1,5 @@
 import {decamelizeKeys} from 'humps';
-import {DBAccess} from 'infrastructure/db';
+import {DBAccess} from 'shared/infrastructure';
 import {Tenant, createTenant} from 'modules/tenants/domain';
 
 export interface DBTenant {

@@ -1,6 +1,6 @@
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
-import {DBAccess} from 'infrastructure/db';
+import {DBAccess} from 'shared/infrastructure';
 import {compareArrays} from 'infrastructure/db/utils';
 import {Form} from 'modules/forms/domain';
 import {Form as DBForm} from './types';

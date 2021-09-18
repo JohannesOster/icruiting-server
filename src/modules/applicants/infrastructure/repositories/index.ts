@@ -1,4 +1,4 @@
-import {DBAccess} from 'infrastructure/db';
+import {DBAccess} from 'shared/infrastructure';
 import {FormsRepository} from 'modules/forms/infrastructure/db/repositories';
 import {FormSubmissionsRepository} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions';
 import {JobsRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';

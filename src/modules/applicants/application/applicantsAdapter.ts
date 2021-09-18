@@ -4,9 +4,9 @@ import {BaseError} from 'application';
 import storageService from 'infrastructure/storageService';
 import {getApplicantFileURLs} from './utils';
 import {calcReport} from './calcReport';
-import {FormCategory} from 'domain/entities';
 import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
 import {DB} from '../infrastructure/repositories';
+import {FormCategory} from 'modules/forms/domain';
 
 export const ApplicantsAdapter = (db: DB) => {
   const retrieve = httpReqHandler(async (req) => {

@@ -1,5 +1,5 @@
 import express from 'express';
-import {RouterFactory} from 'infrastructure/http';
+import {RouterFactory} from 'shared/infrastructure';
 import {SubscriptionsAdapter} from '../../application';
 
 export const SubscriptionsRouter: RouterFactory = (dbAccess) => {

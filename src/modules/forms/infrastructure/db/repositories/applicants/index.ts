@@ -1,4 +1,4 @@
-import {DBAccess} from 'infrastructure/db';
+import {DBAccess} from 'shared/infrastructure';
 import {decamelizeKeys} from 'humps';
 import sql from './sql';
 

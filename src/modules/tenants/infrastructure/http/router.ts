@@ -6,7 +6,7 @@ import {
   requireSubscription,
   validate,
 } from 'infrastructure/http/middlewares';
-import {RouterFactory} from 'infrastructure/http';
+import {RouterFactory} from 'shared/infrastructure';
 import {initializeRepositories} from '../repositories';
 import {
   PaymentMethodsAdapter,

@@ -3,7 +3,7 @@ import {retrieveRules, updateRules} from './validation';
 import {validate} from 'infrastructure/http/middlewares/common';
 import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';
 import {requireSubscription} from 'infrastructure/http/middlewares/stripe';
-import {RouterFactory} from 'infrastructure/http';
+import {RouterFactory} from 'shared/infrastructure';
 import {MembersAdapter} from 'modules/members/application';
 
 export const MembersRouter: RouterFactory = () => {

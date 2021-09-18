@@ -5,10 +5,10 @@ import {
   requireSubscription,
   validate,
 } from 'infrastructure/http/middlewares';
-import {RouterFactory} from 'infrastructure/http';
 import {initializeRepositories} from '../repositories';
 import {ApplicantsAdapter} from '../../application';
 import {listRules, getReportRules} from './validation';
+import {RouterFactory} from 'shared/infrastructure';
 
 export const ApplicantsRouter: RouterFactory = (dbAccess) => {
   const db = initializeRepositories(dbAccess);
