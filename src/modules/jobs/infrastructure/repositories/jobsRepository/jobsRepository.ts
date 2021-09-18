@@ -1,6 +1,6 @@
 import {decamelizeKeys} from 'humps';
 import sql from './sql';
-import {DBAccess} from 'shared/infrastructure';
+import {DBAccess} from 'shared/infrastructure/http';
 import {compareArrays} from 'infrastructure/db/utils';
 import jobsMapper from 'modules/jobs/mappers/jobsMapper';
 import {Job} from 'modules/jobs/domain';

@@ -1,5 +1,5 @@
 import authService from 'infrastructure/authService';
-import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {httpReqHandler} from 'shared/infrastructure/http';
 import {DB} from '../infrastructure/repositories';
 
 export const MembersAdapter = (db: DB) => {

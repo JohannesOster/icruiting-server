@@ -5,7 +5,7 @@ import {BaseError} from 'application';
 import {validateSubscription} from './utils';
 import storageService from 'infrastructure/storageService';
 import {createForm} from 'modules/forms/domain/form';
-import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {httpReqHandler} from 'shared/infrastructure/http';
 import {formsMapper} from '../mappers';
 
 export const FormsAdapter = (db: DB) => {

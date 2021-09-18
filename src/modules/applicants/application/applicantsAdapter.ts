@@ -4,7 +4,7 @@ import {BaseError} from 'application';
 import storageService from 'infrastructure/storageService';
 import {getApplicantFileURLs} from './utils';
 import {calcReport} from './calcReport';
-import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {httpReqHandler} from 'shared/infrastructure/http';
 import {DB} from '../infrastructure/repositories';
 import {FormCategory} from 'modules/forms/domain';
 

@@ -8,7 +8,7 @@ import {Form} from 'modules/forms/domain';
 import {JobsRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;

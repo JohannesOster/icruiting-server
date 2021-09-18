@@ -2,7 +2,7 @@ import fs from 'fs';
 import storageService from 'infrastructure/storageService';
 import {BaseError} from 'application';
 import {File, IncomingForm} from 'formidable';
-import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {httpReqHandler} from 'shared/infrastructure/http';
 import {DB} from '../infrastructure/repositories';
 import jobsMapper from '../mappers/jobsMapper';
 import {createJob, createJobRequirement} from '../domain';

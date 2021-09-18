@@ -6,7 +6,7 @@ import {BaseError} from 'application';
 import templates, {Template} from 'infrastructure/mailService/templates';
 import {sendMail} from 'infrastructure/mailService';
 import storageService from 'infrastructure/storageService';
-import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {httpReqHandler} from 'shared/infrastructure/http';
 import {validateSubscription} from './utils';
 
 export const ApplicantsAdapter = (db: DB) => {

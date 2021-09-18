@@ -1,7 +1,7 @@
 import sql from './sql';
 import {decamelizeKeys} from 'humps';
 import {Applicant} from '../../../domain';
-import {DBAccess} from 'shared/infrastructure';
+import {DBAccess} from 'shared/infrastructure/http';
 
 export interface DBApplicant {
   applicantId: string;

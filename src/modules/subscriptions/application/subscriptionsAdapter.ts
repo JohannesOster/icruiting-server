@@ -1,4 +1,4 @@
-import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {httpReqHandler} from 'shared/infrastructure/http';
 import paymentService from 'infrastructure/paymentService';
 
 export const SubscriptionsAdapter = () => {

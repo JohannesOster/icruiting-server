@@ -1,5 +1,5 @@
 import {FormSubmissionsRepository} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions';
-import {DBAccess} from 'shared/infrastructure';
+import {DBAccess} from 'shared/infrastructure/http';
 
 export interface DB extends ReturnType<typeof initializeRepositories> {}
 

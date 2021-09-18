@@ -3,7 +3,7 @@ import sql from './sql';
 import {ReportPrepareRow, FormSubmission as DBFormSubmission} from './types';
 import {FormSubmission} from '../../../domain';
 import {FormCategory} from 'modules/forms/domain';
-import {DBAccess} from 'shared/infrastructure';
+import {DBAccess} from 'shared/infrastructure/http';
 import {formSubmissionsMapper} from 'modules/formSubmissions/mappers';
 
 export const FormSubmissionsRepository = ({db, pgp}: DBAccess) => {

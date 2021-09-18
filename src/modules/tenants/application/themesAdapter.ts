@@ -1,6 +1,6 @@
 import fs from 'fs';
 import {IncomingForm} from 'formidable';
-import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {httpReqHandler} from 'shared/infrastructure/http';
 import {BaseError} from 'application';
 import storageService from 'infrastructure/storageService';
 import {DB} from '../infrastructure/repositories';

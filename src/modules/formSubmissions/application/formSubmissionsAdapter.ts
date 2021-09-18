@@ -1,6 +1,6 @@
 import {BaseError} from 'application';
 import {createFormSubmission} from '../domain';
-import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {httpReqHandler} from 'shared/infrastructure/http';
 import {DB} from '../infrastructure/repositories';
 import {formSubmissionsMapper} from '../mappers';
 

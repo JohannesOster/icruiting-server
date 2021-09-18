@@ -1,12 +1,12 @@
 import express from 'express';
 import {tenantCreateRules, subsCreateRules} from './validation';
 import {
+  RouterFactory,
   requireAuth,
   requireAdmin,
   requireSubscription,
   validate,
-} from 'infrastructure/http/middlewares';
-import {RouterFactory} from 'shared/infrastructure';
+} from 'shared/infrastructure/http';
 import {initializeRepositories} from '../repositories';
 import {
   PaymentMethodsAdapter,

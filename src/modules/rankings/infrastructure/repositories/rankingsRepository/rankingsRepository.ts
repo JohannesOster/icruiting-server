@@ -1,5 +1,5 @@
 import {decamelizeKeys} from 'humps';
-import {DBAccess} from 'shared/infrastructure';
+import {DBAccess} from 'shared/infrastructure/http';
 import sql from './sql';
 
 export const RankingsRepository = ({db}: DBAccess) => {

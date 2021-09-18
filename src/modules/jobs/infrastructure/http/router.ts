@@ -4,8 +4,8 @@ import {
   requireAdmin,
   requireSubscription,
   validate,
-} from 'infrastructure/http/middlewares';
-import {RouterFactory} from 'shared/infrastructure';
+} from 'shared/infrastructure/http';
+import {RouterFactory} from 'shared/infrastructure/http';
 import {initializeRepositories} from '../repositories';
 import {JobsAdapter} from 'modules/jobs/application';
 import {createRules, updateRules, reportRules} from './validation';

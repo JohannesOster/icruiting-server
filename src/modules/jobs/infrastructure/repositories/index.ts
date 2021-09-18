@@ -1,4 +1,4 @@
-import {DBAccess} from 'shared/infrastructure';
+import {DBAccess} from 'shared/infrastructure/http';
 import {ApplicantsRepository} from 'modules/applicants/infrastructure/repositories/applicantsRepository';
 import {FormsRepository} from 'modules/forms/infrastructure/db/repositories';
 import {JobsRepository} from './jobsRepository';

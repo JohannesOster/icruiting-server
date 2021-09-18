@@ -1,9 +1,11 @@
 import express from 'express';
 import {createRules, updateRules, exportRules} from './validation';
-import {validate} from 'infrastructure/http/middlewares/common';
-import {requireAuth} from 'infrastructure/http/middlewares';
-import {requireSubscription} from 'infrastructure/http/middlewares/stripe';
-import {RouterFactory} from 'shared/infrastructure';
+import {
+  validate,
+  requireAuth,
+  requireSubscription,
+} from 'shared/infrastructure/http';
+import {RouterFactory} from 'shared/infrastructure/http';
 import {initializeRepositories} from '../repositories';
 import {FormSubmissionsAdapter} from 'modules/formSubmissions/application';
 

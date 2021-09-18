@@ -1,10 +1,9 @@
 import express from 'express';
 import {ApplicantsAdapter, FormsAdapter} from 'modules/forms/application';
 import {createRules, updateRules} from './validation';
-import {validate} from 'infrastructure/http/middlewares/common';
-import {requireAdmin, requireAuth} from 'infrastructure/http/middlewares';
-import {requireSubscription} from 'infrastructure/http/middlewares/stripe';
-import {RouterFactory} from 'shared/infrastructure';
+import {validate, requireAdmin, requireAuth} from 'shared/infrastructure/http';
+import {requireSubscription} from 'shared/infrastructure/http';
+import {RouterFactory} from 'shared/infrastructure/http';
 import {initializeDb} from '../db';
 
 export const FormsRouter: RouterFactory = (dbAccess) => {
