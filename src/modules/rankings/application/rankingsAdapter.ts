@@ -1,7 +1,7 @@
-import db from 'infrastructure/db';
 import {httpReqHandler} from 'infrastructure/http/httpReqHandler';
+import {DB} from '../infrastructure/repositories';
 
-export const RankingsAdapter = () => {
+export const RankingsAdapter = (db: DB) => {
   const retrieve = httpReqHandler(async (req) => {
     const jobId = req.params.jobId;
     const {tenantId} = req.user;
