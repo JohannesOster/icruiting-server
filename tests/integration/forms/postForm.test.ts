@@ -5,7 +5,7 @@ import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -16,7 +16,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).id;
 });
 
 afterAll(async () => {

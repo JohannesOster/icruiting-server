@@ -7,7 +7,7 @@ import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -79,7 +79,9 @@ describe('tenants', () => {
     });
 
     it('uses tenantId of jwt not parameter', async () => {
-      const {tenantId} = await dataGenerator.insertTenant(faker.random.uuid());
+      const {id: tenantId} = await dataGenerator.insertTenant(
+        faker.random.uuid(),
+      );
 
       await request(app)
         .del(`/tenants/${tenantId}`)

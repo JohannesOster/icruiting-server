@@ -3,10 +3,11 @@ import app from 'infrastructure/http';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {FormSubmission} from 'domain/entities';
+import {FormSubmission} from 'modules/formSubmissions/domain';
+import {formSubmissionsMapper} from 'modules/formSubmissions/mappers';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -17,7 +18,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).id;
 });
 
 afterAll(async () => {
@@ -40,39 +41,37 @@ describe('form-submissions', () => {
         jobId,
         'application',
       );
-      const formFieldIds = applForm.formFields.map(
-        ({formFieldId}) => formFieldId!,
-      );
+      const formFieldIds = applForm.formFields.map(({id}) => id);
 
-      const {applicantId} = await dataGenerator.insertApplicant(
+      const {applicantId} = (await dataGenerator.insertApplicant(
         tenantId,
         jobId,
         formFieldIds,
-      );
+      )) as any;
 
       formSubmission = await dataGenerator.insertFormSubmission(
         tenantId,
         applicantId,
         userId,
-        screeningForm.formId,
-        screeningForm.formFields.map(({formFieldId}) => formFieldId),
+        screeningForm.id,
+        screeningForm.formFields.map(({id}) => id),
       );
     });
 
     it('returns 201 json response', async (done) => {
       request(app)
-        .put(`/form-submissions/${formSubmission.formSubmissionId}`)
+        .put(`/form-submissions/${formSubmission.id}`)
         .set('Accept', 'application/json')
-        .send({...formSubmission})
+        .send(formSubmissionsMapper.toDTO(mockUser.tenantId, formSubmission))
         .expect('Content-Type', /json/)
         .expect(200, done);
     });
 
     it('returns updated entity', async () => {
       const resp = await request(app)
-        .put(`/form-submissions/${formSubmission.formSubmissionId}`)
+        .put(`/form-submissions/${formSubmission.id}`)
         .set('Accept', 'application/json')
-        .send({...formSubmission})
+        .send(formSubmissionsMapper.toDTO(mockUser.tenantId, formSubmission))
         .expect(200);
 
       // make shure non passed properties stay unchanged

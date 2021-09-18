@@ -1,16 +1,28 @@
-import db from 'infrastructure/db';
+import db, {pgp} from 'infrastructure/db';
 import fake from './fake';
 import {random} from 'faker';
-import {Form, FormCategory} from 'domain/entities';
+import {JobsRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
+import {FormsRepository} from 'modules/forms/infrastructure/db/repositories';
+import {FormSubmissionsRepository} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions';
+import {TenantsRepository} from 'modules/tenants/infrastructure/repositories/tenantsRepository';
+import {ApplicantsRepository} from 'modules/applicants/infrastructure/repositories/applicantsRepository';
+import {FormCategory} from 'modules/forms/domain';
+import {Form} from 'modules/forms/infrastructure/db/repositories/forms';
+
+const tenantsRepo = TenantsRepository({db, pgp});
+const jobsRepo = JobsRepository({db, pgp});
+const formsRepo = FormsRepository({db, pgp});
+const formSubmissionsRepo = FormSubmissionsRepository({db, pgp});
+const applicantsRepo = ApplicantsRepository({db, pgp});
 
 const dataGenerator = {
   insertTenant: (tenantId: string = random.uuid()) => {
     const tenant = fake.tenant(tenantId);
-    return db.tenants.create(tenant);
+    return tenantsRepo.create(tenant);
   },
   insertJob: (tenantId: string) => {
     const job = fake.job(tenantId);
-    return db.jobs.create(job);
+    return jobsRepo.create(job);
   },
   insertForm: (
     tenantId: string,
@@ -38,7 +50,7 @@ const dataGenerator = {
       }
     }
 
-    return db.forms.create(form);
+    return formsRepo.create(form);
   },
   insertApplicant: (
     tenantId: string,
@@ -46,7 +58,7 @@ const dataGenerator = {
     formFieldIds: string[],
   ) => {
     const applicant = fake.applicant(tenantId, jobId, formFieldIds);
-    return db.applicants.create(applicant);
+    return applicantsRepo.create(applicant);
   },
   insertFormSubmission: (
     tenantId: string,
@@ -62,7 +74,7 @@ const dataGenerator = {
       formId,
       formFieldIds,
     );
-    return db.formSubmissions.create(formSubmission);
+    return formSubmissionsRepo.create(formSubmission);
   },
 };
 

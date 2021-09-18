@@ -1,13 +1,13 @@
-import {random} from 'faker';
 import request from 'supertest';
 import app from 'infrastructure/http';
 import fake from '../../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../../testUtils/dataGenerator';
-import {Form, Job, JobRequirement} from 'domain/entities';
+import {Form} from 'modules/forms/domain';
+import {Job} from 'modules/jobs/domain';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -30,17 +30,17 @@ describe('jobs', () => {
   beforeAll(async () => {
     job = await dataGenerator.insertJob(mockUser.tenantId);
     forms = await Promise.all([
-      dataGenerator.insertForm(mockUser.tenantId, job.jobId, 'application'),
-      dataGenerator.insertForm(mockUser.tenantId, job.jobId, 'screening'),
-      dataGenerator.insertForm(mockUser.tenantId, job.jobId, 'assessment'),
-      dataGenerator.insertForm(mockUser.tenantId, job.jobId, 'onboarding'),
+      dataGenerator.insertForm(mockUser.tenantId, job.id, 'application'),
+      dataGenerator.insertForm(mockUser.tenantId, job.id, 'screening'),
+      dataGenerator.insertForm(mockUser.tenantId, job.id, 'assessment'),
+      dataGenerator.insertForm(mockUser.tenantId, job.id, 'onboarding'),
     ]);
   });
 
   describe('GET /jobs/:jobId/export', () => {
     it('Returns 200 json response', async (done) => {
       request(app)
-        .get(`/jobs/${job.jobId}/export`)
+        .get(`/jobs/${job.id}/export`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -48,7 +48,7 @@ describe('jobs', () => {
 
     it('Drops tenantId of job', async () => {
       const {body} = await request(app)
-        .get(`/jobs/${job.jobId}/export`)
+        .get(`/jobs/${job.id}/export`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200);
@@ -59,7 +59,7 @@ describe('jobs', () => {
 
     it('Returns all forms', async () => {
       const {body} = await request(app)
-        .get(`/jobs/${job.jobId}/export`)
+        .get(`/jobs/${job.id}/export`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200);
@@ -69,15 +69,15 @@ describe('jobs', () => {
 
     it('Removes tenantId, formFieldId, jobId', async () => {
       const {body} = await request(app)
-        .get(`/jobs/${job.jobId}/export`)
+        .get(`/jobs/${job.id}/export`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200);
 
-      body.forms.forEach((form: Form) => {
-        expect(form.jobId).toBeUndefined();
+      body.forms.forEach((form: any) => {
+        expect(form.id).toBeUndefined();
         expect(form.tenantId).toBeUndefined();
-        form.formFields.forEach((formField) => {
+        form.formFields.forEach((formField: any) => {
           expect(formField.formFieldId).toBeUndefined();
         });
       });

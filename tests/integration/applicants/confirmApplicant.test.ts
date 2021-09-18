@@ -4,11 +4,12 @@ import app from 'infrastructure/http';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
-import db from 'infrastructure/db';
-import {Applicant, Form} from 'domain/entities';
+import db, {pgp} from 'infrastructure/db';
+import {Form} from 'modules/forms/domain';
+import {ApplicantsRepository} from 'modules/applicants/infrastructure/repositories/applicantsRepository';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -26,13 +27,15 @@ afterAll(async () => {
   endConnection();
 });
 
+const applicantsRepo = ApplicantsRepository({db, pgp});
+
 describe('applicants', () => {
   describe('PUT /applicants/:applicantId', () => {
-    let applicant: Applicant;
+    let applicant: any; // as long as mapper not implemented
     let form: Form;
     beforeAll(async () => {
       const {tenantId} = mockUser;
-      const {jobId} = await dataGenerator.insertJob(tenantId);
+      const {id: jobId} = await dataGenerator.insertJob(tenantId);
       form = await dataGenerator.insertForm(tenantId, jobId, 'application');
 
       const _applicant = {
@@ -40,13 +43,13 @@ describe('applicants', () => {
         tenantId: mockUser.tenantId,
         attributes: [
           {
-            formFieldId: form.formFields[0].formFieldId,
+            formFieldId: form.formFields[0].id,
             attributeValue: random.word(),
           },
         ],
       };
 
-      applicant = await db.applicants.create(_applicant);
+      applicant = await applicantsRepo.create(_applicant);
     });
 
     beforeEach(async () => {

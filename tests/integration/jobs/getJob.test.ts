@@ -4,10 +4,10 @@ import app from 'infrastructure/http';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Job} from 'domain/entities';
+import {Job} from 'modules/jobs/domain';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -33,7 +33,7 @@ describe('jobs', () => {
   describe('GET /jobs/:jobId', () => {
     it('Returns 200 json response', async (done) => {
       request(app)
-        .get(`/jobs/${job.jobId}`)
+        .get(`/jobs/${job.id}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -41,10 +41,10 @@ describe('jobs', () => {
 
     it('returns single job if exists', async () => {
       const resp = await request(app)
-        .get(`/jobs/${job.jobId}`)
+        .get(`/jobs/${job.id}`)
         .set('Accept', 'application/json')
         .expect(200);
-      expect(resp.body.jobId).toEqual(job.jobId);
+      expect(resp.body.jobId).toEqual(job.id);
     });
 
     it('returns 404 if job does not exist', (done) => {
@@ -55,8 +55,8 @@ describe('jobs', () => {
     });
 
     it('isolates tenant', async () => {
-      const {tenantId} = await dataGenerator.insertTenant();
-      const {jobId} = await dataGenerator.insertJob(tenantId);
+      const {id: tenantId} = await dataGenerator.insertTenant();
+      const {id: jobId} = await dataGenerator.insertJob(tenantId);
 
       await request(app)
         .get(`/jobs/${jobId}`)

@@ -1,5 +1,5 @@
-import {calcReport} from 'application/applicants/calcReport';
-import {Report} from 'application/applicants/calcReport/report';
+import {calcReport} from 'modules/applicants/application/calcReport';
+import {Report} from 'modules/applicants/application/calcReport/report';
 
 describe('calcReport', () => {
   const options = ['0', '1', '2', '3', '4'].map((s) => ({

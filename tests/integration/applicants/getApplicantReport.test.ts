@@ -3,10 +3,9 @@ import app from 'infrastructure/http';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Applicant} from 'domain/entities';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -17,7 +16,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).id;
 });
 
 afterAll(async () => {
@@ -28,7 +27,7 @@ afterAll(async () => {
 
 describe('applicants', () => {
   describe('GET applicants/:applicantId/report', () => {
-    let applicant: Applicant;
+    let applicant: any;
     beforeEach(async () => {
       const form = await dataGenerator.insertForm(
         mockUser.tenantId,
@@ -39,7 +38,7 @@ describe('applicants', () => {
       applicant = await dataGenerator.insertApplicant(
         mockUser.tenantId,
         jobId,
-        form.formFields.map(({formFieldId}) => formFieldId),
+        form.formFields.map(({id}) => id),
       );
 
       const screeningForm = await dataGenerator.insertForm(
@@ -52,8 +51,8 @@ describe('applicants', () => {
         mockUser.tenantId,
         applicant.applicantId!,
         mockUser.userId,
-        screeningForm.formId,
-        screeningForm.formFields.map(({formFieldId}) => formFieldId),
+        screeningForm.id,
+        screeningForm.formFields.map(({id}) => id),
       );
     });
 

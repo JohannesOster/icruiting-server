@@ -4,10 +4,12 @@ import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
 import {random} from 'faker';
-import {Form} from 'domain/entities';
+import {Form} from 'modules/forms/domain';
+import {formsMapper} from 'modules/forms/mappers';
+import {formFieldsMapper} from 'modules/forms/mappers/formFieldsMapper';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -18,7 +20,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).id;
 });
 
 afterAll(async () => {
@@ -27,7 +29,7 @@ afterAll(async () => {
 });
 
 describe('forms', () => {
-  describe('GET /forms', () => {
+  describe('GET /forms/:formId', () => {
     let form: Form;
     beforeAll(async () => {
       const {tenantId} = mockUser;
@@ -35,7 +37,7 @@ describe('forms', () => {
     });
     it('returns 200 json response', (done) => {
       request(app)
-        .get(`/forms/${form.formId}`)
+        .get(`/forms/${form.id}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200, done);
@@ -43,11 +45,11 @@ describe('forms', () => {
 
     it('returns single form if exists', async () => {
       const resp = await request(app)
-        .get(`/forms/${form.formId}`)
+        .get(`/forms/${form.id}`)
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(resp.body).toStrictEqual(form);
+      expect(resp.body).toStrictEqual(formsMapper.toDTO(form));
     });
 
     it('returns 404 if form does not exist', async () => {
@@ -58,7 +60,7 @@ describe('forms', () => {
     });
 
     it('isolates tenant', async () => {
-      const {tenantId} = await dataGenerator.insertTenant(random.uuid());
+      const {id: tenantId} = await dataGenerator.insertTenant(random.uuid());
       const form = await dataGenerator.insertForm(
         tenantId,
         jobId,
@@ -66,7 +68,7 @@ describe('forms', () => {
       );
 
       await request(app)
-        .get(`/forms/${form.formId}`)
+        .get(`/forms/${form.id}`)
         .set('Accept', 'application/json')
         .expect(404);
     });
@@ -82,16 +84,18 @@ describe('forms', () => {
         mockUser.tenantId,
         jobId,
         'onboarding',
-        {replicaOf: primary.formId},
+        {replicaOf: primary.id},
       );
 
       const resp = await request(app)
-        .get(`/forms/${replica.formId}`)
+        .get(`/forms/${replica.id}`)
         .set('Accept', 'application/json')
         .expect(200);
 
       expect(resp.body.formFields.sort()).toStrictEqual(
-        primary.formFields.sort(),
+        primary.formFields
+          .sort()
+          .map((field) => formFieldsMapper.toDTO({formId: replica.id}, field)),
       );
     });
   });

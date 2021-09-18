@@ -3,7 +3,7 @@ import {
   CognitoUserPool,
   ISignUpResult,
 } from 'amazon-cognito-identity-js';
-import {BaseError} from 'application/errorHandling';
+import {BaseError} from 'application';
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
 import CognitoExpress from 'cognito-express';
 import {mapCognitoUser, removePrefix} from './utils';

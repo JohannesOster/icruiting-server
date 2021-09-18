@@ -1,4 +1,4 @@
-import * as calc from '../../../../src/application/applicants/calcReport/calculator';
+import * as calc from '../../../../src/modules/applicants/application/calcReport/calculator';
 
 describe('Calculator', () => {
   describe('score', () => {
