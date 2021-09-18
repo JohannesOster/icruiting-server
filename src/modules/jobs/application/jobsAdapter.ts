@@ -168,34 +168,69 @@ export const JobsAdapter = (db: DB) => {
     return JSON.parse(data.toString());
   };
 
-  const _insertJSONJob = (tenantId: string, params: DBJob) => {
-    const {jobRequirements, ..._job} = params;
+  const _insertJSONJob = async (tenantId: string, params: DBJob) => {
+    const {jobRequirements: _jobRequirements, ..._job} = params;
 
-    const job = createJob({
-      ..._job,
-      jobRequirements: jobRequirements.map((req) => createJobRequirement(req)),
+    const idMap: {[key: string]: string} = {}; // map old Ids to new ones
+
+    const jobRequirements = _jobRequirements.map((req) => {
+      const jobRequirement = createJobRequirement(req);
+      idMap[req.jobRequirementId] = jobRequirement.id;
+      return jobRequirement;
     });
 
-    return db.jobs.create(jobsMapper.toPersistance(tenantId, job));
+    const job = createJob({..._job, jobRequirements});
+
+    const dbJob = await db.jobs.create(jobsMapper.toPersistance(tenantId, job));
+
+    return [dbJob, idMap] as const;
   };
 
-  const _insertForms = (tenantId: string, jobId: string, forms: DBForm[]) => {
-    return Promise.all(
-      forms.map(({formFields: _formFields, ...form}) => {
-        const formFields = _formFields.map(
-          ({formFieldId, ...field}) =>
-            formFieldsMapper.toDomain({
-              formFieldId: createId(),
-              ...field,
-            }), // override id to prohibit db errors
-        );
+  const _insertForms = async (
+    tenantId: string,
+    jobId: string,
+    forms: DBForm[],
+    jobRequirementsIdMap: {[key: string]: string},
+    formsIdMap: {[key: string]: string},
+  ) => {
+    return [
+      await Promise.all(
+        forms.map(({formFields: _formFields, ...form}) => {
+          const formFields = _formFields.map(
+            ({formFieldId, jobRequirementId = '', ...field}) => {
+              const jobReqId = jobRequirementsIdMap[jobRequirementId || ''];
 
-        const _form = createForm({...form, formFields, tenantId, jobId});
-        const params = formsMapper.toPersistance(_form);
+              const params = {
+                formFieldId: createId(), // override id to prohibit db errors
+                ...(jobReqId ? {jobRequirementId: jobReqId} : {}),
+                ...field,
+              };
 
-        return db.forms.create(params);
-      }),
-    );
+              return formFieldsMapper.toDomain(params);
+            },
+          );
+
+          const replicaOf = form.replicaOf
+            ? {replicaOf: formsIdMap[form.replicaOf || '']}
+            : {};
+
+          const _form = createForm({
+            ...form,
+            ...replicaOf,
+            formFields,
+            tenantId,
+            jobId,
+          });
+
+          formsIdMap[form.formId] = _form.id;
+
+          const params = formsMapper.toPersistance(_form);
+
+          return db.forms.create(params);
+        }),
+      ),
+      formsIdMap,
+    ] as const;
   };
 
   const importJob = httpReqHandler(async (req) => {
@@ -209,7 +244,10 @@ export const JobsAdapter = (db: DB) => {
           const json = await _readJSONFile(file);
           const {forms: jsonForms, ...jsonJob} = json;
 
-          const job = await _insertJSONJob(tenantId, json);
+          const [job, jobRequirementsIdMap] = await _insertJSONJob(
+            tenantId,
+            jsonJob,
+          );
 
           // split forms into replicas and primaries
           type FormsMap = {primaries: DBForm[]; replicas: DBForm[]};
@@ -223,15 +261,19 @@ export const JobsAdapter = (db: DB) => {
           );
 
           // insert forms
-          let primaries = await _insertForms(
+          let [primaries, formsIdMap] = await _insertForms(
             tenantId,
             job.id,
             formsMap.primaries,
+            jobRequirementsIdMap,
+            {},
           );
-          let replicas = await _insertForms(
+          let [replicas, _formsIdMap] = await _insertForms(
             tenantId,
             job.id,
             formsMap.replicas,
+            jobRequirementsIdMap,
+            formsIdMap,
           );
 
           const forms = primaries.concat(replicas);
