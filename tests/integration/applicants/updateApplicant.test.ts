@@ -4,11 +4,12 @@ import app from 'infrastructure/http';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
-import db from 'infrastructure/db';
-import {Applicant, Form} from 'domain/entities';
+import db, {pgp} from 'infrastructure/db';
+import {Form} from 'modules/forms/domain';
+import {ApplicantsRepository} from 'modules/applicants/infrastructure/repositories/applicantsRepository';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -32,13 +33,15 @@ afterAll(async () => {
   endConnection();
 });
 
+const applicantsRepo = ApplicantsRepository({db, pgp});
+
 describe('applicants', () => {
   describe('PUT /applicants/:applicantId', () => {
-    let applicant: Applicant;
+    let applicant: any;
     let form: Form;
     beforeAll(async () => {
       const {tenantId} = mockUser;
-      const {jobId} = await dataGenerator.insertJob(tenantId);
+      const {id: jobId} = await dataGenerator.insertJob(tenantId);
       form = await dataGenerator.insertForm(tenantId, jobId, 'application');
 
       const _applicant = {
@@ -46,22 +49,22 @@ describe('applicants', () => {
         tenantId: mockUser.tenantId,
         attributes: [
           {
-            formFieldId: form.formFields[0].formFieldId,
+            formFieldId: form.formFields[0].id,
             attributeValue: random.word(),
           },
         ],
       };
 
-      applicant = await db.applicants.create(_applicant);
+      applicant = await applicantsRepo.create(_applicant);
     });
 
     it('returns json 200 response', (done) => {
       request(app)
         .put(`/applicants/${applicant.applicantId}`)
         .set('Accept', 'application/json')
-        .field('formId', form.formId)
-        .field(form.formFields[0].formFieldId, random.words())
-        .field(form.formFields[1].formFieldId, random.words())
+        .field('formId', form.id)
+        .field(form.formFields[0].id, random.words())
+        .field(form.formFields[1].id, random.words())
         .expect('Content-Type', /json/)
         .expect(200, done);
     });

@@ -7,7 +7,7 @@ import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -18,7 +18,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).id;
 });
 
 afterAll(async () => {
@@ -41,26 +41,22 @@ describe('form-submissions', () => {
         jobId,
         'application',
       );
-      const formFieldIds = applForm.formFields.map(
-        ({formFieldId}) => formFieldId!,
-      );
+      const formFieldIds = applForm.formFields.map(({id}) => id);
 
-      const {applicantId} = await dataGenerator.insertApplicant(
+      const {applicantId} = (await dataGenerator.insertApplicant(
         tenantId,
         jobId,
         formFieldIds,
-      );
+      )) as any;
 
       formSubmission = {
         tenantId,
         applicantId,
         submitterId: userId,
-        formId: screeningForm.formId!,
+        formId: screeningForm.id,
         submission: screeningForm.formFields.reduce(
           (acc: {[formFieldId: string]: string}, item) => {
-            acc[item.formFieldId!] = faker.random
-              .number({min: 0, max: 5})
-              .toString();
+            acc[item.id] = faker.random.number({min: 0, max: 5}).toString();
             return acc;
           },
           {},
@@ -85,6 +81,7 @@ describe('form-submissions', () => {
         .set('Accept', 'application/json')
         .send(formSubmission);
 
+      expect(resp.body.formSubmissionId).toBeDefined();
       expect(resp.body.formId).toBe(formSubmission.formId);
       expect(resp.body.applicantId).toBe(formSubmission.applicantId);
       expect(resp.body.submitterId).toBe(formSubmission.submitterId);

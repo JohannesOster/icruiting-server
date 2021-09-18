@@ -3,10 +3,11 @@ import app from 'infrastructure/http';
 import fake from '../testUtils/fake';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {FormSubmission} from 'domain/entities';
+import {FormSubmission} from 'modules/formSubmissions/domain';
+import {formSubmissionsMapper} from 'modules/formSubmissions/mappers';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -17,7 +18,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).id;
 });
 
 afterAll(async () => {
@@ -40,22 +41,20 @@ describe('form-submissions', () => {
         jobId,
         'application',
       );
-      const formFieldIds = applForm.formFields.map(
-        ({formFieldId}) => formFieldId!,
-      );
+      const formFieldIds = applForm.formFields.map(({id}) => id);
 
-      const {applicantId} = await dataGenerator.insertApplicant(
+      const {applicantId} = (await dataGenerator.insertApplicant(
         tenantId,
         jobId,
         formFieldIds,
-      );
+      )) as any;
 
       formSubmission = await dataGenerator.insertFormSubmission(
         tenantId,
         applicantId,
         userId,
-        screeningForm.formId,
-        screeningForm.formFields.map(({formFieldId}) => formFieldId),
+        screeningForm.id,
+        screeningForm.formFields.map(({id}) => id),
       );
     });
 
@@ -78,7 +77,9 @@ describe('form-submissions', () => {
         .expect('Content-Type', /json/)
         .expect(200);
 
-      expect(resp.body).toStrictEqual(formSubmission);
+      expect(resp.body).toStrictEqual(
+        formSubmissionsMapper.toDTO(mockUser.tenantId, formSubmission),
+      );
     });
   });
 });
