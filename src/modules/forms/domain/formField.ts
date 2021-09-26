@@ -41,6 +41,8 @@ interface BaseFormField {
   jobRequirementId?: string;
   /** Indicates who is able to see (and therefor submit) this value */
   visibility: FormFieldVisibility;
+  /** Additional properties */
+  props: {[key: string]: any};
 }
 
 export interface FormField extends BaseFormField, Entity {}
@@ -63,6 +65,7 @@ export const createFormField: EntityFactory<BaseFormField, FormField> = (
     deletable,
     jobRequirementId,
     visibility,
+    props: _props,
   }: BaseFormField = props;
 
   return createEntity(
@@ -80,6 +83,7 @@ export const createFormField: EntityFactory<BaseFormField, FormField> = (
       deletable,
       jobRequirementId,
       visibility,
+      props: _props,
     },
     id,
   );
