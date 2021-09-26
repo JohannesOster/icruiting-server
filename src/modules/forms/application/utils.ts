@@ -4,7 +4,7 @@ import paymentService from 'infrastructure/paymentService';
 
 // TODO: should not access common db
 export const validateSubscription = async (tenantId: string) => {
-  const tenant = await db.one(
+  const tenant = await db.oneOrNone(
     'SELECT * FROM tenant WHERE tenant_id=$1',
     tenantId,
   ); // TODO: find better solution

@@ -27,7 +27,7 @@ export const ApplicantsRepository = ({db, pgp}: DBAccess) => {
       const {tenantId, jobId, applicantId, attributes} = applicant;
       const applVals = decamelizeKeys({tenantId, jobId, applicantId});
       const applStmt = insert(applVals, null, 'applicant');
-      await db.one(applStmt);
+      await db.none(applStmt);
 
       const columns = ['applicant_id', 'form_field_id', 'attribute_value'];
       const options = {table: 'applicant_attribute'};

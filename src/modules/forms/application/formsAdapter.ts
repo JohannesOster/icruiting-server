@@ -7,6 +7,7 @@ import storageService from 'infrastructure/storageService';
 import {createForm} from 'modules/forms/domain/form';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {formsMapper} from '../mappers';
+import {formFieldsMapper} from '../mappers/formFieldsMapper';
 
 export const FormsAdapter = (db: DB) => {
   const create = httpReqHandler(async (req) => {
@@ -90,7 +91,13 @@ export const FormsAdapter = (db: DB) => {
     }
 
     const submitAction = config.baseURL + req.originalUrl;
-    const params = {formId, submitAction, formFields: form.formFields};
+    const params = {
+      formId,
+      submitAction,
+      formFields: form.formFields.map((field) =>
+        formFieldsMapper.toDTO({formId}, field),
+      ),
+    };
     const tenant = await db.tenants.retrieve(form.tenantId);
     if (!tenant?.theme) return {view: 'form', body: params};
 
