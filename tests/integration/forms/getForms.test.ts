@@ -4,9 +4,10 @@ import db from 'infrastructure/db';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import fake from '../testUtils/fake';
 import dataGenerator from '../testUtils/dataGenerator';
+import {formFieldsMapper} from 'modules/forms/mappers/formFieldsMapper';
 
 const mockUser = fake.user();
-jest.mock('infrastructure/http/middlewares/auth', () => ({
+jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   requireAdmin: jest.fn((req, res, next) => next()),
   requireAuth: jest.fn((req, res, next) => {
     req.user = mockUser;
@@ -17,7 +18,7 @@ jest.mock('infrastructure/http/middlewares/auth', () => ({
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
-  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).jobId;
+  jobId = (await dataGenerator.insertJob(mockUser.tenantId)).id;
 });
 
 afterAll(async () => {
@@ -67,7 +68,7 @@ describe('forms', () => {
         mockUser.tenantId,
         jobId,
         'onboarding',
-        {replicaOf: primary.formId},
+        {replicaOf: primary.id},
       );
 
       const resp = await request(app)
@@ -77,12 +78,16 @@ describe('forms', () => {
 
       expect(Array.isArray(resp.body)).toBeTruthy();
       expect(resp.body.length).toBe(2);
-      expect(resp.body[0].formFields.sort()).toStrictEqual(
-        primary.formFields.sort(),
-      );
-      expect(resp.body[1].formFields.sort()).toStrictEqual(
-        primary.formFields.sort(),
-      );
+
+      resp.body.forEach((form: any) => {
+        const formId = form.formId === primary.id ? primary.id : replica.id;
+
+        expect(form.formFields.sort()).toStrictEqual(
+          primary.formFields
+            .sort()
+            .map((field) => formFieldsMapper.toDTO({formId}, field)),
+        );
+      });
     });
   });
 });

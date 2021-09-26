@@ -1,10 +1,12 @@
-import {
-  createForm,
-  createFormSubmission,
-  createJob,
-  createTenant,
-} from 'domain/entities';
 import faker from 'faker';
+import {createForm, createFormField} from 'modules/forms/domain';
+import {formsMapper} from 'modules/forms/mappers';
+import {createFormSubmission} from 'modules/formSubmissions/domain';
+import {formSubmissionsMapper} from 'modules/formSubmissions/mappers';
+import {createJob, createJobRequirement} from 'modules/jobs/domain';
+import jobsMapper from 'modules/jobs/mappers/jobsMapper';
+import {createTenant} from 'modules/tenants/domain';
+import {tenantsMapper} from 'modules/tenants/mappers';
 
 const fake = {
   user: (userRole: 'admin' | 'member' = 'admin') => ({
@@ -13,21 +15,27 @@ const fake = {
     email: faker.internet.email(),
     userRole,
   }),
-  tenant: (tenantId?: string) =>
-    createTenant({
+  tenant: (tenantId?: string) => {
+    const tenant = createTenant(
+      {tenantName: faker.company.companyName()},
       tenantId,
-      tenantName: faker.company.companyName(),
-    }),
-  job: (tenantId: string) =>
-    createJob({
-      tenantId,
+    );
+    return tenantsMapper.toPersistance(tenant);
+  },
+  job: (tenantId: string) => {
+    const job = createJob({
       jobTitle: faker.company.companyName(),
       jobRequirements: [
-        {requirementLabel: faker.commerce.productName(), minValue: 3},
-        {requirementLabel: faker.commerce.productName()},
-        {requirementLabel: faker.commerce.productName()},
+        createJobRequirement({
+          requirementLabel: faker.commerce.productName(),
+          minValue: 3,
+        }),
+        createJobRequirement({requirementLabel: faker.commerce.productName()}),
+        createJobRequirement({requirementLabel: faker.commerce.productName()}),
       ],
-    }),
+    });
+    return jobsMapper.toDTO(tenantId, job);
+  },
   applicant: (
     tenantId: string,
     jobId: string,
@@ -40,13 +48,13 @@ const fake = {
       attributeValue: faker.random.words(),
     })),
   }),
-  applicationForm: (tenantId: string, jobId: string) =>
-    createForm({
+  applicationForm: (tenantId: string, jobId: string) => {
+    const form = createForm({
       tenantId,
       jobId,
       formCategory: 'application',
       formFields: [
-        {
+        createFormField({
           component: 'input',
           label: 'E-Mail-Adresse',
           placeholder: faker.random.word(),
@@ -54,8 +62,8 @@ const fake = {
           required: true,
           description: faker.random.words(),
           visibility: 'all',
-        },
-        {
+        }),
+        createFormField({
           component: 'input',
           label: 'Vollständiger Name',
           placeholder: faker.random.word(),
@@ -63,22 +71,34 @@ const fake = {
           required: true,
           description: faker.random.words(),
           visibility: 'all',
-        },
-        {
+        }),
+        createFormField({
           component: 'checkbox',
           rowIndex: 2,
           label: faker.random.word(),
           description: faker.random.words(),
           options: [
-            {label: faker.random.word(), value: faker.random.alphaNumeric()},
-            {label: faker.random.word(), value: faker.random.alphaNumeric()},
-            {label: faker.random.word(), value: faker.random.alphaNumeric()},
+            {
+              id: faker.random.uuid(),
+              label: faker.random.word(),
+              value: faker.random.alphaNumeric(),
+            },
+            {
+              id: faker.random.uuid(),
+              label: faker.random.word(),
+              value: faker.random.alphaNumeric(),
+            },
+            {
+              id: faker.random.uuid(),
+              label: faker.random.word(),
+              value: faker.random.alphaNumeric(),
+            },
           ],
           editable: true,
           deletable: true,
           visibility: 'all',
-        },
-        {
+        }),
+        createFormField({
           component: 'file_upload',
           label: faker.random.word(),
           rowIndex: 3,
@@ -86,16 +106,19 @@ const fake = {
           editable: true,
           deletable: true,
           visibility: 'all',
-        },
+        }),
       ],
-    }),
-  screeningForm: (tenantId: string, jobId: string) =>
-    createForm({
+    });
+
+    return formsMapper.toDTO(form);
+  },
+  screeningForm: (tenantId: string, jobId: string) => {
+    const form = createForm({
       tenantId,
       jobId,
       formCategory: 'screening',
       formFields: [
-        {
+        createFormField({
           component: 'rating_group',
           label: faker.random.word(),
           placeholder: faker.random.word(),
@@ -104,17 +127,17 @@ const fake = {
           rowIndex: 0,
           defaultValue: '1',
           options: [
-            {label: '1', value: '1'},
-            {label: '2', value: '2'},
-            {label: '3', value: '3'},
-            {label: '4', value: '4'},
-            {label: '5', value: '5'},
+            {id: faker.random.uuid(), label: '1', value: '1'},
+            {id: faker.random.uuid(), label: '2', value: '2'},
+            {id: faker.random.uuid(), label: '3', value: '3'},
+            {id: faker.random.uuid(), label: '4', value: '4'},
+            {id: faker.random.uuid(), label: '5', value: '5'},
           ],
           editable: true,
           deletable: true,
           visibility: 'all',
-        },
-        {
+        }),
+        createFormField({
           component: 'rating_group',
           label: faker.random.word(),
           placeholder: faker.random.word(),
@@ -123,26 +146,28 @@ const fake = {
           rowIndex: 1,
           defaultValue: '1',
           options: [
-            {label: '1', value: '1'},
-            {label: '2', value: '2'},
-            {label: '3', value: '3'},
-            {label: '4', value: '4'},
-            {label: '5', value: '5'},
+            {id: faker.random.uuid(), label: '1', value: '1'},
+            {id: faker.random.uuid(), label: '2', value: '2'},
+            {id: faker.random.uuid(), label: '3', value: '3'},
+            {id: faker.random.uuid(), label: '4', value: '4'},
+            {id: faker.random.uuid(), label: '5', value: '5'},
           ],
           editable: true,
           deletable: true,
           visibility: 'all',
-        },
+        }),
       ],
-    }),
-  assessmentForm: (tenantId: string, jobId: string) =>
-    createForm({
+    });
+    return formsMapper.toDTO(form);
+  },
+  assessmentForm: (tenantId: string, jobId: string) => {
+    const form = createForm({
       tenantId,
       jobId,
       formCategory: 'assessment',
       formTitle: faker.random.words(),
       formFields: [
-        {
+        createFormField({
           component: 'rating_group',
           label: faker.random.word(),
           placeholder: faker.random.word(),
@@ -150,17 +175,17 @@ const fake = {
           rowIndex: 0,
           defaultValue: '1',
           options: [
-            {label: '1', value: '1'},
-            {label: '2', value: '2'},
-            {label: '3', value: '3'},
-            {label: '4', value: '4'},
-            {label: '5', value: '5'},
+            {id: faker.random.uuid(), label: '1', value: '1'},
+            {id: faker.random.uuid(), label: '2', value: '2'},
+            {id: faker.random.uuid(), label: '3', value: '3'},
+            {id: faker.random.uuid(), label: '4', value: '4'},
+            {id: faker.random.uuid(), label: '5', value: '5'},
           ],
           editable: true,
           deletable: true,
           visibility: 'all',
-        },
-        {
+        }),
+        createFormField({
           component: 'rating_group',
           label: faker.random.word(),
           placeholder: faker.random.word(),
@@ -168,20 +193,22 @@ const fake = {
           rowIndex: 1,
           defaultValue: '1',
           options: [
-            {label: '1', value: '1'},
-            {label: '2', value: '2'},
-            {label: '3', value: '3'},
-            {label: '4', value: '4'},
-            {label: '5', value: '5'},
+            {id: faker.random.uuid(), label: '1', value: '1'},
+            {id: faker.random.uuid(), label: '2', value: '2'},
+            {id: faker.random.uuid(), label: '3', value: '3'},
+            {id: faker.random.uuid(), label: '4', value: '4'},
+            {id: faker.random.uuid(), label: '5', value: '5'},
           ],
           editable: true,
           deletable: true,
           visibility: 'all',
-        },
+        }),
       ],
-    }),
-  onboardingForm: (tenantId: string, jobId: string, replicaOf?: string) =>
-    createForm({
+    });
+    return formsMapper.toDTO(form);
+  },
+  onboardingForm: (tenantId: string, jobId: string, replicaOf?: string) => {
+    const form = createForm({
       tenantId,
       jobId,
       formCategory: 'onboarding',
@@ -191,7 +218,7 @@ const fake = {
         ? {formFields: []}
         : {
             formFields: [
-              {
+              createFormField({
                 component: 'rating_group',
                 label: faker.random.word(),
                 placeholder: faker.random.word(),
@@ -199,17 +226,17 @@ const fake = {
                 rowIndex: 0,
                 defaultValue: '1',
                 options: [
-                  {label: '1', value: '1'},
-                  {label: '2', value: '2'},
-                  {label: '3', value: '3'},
-                  {label: '4', value: '4'},
-                  {label: '5', value: '5'},
+                  {id: faker.random.uuid(), label: '1', value: '1'},
+                  {id: faker.random.uuid(), label: '2', value: '2'},
+                  {id: faker.random.uuid(), label: '3', value: '3'},
+                  {id: faker.random.uuid(), label: '4', value: '4'},
+                  {id: faker.random.uuid(), label: '5', value: '5'},
                 ],
                 editable: true,
                 deletable: true,
                 visibility: 'all',
-              },
-              {
+              }),
+              createFormField({
                 component: 'rating_group',
                 label: faker.random.word(),
                 placeholder: faker.random.word(),
@@ -217,28 +244,29 @@ const fake = {
                 rowIndex: 1,
                 defaultValue: '1',
                 options: [
-                  {label: '1', value: '1'},
-                  {label: '2', value: '2'},
-                  {label: '3', value: '3'},
-                  {label: '4', value: '4'},
-                  {label: '5', value: '5'},
+                  {id: faker.random.uuid(), label: '1', value: '1'},
+                  {id: faker.random.uuid(), label: '2', value: '2'},
+                  {id: faker.random.uuid(), label: '3', value: '3'},
+                  {id: faker.random.uuid(), label: '4', value: '4'},
+                  {id: faker.random.uuid(), label: '5', value: '5'},
                 ],
                 editable: true,
                 deletable: true,
                 visibility: 'all',
-              },
+              }),
             ],
           }),
-    }),
+    });
+    return formsMapper.toDTO(form);
+  },
   formSubmission: (
     tenantId: string,
     applicantId: string,
     submitterId: string,
     formId: string,
     formFieldIds: string[],
-  ) =>
-    createFormSubmission({
-      tenantId,
+  ) => {
+    const formSubmission = createFormSubmission({
       applicantId,
       submitterId,
       formId,
@@ -249,7 +277,10 @@ const fake = {
         },
         {},
       ),
-    }),
+    });
+
+    return formSubmissionsMapper.toDTO(tenantId, formSubmission);
+  },
 };
 
 export default fake;

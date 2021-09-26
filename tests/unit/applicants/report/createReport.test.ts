@@ -1,4 +1,4 @@
-import {createReport} from 'application/applicants/calcReport/report';
+import {createReport} from 'modules/applicants/application/calcReport/report';
 
 describe('CreateReport', () => {
   it('rounds results', () => {

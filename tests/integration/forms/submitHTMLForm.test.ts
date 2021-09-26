@@ -3,8 +3,8 @@ import request from 'supertest';
 import app from 'infrastructure/http';
 import {endConnection, truncateAllTables} from 'infrastructure/db/setup';
 import dataGenerator from '../testUtils/dataGenerator';
-import {Form} from 'domain/entities';
 import Mail from 'nodemailer/lib/mailer';
+import {Form} from 'modules/forms/domain';
 
 jest.mock('infrastructure/mailService/mailService', () => ({
   sendMail: jest.fn((options: Mail.Options) => Promise.resolve({})),
@@ -13,8 +13,8 @@ jest.mock('infrastructure/mailService/mailService', () => ({
 let tenantId: string;
 let jobId: string;
 beforeAll(async () => {
-  tenantId = (await dataGenerator.insertTenant(random.uuid())).tenantId;
-  jobId = (await dataGenerator.insertJob(tenantId)).jobId;
+  tenantId = (await dataGenerator.insertTenant(random.uuid())).id;
+  jobId = (await dataGenerator.insertJob(tenantId)).id;
 });
 
 afterAll(async () => {
@@ -31,7 +31,7 @@ describe('forms', () => {
 
     it('renders html without crashing', (done) => {
       request(app)
-        .post(`/forms/${form.formId}/html`)
+        .post(`/forms/${form.id}/html`)
         .set('Accept', 'text/html')
         .expect('Content-Type', /html/)
         .expect(200, done);
@@ -39,8 +39,8 @@ describe('forms', () => {
 
     it('renders html without crashing', (done) => {
       request(app)
-        .post(`/forms/${form.formId}/html`)
-        .field(form.formFields[0].formFieldId, internet.email())
+        .post(`/forms/${form.id}/html`)
+        .field(form.formFields[0].id, internet.email())
         .set('Accept', 'text/html')
         .expect('Content-Type', /html/)
         .expect(200, done);
