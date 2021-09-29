@@ -57,6 +57,12 @@ export const ApplicantsAdapter = (db: DB) => {
 
     if (!data.totalCount) return {body: {applicants: [], totalCount: 0}};
 
+    if (req.user.userRole !== 'admin') {
+      data.applicants = data.applicants.filter(
+        ({applicantStatus}) => applicantStatus === 'confirmed',
+      );
+    }
+
     // replace S3 filekeys with aws presigned URL
     const promises = data.applicants.map(({files, ...appl}) =>
       getApplicantFileURLs(files).then((files) => ({...appl, files})),
