@@ -10,7 +10,11 @@ export interface EntityFactory<T, E> {
   (props: T, id?: Id): E;
 }
 
-export const createEntity = <E>(props: any, id = createId()): E => {
-  const omitNullAndUndefined = omitBy(props, isNil) as unknown as any;
+export const createEntity = <E>(
+  props: any,
+  id: string | undefined,
+): E & Entity => {
+  if (!id) id = createId();
+  const omitNullAndUndefined = (omitBy(props, isNil) as unknown) as any;
   return Object.freeze({...omitNullAndUndefined, id});
 };

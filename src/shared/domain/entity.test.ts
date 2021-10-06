@@ -20,4 +20,16 @@ describe('createTenant', () => {
       expect(Object.keys(car).length).toBe(2); // color and id
     });
   });
+
+  describe('valid id', () => {
+    it('creates id if undefined is passed', () => {
+      const car = createEntity({});
+      expect(car.id).toBeDefined();
+    });
+
+    it('creates id if empty is passed', () => {
+      const car = createEntity({}, '');
+      expect(car.id).toBeTruthy();
+    });
+  });
 });
