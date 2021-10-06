@@ -69,10 +69,6 @@ describe('jobs', () => {
 
     it('adds new requirement', async () => {
       const updateValues = {...jobsMapper.toDTO(mockUser.tenantId, job)};
-      updateValues.jobTitle = random.alphaNumeric();
-      updateValues.jobRequirements = updateValues.jobRequirements.map(
-        (req) => ({...req, requirementLabel: random.alphaNumeric()}),
-      );
 
       (updateValues.jobRequirements as any[]).push({
         requirementLabel: random.alphaNumeric(),
