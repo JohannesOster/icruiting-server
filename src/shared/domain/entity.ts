@@ -12,7 +12,7 @@ export interface EntityFactory<T, E> {
 
 export const createEntity = <E>(
   props: any,
-  id: string | undefined,
+  id?: string | undefined,
 ): E & Entity => {
   if (!id) id = createId();
   const omitNullAndUndefined = (omitBy(props, isNil) as unknown) as any;
