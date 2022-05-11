@@ -112,6 +112,17 @@ export const FormSubmissionsRepository = ({db, pgp}: DBAccess) => {
     );
   };
 
+  const prepareTEReport = (
+    tenantId: string,
+    formId: FormCategory,
+    jobId: string,
+  ): Promise<ReportPrepareRow[]> => {
+    return db.any(
+      sql.prepareTEReport,
+      decamelizeKeys({tenantId, formId, jobId}),
+    );
+  };
+
   const del = (tenantId: string, formSubmissionId: string): Promise<null> => {
     return db.none(
       'DELETE FROM form_submission WHERE tenant_id=${tenant_id} AND form_submission_id=${form_submission_id}',
@@ -143,5 +154,14 @@ export const FormSubmissionsRepository = ({db, pgp}: DBAccess) => {
       });
   };
 
-  return {create, retrieve, update, del, bulkDel, prepareReport, list};
+  return {
+    create,
+    retrieve,
+    update,
+    del,
+    bulkDel,
+    prepareReport,
+    list,
+    prepareTEReport,
+  };
 };

@@ -10,5 +10,13 @@ export const RankingsAdapter = (db: DB) => {
     return {body: data};
   });
 
-  return {retrieve};
+  const retrieveTE = httpReqHandler(async (req) => {
+    const jobId = req.params.jobId;
+    const {formId} = req.query;
+    const {tenantId} = req.user;
+    const data = await db.rankings.retrieveTE(tenantId, jobId, formId);
+    return {body: data};
+  });
+
+  return {retrieve, retrieveTE};
 };

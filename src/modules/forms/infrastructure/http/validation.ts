@@ -8,6 +8,7 @@ const formRules = [
     'screening',
     'assessment',
     'onboarding',
+    'talentElevator',
   ]),
   body('formTitle').optional({nullable: true}).isString(),
   body('replicaOf').optional({nullable: true}).isString(),

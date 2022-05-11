@@ -11,3 +11,5 @@ export const listRules = [
 export const getReportRules = [
   query('formCategory').isIn(['assessment', 'screening', 'onboarding']),
 ];
+
+export const getTEReportRules = [query('formId').isUUID()];
