@@ -8,5 +8,10 @@ export const RankingsRepository = ({db}: DBAccess) => {
     return db.any(sql.retrieve, decamelizeKeys(params));
   };
 
-  return {retrieve};
+  const retrieveTE = (tenantId: string, jobId: string, formId: string) => {
+    const params = {tenantId, jobId, formId};
+    return db.any(sql.retrieveTE, decamelizeKeys(params));
+  };
+
+  return {retrieve, retrieveTE};
 };

@@ -8,7 +8,7 @@ import {
 } from 'shared/infrastructure/http';
 import {initializeRepositories} from '../repositories';
 import {RankingsAdapter} from 'modules/rankings/application/rankingsAdapter';
-import {retrieveRules} from './validation';
+import {retrieveRules, retrieveTERules} from './validation';
 
 export const RankingsRouter: RouterFactory = (dbAccess) => {
   const db = initializeRepositories(dbAccess);
@@ -20,6 +20,7 @@ export const RankingsRouter: RouterFactory = (dbAccess) => {
   router.use(requireSubscription);
   router.use(requireAdmin);
   router.get('/:jobId', retrieveRules, validate, adapter.retrieve);
+  router.get('/:jobId/te', retrieveTERules, validate, adapter.retrieveTE);
 
   return router;
 };
