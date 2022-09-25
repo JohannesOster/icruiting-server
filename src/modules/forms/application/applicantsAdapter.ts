@@ -1,5 +1,5 @@
 import fs from 'fs';
-import {IncomingForm} from 'formidable';
+import formidable, {IncomingForm} from 'formidable';
 import {v4 as uuid} from 'uuid';
 import {DB} from '../infrastructure/db';
 import {BaseError} from 'application';
@@ -8,6 +8,7 @@ import {sendMail} from 'infrastructure/mailService';
 import storageService from 'infrastructure/storageService';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {validateSubscription} from './utils';
+import {File} from 'modules/applicants/domain';
 
 export const ApplicantsAdapter = (db: DB) => {
   const create = httpReqHandler(async (req) => {
@@ -43,8 +44,11 @@ export const ApplicantsAdapter = (db: DB) => {
           attributes = form.formFields.reduce((acc, item) => {
             // !> filter out non submitted values
             const field = fields[item.id];
-            let file = files[item.id];
+
+            // typefix
+            let file: formidable.File = files[item.id] as any;
             if (Array.isArray(file)) file = file[0];
+
             const fileExists = file && file.size;
             if (!field && !fileExists) {
               if (item.required) {
@@ -85,9 +89,14 @@ export const ApplicantsAdapter = (db: DB) => {
                 contentType: file.type || '',
                 data: fileStream,
               };
-              promises.push(storageService.upload(params));
 
-              fs.unlink(file.path, console.error);
+              const pro = new Promise(async (resolve, reject) => {
+                const res = await storageService.upload(params).catch(reject);
+                fs.unlinkSync(file.path);
+                resolve(res);
+              });
+
+              promises.push(pro);
 
               acc.push({
                 formFieldId: item.id,
@@ -146,7 +155,11 @@ export const ApplicantsAdapter = (db: DB) => {
 
         const templateOptions = {tenantName: tenant.tenantName, fullName};
         const html = templates(Template.EmailConfirmation, templateOptions);
-        const mailOptions = {to: email, subject: 'Bewerbungsbestätigung', html};
+        const mailOptions = {
+          to: email,
+          subject: 'Bewerbungsbestätigung',
+          html,
+        };
         await sendMail(mailOptions).catch(console.error);
 
         resolve({view: 'form-submission'});
