@@ -2,9 +2,18 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-type Environment = 'production' | 'development' | 'test';
+type Environment = 'production' | 'development' | 'test' | 'staging';
 
 const config = {
+  staging: {
+    url: process.env.DATABASE_URL || '',
+    flyway: {
+      url: `jdbc:${process.env.FLYWAY_STAGING_DB_URL}`,
+      user: `'${process.env.FLYWAY_STAGING_DB_USER}'`,
+      password: `'${process.env.FLYWAY_STAGING_DB_PASSWORD}'`,
+      locations: 'filesystem:src/infrastructure/db/migrations',
+    },
+  },
   production: {
     url: process.env.DATABASE_URL || '',
     flyway: {
