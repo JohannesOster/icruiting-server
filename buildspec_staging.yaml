@@ -22,6 +22,5 @@ artifacts:
     - package-lock.json
     - node_modules/**/*
     - .platform/**/*
-    - .elasticbeanstalk/**/*
     - .ebextensions/**/*
   name: $(date +%Y-%m-%d)
