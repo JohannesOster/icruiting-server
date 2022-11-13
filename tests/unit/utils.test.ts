@@ -7,6 +7,7 @@ import {removePrefix} from '../../src/infrastructure/authService/utils';
 describe('utils', () => {
   describe('removePrefix', () => {
     it('removes prefix', () => {
+      expect(1).toBe(2); // failing test to see whether build stops
       const prefix = 'custom:';
       const attributeName = faker.random.word();
 
