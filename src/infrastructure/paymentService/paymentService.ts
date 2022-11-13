@@ -4,7 +4,7 @@ import Stripe from 'stripe';
 export const PaymentService = () => {
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
-  const stripe = new Stripe(stripeKey, {apiVersion: '2020-08-27'});
+  const stripe = new Stripe(stripeKey, {apiVersion: '2022-08-01'});
 
   const customers = {
     create: async (email: string, subscriptionId: string) => {
