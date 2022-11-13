@@ -9,6 +9,8 @@ phases:
       - echo Installing source NPM dependencies...
       - npm install
       - npm run test:unit
+      - echo $NODE_ENV
+      - echo $FLYWAY_STAGING_DB_URL
       - npm run db-migrate
   build:
     commands:
