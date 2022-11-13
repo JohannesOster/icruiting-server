@@ -9,6 +9,7 @@ phases:
       - echo Installing source NPM dependencies...
       - npm install
       - npm run test:unit
+      - npm run db-migrate
   build:
     commands:
       - echo Build started on $(date +%Y-%m-%d)
