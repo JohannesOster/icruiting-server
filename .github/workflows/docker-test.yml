@@ -1,0 +1,14 @@
+name: Docker Test
+
+on:
+  push:
+    branches: ['docker']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Docker Compose
+        run: docker compose --file docker-compose.test.yml up --abort-on-container-exit
