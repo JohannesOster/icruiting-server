@@ -1,24 +1,22 @@
+
 FROM node:19-alpine AS base
 WORKDIR /server
-COPY package.json yarn.lock tsconfig.json ./
-COPY typings/ ./typings
-COPY ./src ./src
-COPY tests ./tests
+COPY . .
 
-FROM node:19-alpine AS test
-WORKDIR /server
-COPY --from=base /server .
-RUN yarn install && yarn run test:unit
+RUN apk add bash openjdk11 &&\
+    yarn install
 
-FROM node:19-alpine AS builder
-COPY --from=base /server .
-RUN yarn build
+FROM base as test
+CMD ["yarn", "test"]
+
+FROM base AS builder
+RUN yarn build && yarn db-migrate
 
 FROM node:19-alpine
 WORKDIR /server
 COPY package.json ./
-RUN yarn install --only=production
 COPY --from=builder /server/dist ./dist
+RUN yarn install --only=production
 
 EXPOSE 80
 

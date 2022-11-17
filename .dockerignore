@@ -1,0 +1,14 @@
+# Ignore everything
+*
+
+# Allow files and directories
+!/src
+!/tests
+!/typings
+!./package.json
+!./yarn.lock
+!./tsconfig.*
+!./node_modules
+
+# Ignore unnecessary files inside allowed directories
+**/.DS_Store

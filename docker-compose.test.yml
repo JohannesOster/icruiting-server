@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  database:
+    image: postgres:14.6-alpine
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_DB: 'postgres'
+    networks:
+      - backend
+    ports:
+      - '5432:5432'
+
+  server:
+    environment:
+      - NODE_ENV=test
+      - STRIPE_SECRET_KEY=''
+      - TEST_DB_URL=postgresql://postgres:postgres@database:5432/postgres
+      - LIQUIBASE_TEST_DB_URL=postgresql://database:5432/postgres
+      - LIQUIBASE_TEST_DB_USERNAME=postgres
+      - LIQUIBASE_TEST_DB_PASSWORD=postgres
+    build:
+      dockerfile: Dockerfile
+      target: test
+    networks:
+      - backend
+    depends_on:
+      - database
+
+networks:
+  backend:
+    driver: bridge
