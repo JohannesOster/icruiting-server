@@ -67,7 +67,23 @@ jobs:
 
       - name: Start docker container
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker run -p 80:80 -d --name=${{ env.CONTAINER }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+          "docker run -p 80:80 -d --name=${{ env.CONTAINER }} \
+          -e NODE_ENV=staging \
+          -e STAGING_DB_URL=${{ secrets.STAGING_DB_URL }} \
+          -e LIQUIBASE_STAGING_DB_URL=${{ secrets.LIQUIBASE_STAGING_DB_URL }} \
+          -e LIQUIBASE_STAGING_DB_USERNAME=${{ secrets.LIQUIBASE_STAGING_DB_USERNAME }} \
+          -e LIQUIBASE_STAGING_DB_PASSWORD=${{ secrets.LIQUIBASE_STAGING_DB_PASSWORD }} \
+          -e STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }} \
+          -e EMAIL_ADRESS=${{ secrets.EMAIL_ADRESS }} \
+          -e EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }} \
+          -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+          -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+          -e AWS_USER_POOL_ID=${{ secrets.AWS_USER_POOL_ID }} \
+          -e AWS_CLIENT_ID=${{ secrets.AWS_CLIENT_ID }} \
+          -e AWS_REGION=${{ secrets.AWS_REGION }} \
+          -e S3_BUCKET=${{ secrets.S3_BUCKET }} \
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
 
       - name: Logout from the GitHub Packages Docker Registry
         run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker logout ${{ env.REGISTRY }}"
