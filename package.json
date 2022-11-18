@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development ts-node-dev -r tsconfig-paths/register --respawn --ignore-watch node_modules ./src/index.ts",
-    "start": "yar db-migrate && NODE_PATH=dist/ node dist/index.js",
+    "start": "yarn db-migrate && NODE_PATH=dist/ node dist/index.js",
     "build": "rimraf ./dist && tsc -p tsconfig.build.json && yarn copy-files",
     "copy-files": "copyfiles -u 1 \"src/**/*/*.sql\" \"src/**/*/*.pug\" \"src/**/*/*.css\" dist/",
     "db-migrate": "ts-node ./src/infrastructure/db/migrate.ts dbMigrate update",
