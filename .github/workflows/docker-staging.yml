@@ -68,7 +68,8 @@ jobs:
       - name: Start docker container
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-          "docker run -p 80:80 -d --name=${{ env.CONTAINER }} \
+          "docker run -p 80:5000 -d --name=${{ env.CONTAINER }} \
+          -e PORT=5000 \
           -e NODE_ENV=staging \
           -e STAGING_DB_URL=${{ secrets.STAGING_DB_URL }} \
           -e LIQUIBASE_STAGING_DB_URL=${{ secrets.LIQUIBASE_STAGING_DB_URL }} \
