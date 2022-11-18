@@ -2,7 +2,7 @@ name: Docker Test, Build, Deploy - Staging
 
 on:
   push:
-    branches: ['docker']
+    branches: ['staging']
   workflow_dispatch:
 
 env:
