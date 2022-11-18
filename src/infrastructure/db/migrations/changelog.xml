@@ -8,5 +8,5 @@
 		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
 		http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
 		http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd">
-    <includeAll  path="/src/infrastructure/db/migrations/sql"/>  
+    <includeAll path="sql" relativeToChangelogFile="true"/>  
 </databaseChangeLog>

@@ -4,7 +4,7 @@ dotenv.config();
 
 type Environment = 'production' | 'development' | 'test' | 'staging';
 
-const dbChangelogFile = '/src/infrastructure/db/migrations/changelog.xml';
+const dbChangelogFileBasePath = '/infrastructure/db/migrations/changelog.xml';
 const config = {
   staging: {
     url: process.env.STAGING_DB_URL || '',
@@ -12,7 +12,7 @@ const config = {
       url: `jdbc:${process.env.LIQUIBASE_STAGING_DB_URL}`,
       username: `${process.env.LIQUIBASE_STAGING_DB_USERNAME}`,
       password: `${process.env.LIQUIBASE_STAGING_DB_PASSWORD}`,
-      changeLogFile: dbChangelogFile,
+      changeLogFile: `dist/${dbChangelogFileBasePath}`,
     },
   },
   production: {
@@ -21,7 +21,7 @@ const config = {
       url: `jdbc:${process.env.LIQUIBASE_PROD_DB_URL}`,
       username: `${process.env.LIQUIBASE_PROD_DB_USER}`,
       password: `${process.env.LIQUIBASE_PROD_DB_PASSWORD}`,
-      changeLogFile: dbChangelogFile,
+      changeLogFile: `dist/${dbChangelogFileBasePath}`,
     },
   },
   development: {
@@ -30,7 +30,7 @@ const config = {
       url: `jdbc:${process.env.LIQUIBASE_DEV_DB_URL}`,
       username: `${process.env.LIQUIBASE_DEV_DB_USERNAME}`,
       password: `${process.env.LIQUIBASE_DEV_DB_PASSWORD}`,
-      changeLogFile: dbChangelogFile,
+      changeLogFile: `src/${dbChangelogFileBasePath}`,
     },
   },
   test: {
@@ -39,7 +39,7 @@ const config = {
       url: `jdbc:${process.env.LIQUIBASE_TEST_DB_URL}`,
       username: `${process.env.LIQUIBASE_TEST_DB_USERNAME}`,
       password: `${process.env.LIQUIBASE_TEST_DB_PASSWORD}`,
-      changeLogFile: dbChangelogFile,
+      changeLogFile: `src/${dbChangelogFileBasePath}`,
     },
   },
 };
