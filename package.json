@@ -7,7 +7,7 @@
     "dev": "NODE_ENV=development ts-node-dev -r tsconfig-paths/register --respawn --ignore-watch node_modules ./src/index.ts",
     "start": "node dist/infrastructure/db/migrate.js dbMigrate update && NODE_PATH=dist/ node dist/index.js",
     "build": "rimraf ./dist && tsc -p tsconfig.build.json && yarn copy-files",
-    "copy-files": "copyfiles -u 1 \"src/**/*/*.sql\" \"src/**/*/*.pug\" \"src/**/*/*.css\" dist/",
+    "copy-files": "copyfiles -u 1 \"src/**/*/*.sql\" \"src/**/*/*.pug\" \"src/**/*/*.css\" \"src/**/*/*.xml\" dist/",
     "db-migrate": "ts-node ./src/infrastructure/db/migrate.ts dbMigrate update",
     "db-drop": "ts-node ./src/infrastructure/db/migrate.ts dbMigrate drop-all",
     "test": "yarn test:unit && yarn test:integration",
