@@ -1,22 +1,22 @@
 
 FROM node:19-alpine AS base
 WORKDIR /server
-COPY . .
-
-RUN apk add bash openjdk11 &&\
-    yarn install
+RUN apk add bash openjdk11
 
 FROM base as test
+COPY . .
+RUN yarn install
 CMD ["yarn", "test"]
 
 FROM base AS builder
-RUN yarn build
+COPY . .
+RUN yarn install && yarn build
 
-FROM node:19-alpine
-WORKDIR /server
-COPY package.json ./
+FROM base 
+COPY package.json yarn.lock ./
 COPY --from=builder /server/dist ./dist
-RUN yarn install --only=production
+RUN apk add bash openjdk11 &&\
+    yarn install --only=production
 
 EXPOSE 80
 
