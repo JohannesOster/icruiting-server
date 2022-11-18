@@ -20,4 +20,4 @@ RUN yarn install --only=production
 
 EXPOSE 80
 
-CMD [ "npm", "start" ]
+CMD [ "yarn", "db-migrate && yarn start"]
