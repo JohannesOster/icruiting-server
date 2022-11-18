@@ -10,7 +10,7 @@ FROM base as test
 CMD ["yarn", "test"]
 
 FROM base AS builder
-RUN yarn build && yarn db-migrate
+RUN yarn build
 
 FROM node:19-alpine
 WORKDIR /server
