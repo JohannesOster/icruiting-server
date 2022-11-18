@@ -7,7 +7,7 @@ on:
 
 env:
   REGISTRY: docker.pkg.github.com
-  REPO: JohannesOster/icruiting-server/image
+  REPO: johannesoster/icruiting-server/image
   IMAGE_NAME: icruiting-server
 
 jobs:
