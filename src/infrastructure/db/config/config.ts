@@ -4,7 +4,7 @@ dotenv.config();
 
 type Environment = 'production' | 'development' | 'test' | 'staging';
 
-const dbChangelogFileBasePath = '/infrastructure/db/migrations/changelog.xml';
+const dbChangelogFileBasePath = 'infrastructure/db/migrations/changelog.xml';
 const config = {
   staging: {
     url: process.env.STAGING_DB_URL || '',
