@@ -36,7 +36,7 @@ export const catchAsync = (
   return (req, res, next) => {
     try {
       fn(req, res, next);
-    } catch (e) {
+    } catch (e: any) {
       next(mapDomainErrors(e));
     }
   };

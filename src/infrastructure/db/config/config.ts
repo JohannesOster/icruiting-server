@@ -2,34 +2,44 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-type Environment = 'production' | 'development' | 'test';
+type Environment = 'production' | 'development' | 'test' | 'staging';
 
+const dbChangelogFileBasePath = 'infrastructure/db/migrations/changelog.xml';
 const config = {
+  staging: {
+    url: process.env.STAGING_DB_URL || '',
+    liquibase: {
+      url: `jdbc:${process.env.LIQUIBASE_STAGING_DB_URL}`,
+      username: `${process.env.LIQUIBASE_STAGING_DB_USERNAME}`,
+      password: `${process.env.LIQUIBASE_STAGING_DB_PASSWORD}`,
+      changeLogFile: `dist/${dbChangelogFileBasePath}`,
+    },
+  },
   production: {
     url: process.env.DATABASE_URL || '',
-    flyway: {
-      url: `jdbc:${process.env.FLYWAY_PROD_DB_URL}`,
-      user: `'${process.env.FLYWAY_PROD_DB_USER}'`,
-      password: `'${process.env.FLYWAY_PROD_DB_PASSWORD}'`,
-      locations: 'filesystem:src/infrastructure/db/migrations',
+    liquibase: {
+      url: `jdbc:${process.env.LIQUIBASE_PROD_DB_URL}`,
+      username: `${process.env.LIQUIBASE_PROD_DB_USER}`,
+      password: `${process.env.LIQUIBASE_PROD_DB_PASSWORD}`,
+      changeLogFile: `dist/${dbChangelogFileBasePath}`,
     },
   },
   development: {
     url: process.env.DEV_DB_URL || '',
-    flyway: {
-      url: `jdbc:${process.env.FLYWAY_DEV_DB_URL}`,
-      user: `${process.env.FLYWAY_DEV_DB_USER}`,
-      password: `'${process.env.FLYWAY_DEV_DB_PASSWORD}'`,
-      locations: 'filesystem:src/infrastructure/db/migrations',
+    liquibase: {
+      url: `jdbc:${process.env.LIQUIBASE_DEV_DB_URL}`,
+      username: `${process.env.LIQUIBASE_DEV_DB_USERNAME}`,
+      password: `${process.env.LIQUIBASE_DEV_DB_PASSWORD}`,
+      changeLogFile: `src/${dbChangelogFileBasePath}`,
     },
   },
   test: {
     url: process.env.TEST_DB_URL || '',
-    flyway: {
-      url: `jdbc:${process.env.FLYWAY_TEST_DB_URL}`,
-      user: process.env.FLYWAY_TEST_DB_USER,
-      password: process.env.FLYWAY_TEST_DB_PASSWORD,
-      locations: 'filesystem:src/infrastructure/db/migrations',
+    liquibase: {
+      url: `jdbc:${process.env.LIQUIBASE_TEST_DB_URL}`,
+      username: `${process.env.LIQUIBASE_TEST_DB_USERNAME}`,
+      password: `${process.env.LIQUIBASE_TEST_DB_PASSWORD}`,
+      changeLogFile: `src/${dbChangelogFileBasePath}`,
     },
   },
 };
