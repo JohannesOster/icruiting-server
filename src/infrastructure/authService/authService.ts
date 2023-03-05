@@ -1,8 +1,4 @@
-import {
-  CognitoUserAttribute,
-  CognitoUserPool,
-  ISignUpResult,
-} from 'amazon-cognito-identity-js';
+import {CognitoUserAttribute, CognitoUserPool, ISignUpResult} from 'amazon-cognito-identity-js';
 import {BaseError} from 'application';
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
 import CognitoExpress from 'cognito-express';
@@ -61,11 +57,7 @@ export const AuthService = () => {
     return cIdp.adminCreateUser(params).promise();
   };
   type SignUpParams = {tenantId: string; email: string; password: string};
-  const signUpUser = ({
-    tenantId,
-    email,
-    password,
-  }: SignUpParams): Promise<ISignUpResult> => {
+  const signUpUser = ({tenantId, email, password}: SignUpParams): Promise<ISignUpResult> => {
     const config = {UserPoolId: cognitoUserPoolId, ClientId: clientId};
     const userPool = new CognitoUserPool(config);
     const attributes = [
@@ -94,19 +86,36 @@ export const AuthService = () => {
           'custom:tenant_id',
           'cognito:user_status',
         ],
+        Limit: 60,
       };
 
       const filterConfirmed = {Filter: 'cognito:user_status = "CONFIRMED"'};
-      const filterPending = {
-        Filter: 'cognito:user_status = "FORCE_CHANGE_PASSWORD"',
-      };
+      const filterPending = {Filter: 'cognito:user_status = "FORCE_CHANGE_PASSWORD"'};
 
-      const {Users: confirmed = []} = await cIdp
+      let {Users: confirmed = [], PaginationToken: cPToken} = await cIdp
         .listUsers({...params, ...filterConfirmed})
         .promise();
-      const {Users: pending = []} = await cIdp
+      let {Users: pending = [], PaginationToken: pPToken} = await cIdp
         .listUsers({...params, ...filterPending})
         .promise();
+
+      while (cPToken || pPToken) {
+        if (cPToken) {
+          const {Users: cUsers = [], PaginationToken: _cPToken} = await cIdp
+            .listUsers({...params, ...filterConfirmed, PaginationToken: cPToken})
+            .promise();
+          confirmed = confirmed.concat(cUsers);
+          cPToken = _cPToken;
+        }
+
+        if (pPToken) {
+          const {Users: pUsers = [], PaginationToken: _pPToken} = await cIdp
+            .listUsers({...params, ...filterPending, PaginationToken: pPToken})
+            .promise();
+          pending = pending.concat(pUsers);
+          pPToken = _pPToken;
+        }
+      }
 
       const Users = confirmed.concat(pending);
 
