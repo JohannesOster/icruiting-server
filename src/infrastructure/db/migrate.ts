@@ -18,6 +18,8 @@ export const dbMigrate = (command: string) => {
       return instance.update({});
     case 'drop-all':
       return instance.dropAll();
+    case 'changelogSync':
+      return instance.changelogSync();
     default:
       throw new Error(`Unknown command: ${command}`);
   }
