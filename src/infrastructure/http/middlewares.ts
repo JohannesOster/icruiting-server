@@ -1,5 +1,4 @@
 import {RequestHandler, ErrorRequestHandler} from 'express';
-import {validationResult} from 'express-validator';
 import {BaseError} from 'application';
 
 export const notFound: RequestHandler = (req) => {

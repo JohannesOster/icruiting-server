@@ -1,5 +1,4 @@
 import {Entity, EntityFactory, createEntity} from 'shared/domain';
-import {v4 as uuid} from 'uuid';
 
 export type Attribute = {
   /** The unique id of the formField the attribute originates from */
@@ -31,10 +30,7 @@ interface BaseApplicant {
 }
 export interface Applicant extends BaseApplicant, Entity {}
 
-export const createApplicant: EntityFactory<BaseApplicant, Applicant> = (
-  props,
-  id,
-): Applicant => {
+export const createApplicant: EntityFactory<BaseApplicant, Applicant> = (props, id): Applicant => {
   const {applicantStatus, jobId, attributes, files} = props;
   const applicant: BaseApplicant = {applicantStatus, jobId, attributes, files};
   return createEntity(applicant, id);

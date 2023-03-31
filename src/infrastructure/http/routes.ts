@@ -20,7 +20,6 @@ router.use('/form-submissions', FormSubmissionRouter({db, pgp}));
 router.use('/applicants', ApplicantsRouter({db, pgp}));
 router.use('/rankings', RankingsRouter({db, pgp}));
 
-// route to monitor server status by elastic beanstalk
 router.get('/health', (req, res) => {
   res.json('Everything Up And Running! 🎉');
 });
