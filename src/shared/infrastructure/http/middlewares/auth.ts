@@ -1,9 +1,6 @@
-import dotenv from 'dotenv';
 import {BaseError} from 'application';
 import authService from 'infrastructure/authService';
 import {catchAsync} from '../httpReqHandler';
-
-dotenv.config();
 
 export const requireAuth = catchAsync(async (req, res, next) => {
   const authHeader = req.header('Authorization');

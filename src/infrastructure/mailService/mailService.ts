@@ -1,9 +1,10 @@
 import nodemailer from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
+import config from 'config';
 
 export const sendMail = (options: Mail.Options): Promise<any> => {
-  const user = process.env.EMAIL_ADRESS;
-  const pass = process.env.EMAIL_PASSWORD;
+  const user = config.get('mailService.email');
+  const pass = config.get('mailService.password');
 
   if (!(user && pass)) throw new Error('Missing email credentials');
 

@@ -1,16 +1,13 @@
 import {S3} from 'aws-sdk';
-import dotenv from 'dotenv';
 import {Body} from 'aws-sdk/clients/s3';
+import config from 'config';
 
 export const StorageService = () => {
-  dotenv.config();
-  const bucket = process.env.S3_BUCKET || '';
+  const bucket = config.get('awsS3Bucket');
 
   const getUrl = (path: string) => {
     const urlParams = {Bucket: bucket, Key: path, Expires: 3600};
-    return new S3()
-      .getSignedUrlPromise('getObject', urlParams)
-      .catch((err) => ''); // if object does not exist UriParameterError is thrown
+    return new S3().getSignedUrlPromise('getObject', urlParams).catch((err) => ''); // if object does not exist UriParameterError is thrown
   };
 
   type UploadParams = {path: string; contentType: string; data: Body};

@@ -1,6 +1,7 @@
 import app from 'infrastructure/http';
+import config from 'config';
 
-const port = process.env.PORT || 5000;
+const port = config.get('port');
 app.listen(port, () => {
   if (process.env.NODE_ENV === 'development') {
     /* tslint:disable no-console */
