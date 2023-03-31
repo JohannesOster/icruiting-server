@@ -3,13 +3,12 @@ import {BaseError} from 'application';
 import {CognitoIdentityServiceProvider} from 'aws-sdk';
 import CognitoExpress from 'cognito-express';
 import {mapCognitoUser, removePrefix} from './utils';
-import dotenv from 'dotenv';
+import config from 'config';
 
 export const AuthService = () => {
-  dotenv.config();
-  const cognitoUserPoolId = process.env.AWS_USER_POOL_ID;
-  const clientId = process.env.AWS_CLIENT_ID;
-  const region = process.env.AWS_REGION;
+  const cognitoUserPoolId = config.get('awsCognito.userPoolId');
+  const clientId = config.get('awsCognito.clientId');
+  const region = config.get('awsCognito.region');
 
   if (!(cognitoUserPoolId && clientId && region)) {
     throw new Error('Missing required aws credentials!');

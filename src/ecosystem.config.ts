@@ -1,3 +1,4 @@
+// PM2 configuration file
 export const apps = [
   {
     script: 'dist/index.js',

@@ -2,8 +2,7 @@ import config from 'config';
 import Stripe from 'stripe';
 
 export const PaymentService = () => {
-  const stripeKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
+  const stripeKey = config.get('stripeSecretKey');
   const stripe = new Stripe(stripeKey, {apiVersion: '2022-08-01'});
 
   const customers = {
@@ -16,18 +15,12 @@ export const PaymentService = () => {
       return stripe.customers.del(customerId);
     },
     retrieve: (customerId: string) => {
-      return stripe.customers.retrieve(customerId) as Promise<
-        Stripe.Response<Stripe.Customer>
-      >;
+      return stripe.customers.retrieve(customerId) as Promise<Stripe.Response<Stripe.Customer>>;
     },
   };
 
   const subscriptions = {
-    create: (
-      customerId: string,
-      subscriptionId: string,
-      trial: number = 14,
-    ) => {
+    create: (customerId: string, subscriptionId: string, trial: number = 14) => {
       return stripe.subscriptions.create({
         customer: customerId,
         items: [{price: subscriptionId}],
@@ -59,9 +52,9 @@ export const PaymentService = () => {
           expand: ['data.product'],
         })
         .then(({data}) => {
+          const freeStripeProducId = config.get('freeStripeProducId');
           return data.filter((price) => {
-            const isFriendsAndFamiliy =
-              (price.product as any).id === config.freeStripeProducId;
+            const isFriendsAndFamiliy = (price.product as any).id === freeStripeProducId;
             const isActive = price.active;
             return isActive && !isFriendsAndFamiliy;
           });
@@ -80,10 +73,7 @@ export const PaymentService = () => {
       ]).then(([customer, {data}]) => {
         if (!data) return [];
         const paymentMethods = data.map((paymentMethod) => {
-          if (
-            paymentMethod.id !==
-            customer.invoice_settings.default_payment_method
-          )
+          if (paymentMethod.id !== customer.invoice_settings.default_payment_method)
             return paymentMethod;
           return {is_default: true, ...paymentMethod};
         });
