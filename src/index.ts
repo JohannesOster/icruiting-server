@@ -1,10 +1,13 @@
 import app from 'infrastructure/http';
 import config from 'config';
+import {errorHandler} from 'shared/infrastructure/errorHandler';
+import logger from 'shared/infrastructure/logger';
 
 const port = config.get('port');
-app.listen(port, () => {
+
+const server = app.listen(port, () => {
+  errorHandler.listenToErrorEvents(server);
   if (process.env.NODE_ENV === 'development') {
-    /* tslint:disable no-console */
-    console.log(`Listening: http://localhost:${port}`);
+    logger.info(`Listening: http://localhost:${port}`);
   }
 });

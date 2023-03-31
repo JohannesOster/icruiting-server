@@ -3,6 +3,12 @@ import * as dotenv from 'dotenv';
 dotenv.config({path: `.env.${process.env.NODE_ENV}`});
 
 const config = convict({
+  discordWebHook: {
+    doc: '',
+    format: String,
+    default: '',
+    env: 'DISCORD_ERROR_LOGGING_WEBHOOK',
+  },
   liquibase: {
     url: {
       doc: '',
