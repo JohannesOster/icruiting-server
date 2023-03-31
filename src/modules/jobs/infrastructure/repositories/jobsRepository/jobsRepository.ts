@@ -51,9 +51,7 @@ export const JobsRepository = ({db, pgp}: DBAccess) => {
     const insertedJob = await db.one(stmt);
 
     return db
-      .any(
-        insert(decamelizeKeys(jobRequirements), jrColumnSet) + ' RETURNING *',
-      )
+      .any(insert(decamelizeKeys(jobRequirements), jrColumnSet) + ' RETURNING *')
       .then((jobRequirements) => ({...insertedJob, jobRequirements}))
       .then(jobsMapper.toDomain);
   };
@@ -91,10 +89,7 @@ export const JobsRepository = ({db, pgp}: DBAccess) => {
 
       /** INSERT ========================= */
       if (requirementsMap.firstMinusSecond.length) {
-        const stmt = insert(
-          decamelizeKeys(requirementsMap.firstMinusSecond),
-          jrColumnSet,
-        );
+        const stmt = insert(decamelizeKeys(requirementsMap.firstMinusSecond), jrColumnSet);
         promises.push(t.none(stmt));
       }
 
@@ -111,8 +106,7 @@ export const JobsRepository = ({db, pgp}: DBAccess) => {
 
         const values = decamelizeKeys(requirementsMap.intersection);
         const stmt =
-          update(values, csUpdate) +
-          ' WHERE v.job_requirement_id::UUID = t.job_requirement_id';
+          update(values, csUpdate) + ' WHERE v.job_requirement_id::UUID = t.job_requirement_id';
         promises.push(t.any(stmt));
       }
       return t.batch(promises);
@@ -131,11 +125,7 @@ export const JobsRepository = ({db, pgp}: DBAccess) => {
     );
   };
 
-  const createReport = async (
-    tenantId: string,
-    jobId: string,
-    formFields: string[],
-  ) => {
+  const createReport = async (tenantId: string, jobId: string, formFields: string[]) => {
     const {insert} = pgp.helpers;
     const formFieldIds = formFields.map((formFieldId) =>
       decamelizeKeys({jobId, tenantId, formFieldId}),
@@ -144,20 +134,14 @@ export const JobsRepository = ({db, pgp}: DBAccess) => {
     const table = {table: 'report_field'};
     const cs = new ColumnSet(['job_id', 'tenant_id', 'form_field_id'], table);
 
-    return db
-      .any(insert(formFieldIds, cs))
-      .then(() => retrieveReport(tenantId, jobId));
+    return db.any(insert(formFieldIds, cs)).then(() => retrieveReport(tenantId, jobId));
   };
 
   const retrieveReport = async (tenantId: string, jobId: string) => {
     return db.oneOrNone(sql.retrieveReport, decamelizeKeys({tenantId, jobId}));
   };
 
-  const updateReport = async (
-    tenantId: string,
-    jobId: string,
-    formFields: string[],
-  ) => {
+  const updateReport = async (tenantId: string, jobId: string, formFields: string[]) => {
     await delReport(tenantId, jobId);
     return createReport(tenantId, jobId, formFields);
   };

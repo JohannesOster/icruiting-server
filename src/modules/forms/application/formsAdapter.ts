@@ -37,10 +37,7 @@ export const FormsAdapter = (db: DB) => {
     const form = await db.forms.retrieve(tenantId, formId);
     if (!form) throw new BaseError(404, 'Not Found');
 
-    const updatedForm = createForm(
-      {tenantId, jobId: form.jobId, ...req.body},
-      formId,
-    );
+    const updatedForm = createForm({tenantId, jobId: form.jobId, ...req.body}, formId);
     const params = formsMapper.toPersistance(updatedForm);
     const raw = await db.forms.update(params);
     const body = formsMapper.toDTO(raw);
@@ -86,17 +83,15 @@ export const FormsAdapter = (db: DB) => {
 
     try {
       await validateSubscription(form.tenantId);
-    } catch ({message}) {
+    } catch ({message}: any) {
       return {view: 'form', body: {error: message}};
     }
 
-    const submitAction = config.baseURL + req.originalUrl;
+    const submitAction = config.get('baseUrl') + req.originalUrl;
     const params = {
       formId,
       submitAction,
-      formFields: form.formFields.map((field) =>
-        formFieldsMapper.toDTO({formId}, field),
-      ),
+      formFields: form.formFields.map((field) => formFieldsMapper.toDTO({formId}, field)),
     };
     const tenant = await db.tenants.retrieve(form.tenantId);
     if (!tenant?.theme) return {view: 'form', body: params};

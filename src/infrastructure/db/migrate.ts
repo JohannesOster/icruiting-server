@@ -1,9 +1,14 @@
-import config from './config';
-import {LiquibaseConfig, Liquibase, POSTGRESQL_DEFAULT_CONFIG} from 'liquibase';
+import {LiquibaseConfig, Liquibase, POSTGRESQL_DEFAULT_CONFIG, LiquibaseLogLevels} from 'liquibase';
+import config from '../../config';
 
+const dbChangelogFileBasePath = 'infrastructure/db/migrations/changelog.xml';
 const liquibaseConfig: LiquibaseConfig = {
   ...POSTGRESQL_DEFAULT_CONFIG,
-  ...config.liquibase,
+  url: `jdbc:${config.get('liquibase.url')}`,
+  username: config.get('liquibase.username'),
+  password: config.get('liquibase.password'),
+  changeLogFile: `dist/${dbChangelogFileBasePath}`,
+  logLevel: LiquibaseLogLevels.Debug,
 };
 const instance = new Liquibase(liquibaseConfig);
 
