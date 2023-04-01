@@ -34,7 +34,7 @@ const ErrorHandler = () => {
       logger.error(appError.message, appError);
 
       if (![400, 404, 422].includes(appError.statusCode)) {
-        sendDiscordMessage(JSON.stringify(appError));
+        sendDiscordMessage(JSON.stringify({appError, stack: appError.stack}));
       }
 
       // Unknown error (non-trusted) is being thrown - crash app
