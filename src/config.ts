@@ -81,7 +81,7 @@ const config = convict({
     doc: 'The base URL of the API',
     format: String,
     default: 'http://localhost:5000',
-    env: 'BASE_URL',
+    env: 'API_BASE_URL',
   },
   freeStripeProducId: {
     doc: 'There is a free friends and family plan in stripe that we want to hide. To be able to filter it from the request we need the product id',
