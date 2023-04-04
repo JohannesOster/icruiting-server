@@ -28,6 +28,18 @@ const config = convict({
       default: '',
       env: 'LIQUIBASE_DB_PASSWORD',
     },
+    changeLogFile: {
+      doc: '',
+      format: String,
+      default: '',
+      env: 'LIQUIBASE_CHANGELOG_FILE',
+    },
+    logLevel: {
+      doc: '',
+      format: String, // "off", "severe", "warning", "info", "debug"
+      default: 'info',
+      env: 'LIQUIBASE_LOG_LEVEL',
+    },
   },
   db: {
     url: {
