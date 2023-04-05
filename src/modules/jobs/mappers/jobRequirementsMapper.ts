@@ -2,7 +2,6 @@ import {createJobRequirement, JobRequirement} from '../domain';
 import {DBJobRequirement} from '../infrastructure/repositories/jobsRepository';
 
 const toPersistance = (jobId: string, jobRequirement: JobRequirement): DBJobRequirement => {
-  console.log('To persistence', jobRequirement);
   const {id: jobRequirementId, ..._jobRequirement} = jobRequirement;
   return Object.freeze({jobId, jobRequirementId, ..._jobRequirement});
 };
