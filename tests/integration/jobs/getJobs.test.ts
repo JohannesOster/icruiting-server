@@ -24,7 +24,7 @@ afterAll(async () => {
 
 describe('jobs', () => {
   beforeAll(async () => {
-    await dataGenerator.insertJob(mockUser.tenantId);
+    await dataGenerator.insertJob(mockUser.tenantId, []);
   });
 
   describe('GET /jobs', () => {
@@ -37,10 +37,7 @@ describe('jobs', () => {
     });
 
     it('returns array of jobs', async () => {
-      const resp = await request(app)
-        .get('/jobs')
-        .set('Accept', 'application/json')
-        .expect(200);
+      const resp = await request(app).get('/jobs').set('Accept', 'application/json').expect(200);
       expect(Array.isArray(resp.body));
       expect(resp.body[0].jobId).toBeDefined();
       expect(resp.body[0].jobRequirements).toBeDefined();
@@ -69,14 +66,9 @@ describe('jobs', () => {
       const {id: tenantId} = await dataGenerator.insertTenant();
       await dataGenerator.insertJob(tenantId);
 
-      const resp = await request(app)
-        .get('/jobs')
-        .set('Accept', 'application/json')
-        .expect(200);
+      const resp = await request(app).get('/jobs').set('Accept', 'application/json').expect(200);
 
-      resp.body.forEach((job: any) =>
-        expect(job.tenantId).toBe(mockUser.tenantId),
-      );
+      resp.body.forEach((job: any) => expect(job.tenantId).toBe(mockUser.tenantId));
     });
   });
 });
