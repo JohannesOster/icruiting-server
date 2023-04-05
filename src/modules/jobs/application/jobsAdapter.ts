@@ -23,12 +23,10 @@ export const JobsAdapter = (db: DB) => {
   });
 
   const create = httpReqHandler(async (req) => {
-    const {jobTitle, jobRequirements: _jobRequirements} = req.body;
+    const {jobTitle} = req.body;
     const {tenantId} = req.user;
-    const jobRequirements = _jobRequirements.map((req: any) => {
-      return createJobRequirement(req);
-    });
-    const job = createJob({jobTitle, jobRequirements});
+
+    const job = createJob({jobTitle, jobRequirements: []});
     const params = jobsMapper.toPersistance(tenantId, job);
     const raw = await db.jobs.create(params);
     const body = jobsMapper.toDTO(tenantId, raw);
@@ -40,7 +38,7 @@ export const JobsAdapter = (db: DB) => {
     const {jobId} = req.params;
     const {tenantId} = req.user;
 
-    const jobRequirements = req.body.jobRequirements.map((req: any) => {
+    const jobRequirements = (req.body.jobRequirements || []).map((req: any) => {
       return createJobRequirement(req, req.jobRequirementId);
     });
 
@@ -81,9 +79,7 @@ export const JobsAdapter = (db: DB) => {
   const createReport = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const {jobId} = req.params;
-    return db.jobs
-      .createReport(tenantId, jobId, req.body)
-      .then((body) => ({status: 201, body}));
+    return db.jobs.createReport(tenantId, jobId, req.body).then((body) => ({status: 201, body}));
   });
 
   const retrieveReport = httpReqHandler(async (req) => {
@@ -95,9 +91,7 @@ export const JobsAdapter = (db: DB) => {
   const updateReport = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     const {jobId} = req.params;
-    return await db.jobs
-      .updateReport(tenantId, jobId, req.body)
-      .then((body) => ({body}));
+    return await db.jobs.updateReport(tenantId, jobId, req.body).then((body) => ({body}));
   });
 
   const delReport = httpReqHandler(async (req) => {
@@ -146,13 +140,11 @@ export const JobsAdapter = (db: DB) => {
   });
 
   const _validateJobFile = (file: File | File[]) => {
-    if (Array.isArray(file))
-      throw new BaseError(422, 'Multifile no supported.');
+    if (Array.isArray(file)) throw new BaseError(422, 'Multifile no supported.');
     if (!file.name) throw new BaseError(500, 'Missing file name');
 
     const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
-    if (extension !== 'json')
-      throw new BaseError(422, `Invalid fileformat ${extension}`);
+    if (extension !== 'json') throw new BaseError(422, `Invalid fileformat ${extension}`);
 
     return file;
   };
@@ -196,23 +188,19 @@ export const JobsAdapter = (db: DB) => {
     return [
       await Promise.all(
         forms.map(({formFields: _formFields, ...form}) => {
-          const formFields = _formFields.map(
-            ({formFieldId, jobRequirementId = '', ...field}) => {
-              const jobReqId = jobRequirementsIdMap[jobRequirementId || ''];
+          const formFields = _formFields.map(({formFieldId, jobRequirementId = '', ...field}) => {
+            const jobReqId = jobRequirementsIdMap[jobRequirementId || ''];
 
-              const params = {
-                formFieldId: createId(), // override id to prohibit db errors
-                ...(jobReqId ? {jobRequirementId: jobReqId} : {}),
-                ...field,
-              };
+            const params = {
+              formFieldId: createId(), // override id to prohibit db errors
+              ...(jobReqId ? {jobRequirementId: jobReqId} : {}),
+              ...field,
+            };
 
-              return formFieldsMapper.toDomain(params);
-            },
-          );
+            return formFieldsMapper.toDomain(params);
+          });
 
-          const replicaOf = form.replicaOf
-            ? {replicaOf: formsIdMap[form.replicaOf || '']}
-            : {};
+          const replicaOf = form.replicaOf ? {replicaOf: formsIdMap[form.replicaOf || '']} : {};
 
           const _form = createForm({
             ...form,
@@ -244,10 +232,7 @@ export const JobsAdapter = (db: DB) => {
           const json = await _readJSONFile(file);
           const {forms: jsonForms, ...jsonJob} = json;
 
-          const [job, jobRequirementsIdMap] = await _insertJSONJob(
-            tenantId,
-            jsonJob,
-          );
+          const [job, jobRequirementsIdMap] = await _insertJSONJob(tenantId, jsonJob);
 
           // split forms into replicas and primaries
           type FormsMap = {primaries: DBForm[]; replicas: DBForm[]};

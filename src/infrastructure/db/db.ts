@@ -1,5 +1,5 @@
 import pgPromise, {IInitOptions} from 'pg-promise';
-import config from 'config';
+import config from '../../config';
 import humps from 'humps';
 
 const initOptions: IInitOptions = {
