@@ -7,14 +7,12 @@ import {filterNotNullAndDefined} from 'utils/filterNotNullAndDefined';
 import {DB} from '../infrastructure/repositories';
 import {createTenant} from '../domain';
 import {tenantsMapper} from '../mappers';
+import logger from 'shared/infrastructure/logger';
 
 export const TenantsAdapter = (db: DB) => {
   const create = httpReqHandler(async (req) => {
     const {tenantName, email, password, stripePriceId} = req.body;
-    const {customerId} = await paymentService.customers.create(
-      email,
-      stripePriceId,
-    );
+    const {customerId} = await paymentService.customers.create(email, stripePriceId);
 
     const tenant = createTenant({tenantName, stripeCustomerId: customerId});
     const props = tenantsMapper.toPersistance(tenant);
@@ -23,6 +21,8 @@ export const TenantsAdapter = (db: DB) => {
 
     const signUpParams = {tenantId: tenant.id, email, password};
     const {user} = await authService.signUpUser(signUpParams);
+
+    logger.info(`New Signup: ${tenant.id}, ${tenant.tenantName}, ${email} 🎉`);
 
     return {status: 201, body: {tenant: tenantDTO, user}};
   });
@@ -40,8 +40,7 @@ export const TenantsAdapter = (db: DB) => {
     const {tenantId} = req.user;
     const tenant = await db.tenants.retrieve(tenantId);
     if (!tenant) throw new BaseError(404, 'Tenant Not Found');
-    if (tenant.stripeCustomerId)
-      await paymentService.customers.del(tenant.stripeCustomerId);
+    if (tenant.stripeCustomerId) await paymentService.customers.del(tenant.stripeCustomerId);
 
     _deleteTenantFiles(tenantId);
 

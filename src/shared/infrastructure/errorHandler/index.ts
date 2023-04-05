@@ -1,9 +1,7 @@
 import * as Http from 'http';
-import https from 'https';
 import * as util from 'util';
 import logger from 'shared/infrastructure/logger';
 import {BaseError} from 'application';
-import config from 'config';
 
 const ErrorHandler = () => {
   let httpServerRef: Http.Server;
@@ -34,7 +32,7 @@ const ErrorHandler = () => {
       logger.error(appError.message, appError);
 
       if (![400, 404, 422].includes(appError.statusCode)) {
-        sendDiscordMessage(JSON.stringify({appError, stack: appError.stack}));
+        logger.discord(JSON.stringify({appError, stack: appError.stack}));
       }
 
       // Unknown error (non-trusted) is being thrown - crash app
@@ -47,18 +45,6 @@ const ErrorHandler = () => {
       process.stdout.write(JSON.stringify(handlingError));
       process.stdout.write(JSON.stringify(errorToHandle));
     }
-  };
-
-  const sendDiscordMessage = (content: string) => {
-    const req = https.request({
-      method: 'POST',
-      host: 'discord.com',
-      path: config.get('discordWebHook'),
-      headers: {'Content-Type': 'application/json'},
-    });
-    req.write(JSON.stringify({content}));
-    req.on('error', logger.error);
-    req.end();
   };
 
   // The input might not be 'BaseError' or even 'Error' instance, the output of this function will be - BaseError.

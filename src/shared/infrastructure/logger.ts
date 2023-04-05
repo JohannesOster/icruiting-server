@@ -1,4 +1,6 @@
 import {pino} from 'pino';
+import https from 'https';
+import config from 'config';
 
 const Logger = () => {
   const ops = {
@@ -24,7 +26,20 @@ const Logger = () => {
     _logger.error(message, ...args);
   };
 
-  return {debug, info, warning, error};
+  const discord = (message: string) => {
+    const req = https.request({
+      method: 'POST',
+      host: 'discord.com',
+      path: config.get('discordWebHook'),
+      headers: {'Content-Type': 'application/json'},
+    });
+
+    req.write(message);
+    req.on('error', error);
+    req.end();
+  };
+
+  return {debug, info, warning, error, discord};
 };
 
 export default Logger();
