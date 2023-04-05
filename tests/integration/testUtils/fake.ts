@@ -3,7 +3,7 @@ import {createForm, createFormField} from 'modules/forms/domain';
 import {formsMapper} from 'modules/forms/mappers';
 import {createFormSubmission} from 'modules/formSubmissions/domain';
 import {formSubmissionsMapper} from 'modules/formSubmissions/mappers';
-import {createJob, createJobRequirement} from 'modules/jobs/domain';
+import {createJob, createJobRequirement, JobRequirement} from 'modules/jobs/domain';
 import jobsMapper from 'modules/jobs/mappers/jobsMapper';
 import {createTenant} from 'modules/tenants/domain';
 import {tenantsMapper} from 'modules/tenants/mappers';
@@ -16,31 +16,23 @@ const fake = {
     userRole,
   }),
   tenant: (tenantId?: string) => {
-    const tenant = createTenant(
-      {tenantName: faker.company.companyName()},
-      tenantId,
-    );
+    const tenant = createTenant({tenantName: faker.company.companyName()}, tenantId);
     return tenantsMapper.toPersistance(tenant);
   },
-  job: (tenantId: string) => {
-    const job = createJob({
-      jobTitle: faker.company.companyName(),
-      jobRequirements: [
-        createJobRequirement({
-          requirementLabel: faker.commerce.productName(),
-          minValue: 3,
-        }),
-        createJobRequirement({requirementLabel: faker.commerce.productName()}),
-        createJobRequirement({requirementLabel: faker.commerce.productName()}),
-      ],
-    });
+  job: (tenantId: string, requirements: JobRequirement[] | undefined = undefined) => {
+    const jobRequirements =
+      requirements === undefined
+        ? [
+            createJobRequirement({requirementLabel: faker.commerce.productName(), minValue: 3}),
+            createJobRequirement({requirementLabel: faker.commerce.productName()}),
+            createJobRequirement({requirementLabel: faker.commerce.productName()}),
+          ]
+        : requirements;
+
+    const job = createJob({jobTitle: faker.company.companyName(), jobRequirements});
     return jobsMapper.toDTO(tenantId, job);
   },
-  applicant: (
-    tenantId: string,
-    jobId: string,
-    formFieldIds: string[] = [],
-  ) => ({
+  applicant: (tenantId: string, jobId: string, formFieldIds: string[] = []) => ({
     tenantId,
     jobId,
     attributes: formFieldIds.map((formFieldId) => ({
@@ -270,13 +262,10 @@ const fake = {
       applicantId,
       submitterId,
       formId,
-      submission: formFieldIds.reduce(
-        (acc: {[formFieldId: string]: string}, curr) => {
-          acc[curr] = faker.random.number({min: 0, max: 5}).toString();
-          return acc;
-        },
-        {},
-      ),
+      submission: formFieldIds.reduce((acc: {[formFieldId: string]: string}, curr) => {
+        acc[curr] = faker.random.number({min: 0, max: 5}).toString();
+        return acc;
+      }, {}),
     });
 
     return formSubmissionsMapper.toDTO(tenantId, formSubmission);

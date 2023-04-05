@@ -1,13 +1,15 @@
 import db, {pgp} from 'infrastructure/db';
 import fake from './fake';
 import {random} from 'faker';
-import {JobsRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
+import {DBJob, JobsRepository} from 'modules/jobs/infrastructure/repositories/jobsRepository';
 import {FormsRepository} from 'modules/forms/infrastructure/db/repositories';
 import {FormSubmissionsRepository} from 'modules/formSubmissions/infrastructure/repositories/formSubmissions';
 import {TenantsRepository} from 'modules/tenants/infrastructure/repositories/tenantsRepository';
 import {ApplicantsRepository} from 'modules/applicants/infrastructure/repositories/applicantsRepository';
 import {FormCategory} from 'modules/forms/domain';
 import {Form} from 'modules/forms/infrastructure/db/repositories/forms';
+import {JobRequirement, createJob} from 'modules/jobs/domain';
+import jobsMapper from 'modules/jobs/mappers/jobsMapper';
 
 const tenantsRepo = TenantsRepository({db, pgp});
 const jobsRepo = JobsRepository({db, pgp});
@@ -20,8 +22,8 @@ const dataGenerator = {
     const tenant = fake.tenant(tenantId);
     return tenantsRepo.create(tenant);
   },
-  insertJob: (tenantId: string) => {
-    const job = fake.job(tenantId);
+  insertJob: (tenantId: string, requirements: JobRequirement[] | undefined = undefined) => {
+    const job = fake.job(tenantId, requirements);
     return jobsRepo.create(job);
   },
   insertForm: (
@@ -52,11 +54,7 @@ const dataGenerator = {
 
     return formsRepo.create(form);
   },
-  insertApplicant: (
-    tenantId: string,
-    jobId: string,
-    formFieldIds: string[],
-  ) => {
+  insertApplicant: (tenantId: string, jobId: string, formFieldIds: string[]) => {
     const applicant = fake.applicant(tenantId, jobId, formFieldIds);
     return applicantsRepo.create(applicant);
   },

@@ -13,7 +13,7 @@ const toPersistance = (tenantId: string, job: Job): DBJob => {
 };
 
 const toDomain = (raw: DBJob): Job => {
-  const {jobId, jobRequirements: _jobRequirements, ..._job} = raw;
+  const {jobId, jobRequirements: _jobRequirements = [], ..._job} = raw;
   const jobRequirements = _jobRequirements.map(jobRequirementsMapper.toDomain);
   return createJob({..._job, jobRequirements}, jobId);
 };

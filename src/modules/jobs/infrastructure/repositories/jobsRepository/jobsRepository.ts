@@ -50,6 +50,8 @@ export const JobsRepository = ({db, pgp}: DBAccess) => {
     const stmt = insert(decamelizeKeys(job), null, 'job') + ' RETURNING *';
     const insertedJob = await db.one(stmt);
 
+    if (!jobRequirements.length) return jobsMapper.toDomain(insertedJob);
+
     return db
       .any(insert(decamelizeKeys(jobRequirements), jrColumnSet) + ' RETURNING *')
       .then((jobRequirements) => ({...insertedJob, jobRequirements}))
