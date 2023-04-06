@@ -22,7 +22,7 @@ export const TenantsAdapter = (db: DB) => {
     const signUpParams = {tenantId: tenant.id, email, password};
     const {user} = await authService.signUpUser(signUpParams);
 
-    logger.info(`New Signup: ${tenant.id}, ${tenant.tenantName}, ${email} 🎉`);
+    logger.discord(`New Signup: ${tenant.id}, ${tenant.tenantName}, ${email} 🎉`);
 
     return {status: 201, body: {tenant: tenantDTO, user}};
   });
