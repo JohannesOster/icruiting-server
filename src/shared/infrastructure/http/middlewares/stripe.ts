@@ -4,21 +4,15 @@ import paymentService from 'infrastructure/paymentService';
 import {catchAsync} from '../httpReqHandler';
 
 export const requireSubscription = catchAsync(async (req, res, next) => {
-  // quick fix
-  return next();
   let tenantId;
   if (req.user) tenantId = req.user.tenantId;
   if (!tenantId) tenantId = req.params.tenantId;
   if (!tenantId) throw new BaseError(422, 'Missing tenantId');
 
-  const tenant = await db.one(
-    'SELECT * FROM tenant where tenant_id=$1',
-    tenantId,
-  ); // TODO: find better solution
+  const tenant = await db.one('SELECT * FROM tenant where tenant_id=$1', tenantId); // TODO: find better solution
   if (!tenant) throw new BaseError(404, 'Authorized tenant Not Found.');
 
-  if (!tenant.stripeCustomerId)
-    throw new BaseError(404, 'Stripe customer id not found');
+  if (!tenant.stripeCustomerId) throw new BaseError(404, 'Stripe customer id not found');
 
   req.user.stripeCustomerId = tenant.stripeCustomerId;
 
