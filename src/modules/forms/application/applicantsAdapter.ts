@@ -8,7 +8,6 @@ import {sendMail} from 'infrastructure/mailService';
 import storageService from 'infrastructure/storageService';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {validateSubscription} from './utils';
-import {File} from 'modules/applicants/domain';
 
 export const ApplicantsAdapter = (db: DB) => {
   const create = httpReqHandler(async (req) => {
@@ -20,13 +19,12 @@ export const ApplicantsAdapter = (db: DB) => {
 
     try {
       await validateSubscription(form.tenantId);
-    } catch ({message}) {
+    } catch ({message}: any) {
       return {view: 'form-submission', body: {error: message}};
     }
 
     if (form.formCategory !== 'application') {
-      const errorMsg =
-        'Only application form are allowed to be submitted via html';
+      const errorMsg = 'Only application form are allowed to be submitted via html';
       throw new BaseError(402, errorMsg);
     }
 
@@ -52,18 +50,13 @@ export const ApplicantsAdapter = (db: DB) => {
             const fileExists = file && file.size;
             if (!field && !fileExists) {
               if (item.required) {
-                throw new BaseError(
-                  402,
-                  `Missing required field: ${item.label}`,
-                );
+                throw new BaseError(402, `Missing required field: ${item.label}`);
               }
 
               return acc;
             }
 
-            if (
-              ['input', 'textarea', 'select', 'radio'].includes(item.component)
-            ) {
+            if (['input', 'textarea', 'select', 'radio'].includes(item.component)) {
               acc.push({
                 formFieldId: item.id,
                 attributeValue: field as string,
@@ -78,9 +71,7 @@ export const ApplicantsAdapter = (db: DB) => {
                 attributeValue: value,
               });
             } else if (item.component === 'file_upload') {
-              const extension = file.name?.substr(
-                file.name?.lastIndexOf('.') + 1,
-              );
+              const extension = file.name?.substr(file.name?.lastIndexOf('.') + 1);
               const fileId = (Math.random() * 1e32).toString(36);
               const fileKey = form.tenantId + '.' + fileId + '.' + extension;
               const fileStream = fs.createReadStream(file.path);
@@ -124,34 +115,23 @@ export const ApplicantsAdapter = (db: DB) => {
           return resolve({view: 'form-submission', body: {error: message}});
         }
 
-        const {emailFieldId, fullNameFieldId} = form.formFields.reduce(
-          (acc, curr) => {
-            if (curr.label === 'E-Mail-Adresse') acc.emailFieldId = curr.id;
-            if (curr.label === 'Vollständiger Name')
-              acc.fullNameFieldId = curr.id;
-            return acc;
-          },
-          {} as any,
-        );
-        if (!emailFieldId)
-          return reject(new BaseError(500, 'E-Mail-Adresse field not found'));
+        const {emailFieldId, fullNameFieldId} = form.formFields.reduce((acc, curr) => {
+          if (curr.label === 'E-Mail-Adresse') acc.emailFieldId = curr.id;
+          if (curr.label === 'Vollständiger Name') acc.fullNameFieldId = curr.id;
+          return acc;
+        }, {} as any);
+        if (!emailFieldId) return reject(new BaseError(500, 'E-Mail-Adresse field not found'));
         if (!fullNameFieldId)
-          return reject(
-            new BaseError(500, 'Vollständiger-Name field not found'),
-          );
+          return reject(new BaseError(500, 'Vollständiger-Name field not found'));
 
         const {email, fullName} = attributes.reduce((acc, curr) => {
-          if (curr.formFieldId === emailFieldId)
-            acc.email = curr.attributeValue;
-          if (curr.formFieldId === fullNameFieldId)
-            acc.fullName = curr.attributeValue;
+          if (curr.formFieldId === emailFieldId) acc.email = curr.attributeValue;
+          if (curr.formFieldId === fullNameFieldId) acc.fullName = curr.attributeValue;
           return acc;
         }, {} as any);
 
-        if (!email)
-          return reject(new BaseError(500, 'Applicant has no email-adress'));
-        if (!fullName)
-          return reject(new BaseError(500, 'Applicant has no email-adress'));
+        if (!email) return reject(new BaseError(500, 'Applicant has no email-adress'));
+        if (!fullName) return reject(new BaseError(500, 'Applicant has no email-adress'));
 
         const templateOptions = {tenantName: tenant.tenantName, fullName};
         const html = templates(Template.EmailConfirmation, templateOptions);
