@@ -20,11 +20,11 @@ export const TenantsAdapter = (db: DB) => {
     const tenantDTO = tenantsMapper.toDTO(raw);
 
     const signUpParams = {tenantId: tenant.id, email, password};
-    const {user} = await authService.signUpUser(signUpParams);
+    const {user, userSub} = await authService.signUpUser(signUpParams);
 
     logger.discord(`New Signup: ${tenant.id}, ${tenant.tenantName}, ${email} 🎉`);
 
-    return {status: 201, body: {tenant: tenantDTO, user}};
+    return {status: 201, body: {tenant: tenantDTO, user: {userId: userSub, ...user}}};
   });
 
   const retrieve = httpReqHandler(async (req) => {
