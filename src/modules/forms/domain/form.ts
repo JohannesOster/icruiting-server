@@ -1,16 +1,7 @@
-import {
-  createEntity,
-  Entity,
-  EntityFactory,
-  ValidationError,
-} from 'shared/domain';
+import {createEntity, Entity, EntityFactory, ValidationError} from 'shared/domain';
 import {FormField} from './formField';
 
-export type FormCategory =
-  | 'application'
-  | 'screening'
-  | 'assessment'
-  | 'onboarding';
+export type FormCategory = 'application' | 'screening' | 'assessment' | 'onboarding';
 
 interface BaseForm {
   tenantId: string;
@@ -28,8 +19,7 @@ interface BaseForm {
 export interface Form extends BaseForm, Entity {}
 
 export const createForm: EntityFactory<BaseForm, Form> = (props, id) => {
-  const {tenantId, jobId, formCategory, formTitle, replicaOf, formFields} =
-    props;
+  const {tenantId, jobId, formCategory, formTitle, replicaOf, formFields} = props;
 
   validateFormTitle(formCategory, formTitle);
   validateFormFields(formCategory, formFields);
@@ -57,23 +47,14 @@ const validateFormTitle = (formCategory: FormCategory, formTitle?: string) => {
     throw new ValidationError('Onboarding form must have a formTitle');
 };
 
-const validateFormFields = (
-  formCategory: FormCategory,
-  formFields: FormField[],
-) => {
+const validateFormFields = (formCategory: FormCategory, formFields: FormField[]) => {
   if (formCategory != 'application') return; // no validation required
 
   let nameField: FormField | undefined = undefined;
-  let emailField: FormField | undefined = undefined;
   for (const formField of formFields) {
     if (formField.label === 'Vollständiger Name') nameField = formField;
-    else if (formField.label === 'E-Mail-Adresse') emailField = formField;
-
-    if (nameField && emailField) return;
+    if (nameField) return;
   }
 
-  if (!nameField)
-    throw new ValidationError('Application form requires name field');
-  if (!emailField)
-    throw new ValidationError('Application form requires email field');
+  if (!nameField) throw new ValidationError('Application form requires name field');
 };
