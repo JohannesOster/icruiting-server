@@ -111,8 +111,8 @@ export const ApplicantsAdapter = (db: DB) => {
 
         try {
           await Promise.all(promises);
-        } catch ({message}) {
-          return resolve({view: 'form-submission', body: {error: message}});
+        } catch (error: any) {
+          return resolve({view: 'form-submission', body: {error: error.message}});
         }
 
         const {emailFieldId, fullNameFieldId} = form.formFields.reduce((acc, curr) => {
@@ -120,27 +120,24 @@ export const ApplicantsAdapter = (db: DB) => {
           if (curr.label === 'Vollständiger Name') acc.fullNameFieldId = curr.id;
           return acc;
         }, {} as any);
-        if (!emailFieldId) return reject(new BaseError(500, 'E-Mail-Adresse field not found'));
         if (!fullNameFieldId)
           return reject(new BaseError(500, 'Vollständiger-Name field not found'));
 
-        const {email, fullName} = attributes.reduce((acc, curr) => {
-          if (curr.formFieldId === emailFieldId) acc.email = curr.attributeValue;
-          if (curr.formFieldId === fullNameFieldId) acc.fullName = curr.attributeValue;
-          return acc;
-        }, {} as any);
+        if (emailFieldId) {
+          const {email, fullName} = attributes.reduce((acc, curr) => {
+            if (curr.formFieldId === emailFieldId) acc.email = curr.attributeValue;
+            if (curr.formFieldId === fullNameFieldId) acc.fullName = curr.attributeValue;
+            return acc;
+          }, {} as any);
 
-        if (!email) return reject(new BaseError(500, 'Applicant has no email-adress'));
-        if (!fullName) return reject(new BaseError(500, 'Applicant has no email-adress'));
+          if (!email) return reject(new BaseError(500, 'Applicant has no email-adress'));
+          if (!fullName) return reject(new BaseError(500, 'Applicant has no email-adress'));
 
-        const templateOptions = {tenantName: tenant.tenantName, fullName};
-        const html = templates(Template.EmailConfirmation, templateOptions);
-        const mailOptions = {
-          to: email,
-          subject: 'Bewerbungsbestätigung',
-          html,
-        };
-        await sendMail(mailOptions).catch(console.error);
+          const templateOptions = {tenantName: tenant.tenantName, fullName};
+          const html = templates(Template.EmailConfirmation, templateOptions);
+          const mailOptions = {to: email, subject: 'Bewerbungsbestätigung', html};
+          await sendMail(mailOptions).catch(console.error);
+        }
 
         resolve({view: 'form-submission'});
       });

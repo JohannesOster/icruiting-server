@@ -117,7 +117,7 @@ describe('createForm', () => {
       expect(create).toThrowError(ValidationError);
     });
 
-    it('requires email and name field for application form', () => {
+    it('requires name field for application form', () => {
       const create = () => {
         createForm({
           tenantId: random.uuid(),
