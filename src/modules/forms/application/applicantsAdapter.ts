@@ -9,6 +9,11 @@ import storageService from 'infrastructure/storageService';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {validateSubscription} from './utils';
 
+const htmlTemplateForJobId = (jobId: string) => {
+  if (jobId == '8182cb05-7f2a-467a-9c83-b58cad1acbaf') return Template.EmailConfirmationTE;
+  return Template.EmailConfirmation;
+};
+
 export const ApplicantsAdapter = (db: DB) => {
   const create = httpReqHandler(async (req) => {
     const {formId} = req.params;
@@ -134,7 +139,7 @@ export const ApplicantsAdapter = (db: DB) => {
           if (!fullName) return reject(new BaseError(500, 'Applicant has no email-adress'));
 
           const templateOptions = {tenantName: tenant.tenantName, fullName};
-          const html = templates(Template.EmailConfirmation, templateOptions);
+          let html = templates(htmlTemplateForJobId(form.jobId), templateOptions);
           const mailOptions = {to: email, subject: 'Bewerbungsbestätigung', html};
           await sendMail(mailOptions).catch(console.error);
         }
