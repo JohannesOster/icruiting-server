@@ -66,7 +66,6 @@
     "@types/lodash": "^4.17.7",
     "@types/nodemailer": "^6.4.15",
     "@types/pug": "^2.0.10",
-    "@types/puppeteer": "^3.0.5",
     "@types/supertest": "^2.0.10",
     "@types/uuid": "^8.3.0",
     "babel-plugin-styled-components": "^2.1.4",
