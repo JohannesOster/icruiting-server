@@ -18,7 +18,7 @@ export const dbMigrate = (command: string) => {
     case 'drop-all':
       return instance.dropAll();
     case 'changelogSync':
-      return instance.changelogSync();
+      return instance.changelogSync({changelogFile: liquibaseConfig.changeLogFile});
     default:
       throw new Error(`Unknown command: ${command}`);
   }
