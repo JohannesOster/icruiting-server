@@ -38,12 +38,12 @@ describe('tenants', () => {
         .expect(201, {message: 'Successfully uploaded theme'}, done);
     });
 
-    it('validates file type', async (done) => {
-      request(app)
+    it('validates file type', async () => {
+      await request(app)
         .post(`/tenants/${mockUser.tenantId}/themes`)
         .attach('theme', `${__dirname}/files/theme.txt`)
         .expect('Content-Type', /json/)
-        .expect(422, done);
+        .expect(422);
     });
   });
 });

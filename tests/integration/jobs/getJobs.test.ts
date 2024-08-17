@@ -28,12 +28,12 @@ describe('jobs', () => {
   });
 
   describe('GET /jobs', () => {
-    it('returns 200 json response', async (done) => {
-      request(app)
+    it('returns 200 json response', async () => {
+      await request(app)
         .get('/jobs')
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
 
     it('returns array of jobs', async () => {

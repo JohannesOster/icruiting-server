@@ -38,12 +38,12 @@ describe('jobs', () => {
   });
 
   describe('GET /jobs/:jobId/export', () => {
-    it('Returns 200 json response', async (done) => {
-      request(app)
+    it('Returns 200 json response', async () => {
+      await request(app)
         .get(`/jobs/${job.id}/export`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
 
     it('Drops tenantId of job', async () => {

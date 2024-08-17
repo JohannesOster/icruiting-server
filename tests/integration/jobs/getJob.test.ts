@@ -31,12 +31,12 @@ describe('jobs', () => {
   });
 
   describe('GET /jobs/:jobId', () => {
-    it('Returns 200 json response', async (done) => {
-      request(app)
+    it('Returns 200 json response', async () => {
+      await request(app)
         .get(`/jobs/${job.id}`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
 
     it('returns single job if exists', async () => {
@@ -58,10 +58,7 @@ describe('jobs', () => {
       const {id: tenantId} = await dataGenerator.insertTenant();
       const {id: jobId} = await dataGenerator.insertJob(tenantId);
 
-      await request(app)
-        .get(`/jobs/${jobId}`)
-        .set('Accept', 'application/json')
-        .expect(404);
+      await request(app).get(`/jobs/${jobId}`).set('Accept', 'application/json').expect(404);
     });
   });
 });

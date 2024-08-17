@@ -90,21 +90,17 @@ describe('tenants', () => {
       password: faker.internet.password(),
       stripePriceId: faker.random.uuid(),
     });
-    it('returns 201 json response', async (done) => {
-      request(app)
+    it('returns 201 json response', async () => {
+      await request(app)
         .post('/tenants')
         .set('Accept', 'application/json')
         .send(params())
         .expect('Content-Type', /json/)
-        .expect(201, done);
+        .expect(201);
     });
 
-    it('returns 422 on missing params', async (done) => {
-      request(app)
-        .post('/tenants')
-        .send({})
-        .set('Accept', 'application/json')
-        .expect(422, done);
+    it('returns 422 on missing params', async () => {
+      await request(app).post('/tenants').send({}).set('Accept', 'application/json').expect(422);
     });
 
     it('returns inserted tenant entity', async () => {
