@@ -30,15 +30,11 @@ export const httpReqHandler = (fn: RequestHandler): ExpressRequestHandler => {
   };
 };
 
-export const catchAsync = (
-  fn: ExpressRequestHandler,
-): ExpressRequestHandler => {
+export const catchAsync = (fn: ExpressRequestHandler): ExpressRequestHandler => {
   return (req, res, next) => {
-    try {
-      fn(req, res, next);
-    } catch (e: any) {
+    Promise.resolve(fn(req, res, next)).catch((e: any) => {
       next(mapDomainErrors(e));
-    }
+    });
   };
 };
 
