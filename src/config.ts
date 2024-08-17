@@ -4,6 +4,12 @@ const env = process.env.NODE_ENV || 'development';
 dotenv.config({path: `.env.${env}`});
 
 const config = convict({
+  env: {
+    doc: 'The application environment.',
+    format: ['production', 'development', 'test'],
+    default: 'development',
+    env: 'NODE_ENV',
+  },
   discordWebHook: {
     doc: '',
     format: String,

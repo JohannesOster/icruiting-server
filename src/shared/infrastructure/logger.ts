@@ -3,10 +3,14 @@ import https from 'https';
 import config from 'config';
 
 const Logger = () => {
-  const ops = {
-    level: 'info', // 'debug' | 'info' | 'warn' | 'error' | 'critical';
-    transport: {target: 'pino-pretty', options: {colorize: true, sync: true}},
-  };
+  const ops =
+    config.get('env') === 'test'
+      ? {level: 'silent'}
+      : {
+          level: 'info', // 'debug' | 'info' | 'warn' | 'error' | 'critical';
+          transport: {target: 'pino-pretty', options: {colorize: true, sync: true}},
+        };
+  const pino = require('pino');
 
   const _logger = pino(ops);
 
