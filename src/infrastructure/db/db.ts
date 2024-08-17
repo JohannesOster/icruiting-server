@@ -3,9 +3,9 @@ import config from '../../config';
 import humps from 'humps';
 
 const initOptions: IInitOptions = {
-  receive(data, result) {
-    if (!result) return result;
-    result.rows = data.map((obj) => humps.camelizeKeys(obj));
+  receive(e) {
+    if (!e.result) return e.result;
+    e.result.rows = e.data.map((obj) => humps.camelizeKeys(obj));
   },
 };
 
