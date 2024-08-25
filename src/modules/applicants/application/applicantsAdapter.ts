@@ -122,8 +122,9 @@ export const ApplicantsAdapter = (db: DB) => {
 
             // !> filter out non submitted values
             const isFile = item.component === 'file_upload';
+            const fieldVal = fields[item.id]?.[0];
 
-            if (!fields[item.id] && !isFile) {
+            if (!fieldVal && !isFile) {
               if (!item.required) return acc;
               return reject(new BaseError(422, `Missing required field: ${item.label}`));
             }
@@ -177,10 +178,7 @@ export const ApplicantsAdapter = (db: DB) => {
               return acc;
             }
 
-            (await acc).attributes.push({
-              formFieldId: item.id,
-              attributeValue: fields[item.id],
-            });
+            (await acc).attributes.push({formFieldId: item.id, attributeValue: fieldVal});
 
             return acc;
           },

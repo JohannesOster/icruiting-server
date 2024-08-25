@@ -60,7 +60,7 @@ export const ApplicantsAdapter = (db: DB) => {
             }
 
             if (['input', 'textarea', 'select', 'radio'].includes(item.component)) {
-              if (!field) return acc;
+              if (!field?.[0]) return acc;
               acc.push({formFieldId: item.id, attributeValue: field[0]});
             } else if (item.component === 'checkbox') {
               if (!field) return acc;
