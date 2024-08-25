@@ -19,7 +19,7 @@ type AdminUpdateUserParams = {
   Username: string;
   UserAttributes: {Name: string; Value: string}[];
 };
-jest.mock('aws-sdk', () => ({
+jest.mock('@aws-sdk/client-cognito-identity-provider', () => ({
   CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({
     adminUpdateUserAttributes: (params: AdminUpdateUserParams) => ({
       promise: () =>

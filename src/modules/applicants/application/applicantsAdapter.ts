@@ -1,5 +1,5 @@
 import fs from 'fs';
-import {IncomingForm} from 'formidable';
+import formidable from 'formidable';
 import {BaseError} from 'application';
 import storageService from 'infrastructure/storageService';
 import {getApplicantFileURLs} from './utils';
@@ -72,9 +72,7 @@ export const ApplicantsAdapter = (db: DB) => {
     const applicants = await Promise.all(promises);
 
     /* MAP formFieldId to lable */
-    const form = (
-      await db.forms.list(tenantId, {jobId, formCategory: 'application'})
-    )[0];
+    const form = (await db.forms.list(tenantId, {jobId, formCategory: 'application'}))[0];
 
     if (!form) throw new BaseError(404, 'Application form Not Found');
     const formFields = form.formFields.reduce((acc, curr) => {
@@ -102,17 +100,16 @@ export const ApplicantsAdapter = (db: DB) => {
   const update = httpReqHandler((req) => {
     const {tenantId} = req.user;
     const {applicantId} = req.params;
-    const formidable = new IncomingForm({multiples: true} as any);
 
     let applicant;
     return new Promise((resolve, reject) => {
-      formidable.parse(req, async (err: Error, fields: any, files: any) => {
+      formidable({multiples: true}).parse(req, async (err, fields, files) => {
         if (err) return reject(err);
         const {formId} = fields;
 
         if (!formId) return reject(new BaseError(422, 'Missing formId field'));
 
-        const form = await db.forms.retrieve(null, formId);
+        const form = await db.forms.retrieve(null, formId[0]);
         if (!form) return reject(new BaseError(404, 'Form Not Found'));
 
         applicant = await db.applicants.retrieve(tenantId, applicantId);
@@ -128,17 +125,13 @@ export const ApplicantsAdapter = (db: DB) => {
 
             if (!fields[item.id] && !isFile) {
               if (!item.required) return acc;
-              return reject(
-                new BaseError(422, `Missing required field: ${item.label}`),
-              );
+              return reject(new BaseError(422, `Missing required field: ${item.label}`));
             }
 
             if (isFile) {
-              const file = files[item.id];
+              const file = files[item.id]?.[0];
 
-              const oldFile = oldFiles?.find(
-                ({formFieldId}) => formFieldId === item.id,
-              );
+              const oldFile = oldFiles?.find(({formFieldId}) => formFieldId === item.id);
 
               const fileExists = !!(file && file.size);
               if (!fileExists) {
@@ -151,8 +144,8 @@ export const ApplicantsAdapter = (db: DB) => {
                 return acc;
               }
 
-              const extension = file.name.substr(
-                file.name.lastIndexOf('.') + 1,
+              const extension = file.originalFilename?.substr(
+                file.originalFilename.lastIndexOf('.') + 1,
               );
 
               const fileId = (Math.random() * 1e32).toString(36);
@@ -160,17 +153,17 @@ export const ApplicantsAdapter = (db: DB) => {
 
               if (oldFile) await storageService.del(oldFile.uri);
 
-              const fileStream = await fs.createReadStream(file.path);
+              const fileStream = await fs.createReadStream(file.filepath);
               const params = {
                 path: fileKey,
-                contentType: file.type,
+                contentType: file.mimetype || '',
                 data: fileStream,
               };
 
               await storageService.upload(params);
 
               await new Promise((resolve, reject) => {
-                fs.unlink(file.path, (error) => {
+                fs.unlink(file.filepath, (error) => {
                   if (error) return reject(new BaseError(500, error.message));
                   resolve({});
                 });
@@ -218,11 +211,7 @@ export const ApplicantsAdapter = (db: DB) => {
     const job = await db.jobs.retrieve(tenantId, applicant.jobId);
     if (!job) throw new BaseError(404, 'Job Not Found');
 
-    const data = await db.formSubmissions.prepareReport(
-      tenantId,
-      formCategory,
-      job.id,
-    );
+    const data = await db.formSubmissions.prepareReport(tenantId, formCategory, job.id);
 
     const report = calcReport(data, applicantId, job.jobRequirements);
 
@@ -240,11 +229,7 @@ export const ApplicantsAdapter = (db: DB) => {
     const job = await db.jobs.retrieve(tenantId, applicant.jobId);
     if (!job) throw new BaseError(404, 'Job Not Found');
 
-    const data = await db.formSubmissions.prepareTEReport(
-      tenantId,
-      formId,
-      job.id,
-    );
+    const data = await db.formSubmissions.prepareTEReport(tenantId, formId, job.id);
 
     const report = calcReport(data, applicantId, job.jobRequirements);
 
@@ -273,11 +258,7 @@ export const ApplicantsAdapter = (db: DB) => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
 
-    const applicant = await db.applicants.updateApplicantStatus(
-      tenantId,
-      applicantId,
-      'confirmed',
-    );
+    const applicant = await db.applicants.updateApplicantStatus(tenantId, applicantId, 'confirmed');
 
     return {body: applicant};
   });

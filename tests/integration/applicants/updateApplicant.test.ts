@@ -17,12 +17,6 @@ jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   }),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    getSignedUrlPromise: () => Promise.resolve(''),
-  })),
-}));
-
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
 });
@@ -58,15 +52,15 @@ describe('applicants', () => {
       applicant = await applicantsRepo.create(_applicant);
     });
 
-    it('returns json 200 response', (done) => {
-      request(app)
+    it('returns json 200 response', async () => {
+      await request(app)
         .put(`/applicants/${applicant.applicantId}`)
         .set('Accept', 'application/json')
         .field('formId', form.id)
         .field(form.formFields[0].id, random.words())
         .field(form.formFields[1].id, random.words())
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
   });
 });

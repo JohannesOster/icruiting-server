@@ -1,20 +1,17 @@
-import {CognitoIdentityServiceProvider} from 'aws-sdk';
+import {UserType} from '@aws-sdk/client-cognito-identity-provider';
 
 type KeyValuePair<T> = {
   [key: string]: T;
 };
 
-export const mapCognitoUser = (
-  user: CognitoIdentityServiceProvider.UserType,
-  keyModifier?: (key: string) => string,
-) => {
+export const mapCognitoUser = (user: UserType, keyModifier?: (key: string) => string) => {
   const attributes: KeyValuePair<string> = {};
   if (user.UserStatus) attributes.status = user.UserStatus;
   if (!user.Attributes?.length) return attributes;
   return {
     ...attributes,
     ...user.Attributes.reduce((acc, curr) => {
-      if (!curr.Value) return acc;
+      if (!(curr.Value && curr.Name)) return acc;
       const key = keyModifier ? keyModifier(curr.Name) : curr.Name;
       acc[key] = curr.Value;
       return acc;

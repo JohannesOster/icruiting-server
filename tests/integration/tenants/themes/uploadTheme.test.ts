@@ -13,12 +13,6 @@ jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   }),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    upload: () => ({promise: () => Promise.resolve()}),
-  })),
-}));
-
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
 });
@@ -30,20 +24,21 @@ afterAll(async () => {
 
 describe('tenants', () => {
   describe('POST /tenants/:tenantId/themes', () => {
-    it('returns 201 json response', (done) => {
-      request(app)
+    it('returns 201 json response', async () => {
+      await request(app)
         .post(`/tenants/${mockUser.tenantId}/themes`)
         .attach('theme', `${__dirname}/files/theme.css`)
         .expect('Content-Type', /json/)
-        .expect(201, {message: 'Successfully uploaded theme'}, done);
+        .expect(201, {message: 'Successfully uploaded theme'});
     });
 
-    it('validates file type', async (done) => {
-      request(app)
+    it('validates file type', async () => {
+      await request(app)
         .post(`/tenants/${mockUser.tenantId}/themes`)
+        .set('Content-Type', 'multipart/form-data')
         .attach('theme', `${__dirname}/files/theme.txt`)
         .expect('Content-Type', /json/)
-        .expect(422, done);
+        .expect(422);
     });
   });
 });

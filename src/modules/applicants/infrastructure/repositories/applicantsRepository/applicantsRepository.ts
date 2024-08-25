@@ -65,10 +65,7 @@ export const ApplicantsRepository = ({db, pgp}: DBAccess) => {
       });
   };
 
-  const retrieve = (
-    tenantId: string,
-    applicantId: string,
-  ): Promise<Applicant | null> => {
+  const retrieve = (tenantId: string, applicantId: string): Promise<Applicant | null> => {
     const params = decamelizeKeys({tenantId, applicantId});
     return db.oneOrNone(sql.retrieve, params);
   };
@@ -106,8 +103,7 @@ export const ApplicantsRepository = ({db, pgp}: DBAccess) => {
 
   const del = (tenantId: string, applicantId: string): Promise<null> => {
     const stmt =
-      'DELETE FROM applicant' +
-      ' WHERE tenant_id=${tenant_id} AND applicant_id=${applicant_id} ';
+      'DELETE FROM applicant' + ' WHERE tenant_id=${tenant_id} AND applicant_id=${applicant_id} ';
     return db.none(stmt, {tenant_id: tenantId, applicant_id: applicantId});
   };
 

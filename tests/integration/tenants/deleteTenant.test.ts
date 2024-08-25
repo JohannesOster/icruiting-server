@@ -15,13 +15,7 @@ jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   }),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    listObjects: () => ({
-      promise: () => Promise.resolve({Contents: [{Key: faker.internet.url()}]}),
-    }),
-    deleteObject: () => ({promise: () => Promise.resolve()}),
-  })),
+jest.mock('@aws-sdk/client-cognito-identity-provider', () => ({
   CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({
     listUsers: () => ({
       promise: () =>
@@ -79,9 +73,7 @@ describe('tenants', () => {
     });
 
     it('uses tenantId of jwt not parameter', async () => {
-      const {id: tenantId} = await dataGenerator.insertTenant(
-        faker.random.uuid(),
-      );
+      const {id: tenantId} = await dataGenerator.insertTenant(faker.random.uuid());
 
       await request(app)
         .del(`/tenants/${tenantId}`)

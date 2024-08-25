@@ -34,15 +34,7 @@ jest.mock('amazon-cognito-identity-js', () => ({
   })),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    listObjects: () => ({
-      promise: () => Promise.resolve({Contents: [{Key: faker.internet.url()}]}),
-    }),
-    deleteObjects: () => ({
-      promise: () => Promise.resolve(),
-    }),
-  })),
+jest.mock('@aws-sdk/client-cognito-identity-provider', () => ({
   CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({
     adminCreateUser: (parmas: {
       UserPoolId: string;
@@ -90,21 +82,17 @@ describe('tenants', () => {
       password: faker.internet.password(),
       stripePriceId: faker.random.uuid(),
     });
-    it('returns 201 json response', async (done) => {
-      request(app)
+    it('returns 201 json response', async () => {
+      await request(app)
         .post('/tenants')
         .set('Accept', 'application/json')
         .send(params())
         .expect('Content-Type', /json/)
-        .expect(201, done);
+        .expect(201);
     });
 
-    it('returns 422 on missing params', async (done) => {
-      request(app)
-        .post('/tenants')
-        .send({})
-        .set('Accept', 'application/json')
-        .expect(422, done);
+    it('returns 422 on missing params', async () => {
+      await request(app).post('/tenants').send({}).set('Accept', 'application/json').expect(422);
     });
 
     it('returns inserted tenant entity', async () => {

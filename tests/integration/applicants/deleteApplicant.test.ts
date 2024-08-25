@@ -14,12 +14,6 @@ jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   }),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    deleteObject: () => ({promise: () => Promise.resolve()}),
-  })),
-}));
-
 let jobId: string;
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
@@ -36,11 +30,7 @@ describe('applicants', () => {
   describe('DELETE /applicants/:applicantId', () => {
     let applicant: any;
     beforeEach(async () => {
-      const form = await dataGenerator.insertForm(
-        mockUser.tenantId,
-        jobId,
-        'application',
-      );
+      const form = await dataGenerator.insertForm(mockUser.tenantId, jobId, 'application');
 
       applicant = await dataGenerator.insertApplicant(
         mockUser.tenantId,

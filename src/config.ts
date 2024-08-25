@@ -1,8 +1,15 @@
 import convict from 'convict';
 import * as dotenv from 'dotenv';
-dotenv.config({path: `.env.${process.env.NODE_ENV}`});
+const env = process.env.NODE_ENV || 'development';
+dotenv.config({path: `.env.${env}`});
 
 const config = convict({
+  env: {
+    doc: 'The application environment.',
+    format: ['production', 'development', 'test'],
+    default: 'development',
+    env: 'NODE_ENV',
+  },
   discordWebHook: {
     doc: '',
     format: String,
@@ -49,11 +56,19 @@ const config = convict({
       env: 'DATABASE_URL',
     },
   },
-  awsS3Bucket: {
-    doc: '',
-    format: String,
-    default: '',
-    env: 'S3_BUCKET',
+  awsS3: {
+    bucket: {
+      doc: '',
+      format: String,
+      default: '',
+      env: 'S3_BUCKET',
+    },
+    region: {
+      doc: '',
+      format: String,
+      default: '',
+      env: 'S3_REGION',
+    },
   },
   mailService: {
     email: {

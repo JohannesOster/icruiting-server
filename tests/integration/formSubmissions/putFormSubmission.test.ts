@@ -31,16 +31,8 @@ describe('form-submissions', () => {
     let formSubmission: FormSubmission;
     beforeAll(async () => {
       const {tenantId, userId} = mockUser;
-      const screeningForm = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        'screening',
-      );
-      const applForm = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        'application',
-      );
+      const screeningForm = await dataGenerator.insertForm(tenantId, jobId, 'screening');
+      const applForm = await dataGenerator.insertForm(tenantId, jobId, 'application');
       const formFieldIds = applForm.formFields.map(({id}) => id);
 
       const {applicantId} = (await dataGenerator.insertApplicant(
@@ -58,13 +50,13 @@ describe('form-submissions', () => {
       );
     });
 
-    it('returns 201 json response', async (done) => {
-      request(app)
+    it('returns 201 json response', async () => {
+      await request(app)
         .put(`/form-submissions/${formSubmission.id}`)
         .set('Accept', 'application/json')
         .send(formSubmissionsMapper.toDTO(mockUser.tenantId, formSubmission))
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
 
     it('returns updated entity', async () => {

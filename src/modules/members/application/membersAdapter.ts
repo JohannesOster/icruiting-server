@@ -36,6 +36,7 @@ export const MembersAdapter = (db: DB) => {
     const {tenantId} = req.user;
     const {username: email} = req.params;
     const {Username} = await authService.retrieve(email);
+    if (!Username) throw new Error(`User ${email} not found.`);
     await db.formSubmissions.bulkDel(tenantId, Username);
     await authService.deleteUser(email);
     return {};

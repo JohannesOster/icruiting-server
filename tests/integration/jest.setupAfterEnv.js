@@ -14,3 +14,4 @@ jest.mock('stripe', () =>
 
 jest.mock('shared/infrastructure/http/middlewares/stripe');
 jest.mock('infrastructure/authService/authService');
+jest.mock('infrastructure/storageService/storageService');

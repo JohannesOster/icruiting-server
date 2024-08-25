@@ -15,12 +15,6 @@ jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   }),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    deleteObject: () => ({promise: () => Promise.resolve()}),
-  })),
-}));
-
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
 });
@@ -38,11 +32,11 @@ describe('tenants', () => {
       await tenantsRepo.updateTheme(mockUser.tenantId, 'mockTheme.css');
     });
 
-    it('returns 200 json response', async (done) => {
-      request(app)
+    it('returns 200 json response', async () => {
+      await request(app)
         .delete(`/tenants/${mockUser.tenantId}/themes`)
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
 
     it('deletes theme column', async () => {
@@ -55,12 +49,12 @@ describe('tenants', () => {
       expect(tenant!.theme).toBeUndefined();
     });
 
-    it('returns 404 if theme does not exist', async (done) => {
+    it('returns 404 if theme does not exist', async () => {
       tenantsRepo.updateTheme(mockUser.tenantId, null);
-      request(app)
+      await request(app)
         .delete(`/tenants/${mockUser.tenantId}/themes`)
         .expect('Content-Type', /json/)
-        .expect(404, done);
+        .expect(404);
     });
   });
 });

@@ -14,12 +14,6 @@ jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   }),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    getSignedUrlPromise: () => Promise.resolve(''),
-  })),
-}));
-
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
 });
@@ -36,11 +30,7 @@ describe('applicants', () => {
     beforeAll(async () => {
       const {tenantId} = mockUser;
       const {id: jobId} = await dataGenerator.insertJob(tenantId);
-      const form = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        'application',
-      );
+      const form = await dataGenerator.insertForm(tenantId, jobId, 'application');
       const applicant = await dataGenerator.insertApplicant(
         tenantId,
         jobId,
@@ -65,19 +55,13 @@ describe('applicants', () => {
 
       expect(Array.isArray(res.body.applicants)).toBeTruthy();
       expect(res.body.applicants.length).toBe(applicants.length);
-      expect(res.body.applicants[0].applicantId).toBe(
-        applicants[0].applicantId,
-      );
+      expect(res.body.applicants[0].applicantId).toBe(applicants[0].applicantId);
     });
 
     it('isloates applicants of tenant', async () => {
       const {id: tenantId} = await dataGenerator.insertTenant(random.uuid());
       const {id: jobId} = await dataGenerator.insertJob(tenantId);
-      const form = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        'application',
-      );
+      const form = await dataGenerator.insertForm(tenantId, jobId, 'application');
       const fieldIds = form.formFields.map(({id}) => id);
       await dataGenerator.insertApplicant(tenantId, jobId, fieldIds);
 
@@ -91,11 +75,7 @@ describe('applicants', () => {
 
     it('filters by jobId using query', async () => {
       const {id: jobId} = await dataGenerator.insertJob(mockUser.tenantId);
-      const form = await dataGenerator.insertForm(
-        mockUser.tenantId,
-        jobId,
-        'application',
-      );
+      const form = await dataGenerator.insertForm(mockUser.tenantId, jobId, 'application');
 
       const fieldIds = form.formFields.map(({id}) => id);
       const applicant = (await dataGenerator.insertApplicant(
@@ -116,11 +96,7 @@ describe('applicants', () => {
     it('isolates tenant applicants even if foreign jobId is queried', async () => {
       const {id: tenantId} = await dataGenerator.insertTenant(random.uuid());
       const {id: jobId} = await dataGenerator.insertJob(tenantId);
-      const form = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        'application',
-      );
+      const form = await dataGenerator.insertForm(tenantId, jobId, 'application');
       const fieldIds = form.formFields.map(({id}) => id);
       await dataGenerator.insertApplicant(tenantId, jobId, fieldIds);
 

@@ -14,7 +14,7 @@ jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   }),
 }));
 
-jest.mock('aws-sdk', () => ({
+jest.mock('@aws-sdk/client-cognito-identity-provider', () => ({
   CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({
     listUsers: () => ({
       promise: () =>
@@ -70,10 +70,7 @@ describe('members', () => {
     });
 
     it('Removes custom keywoard before custom attributes', async () => {
-      const resp = await request(app)
-        .get('/members')
-        .set('Accept', 'application/json')
-        .expect(200);
+      const resp = await request(app).get('/members').set('Accept', 'application/json').expect(200);
 
       resp.body.forEach((user: any) => {
         expect(user.email).toBeDefined();
@@ -83,10 +80,7 @@ describe('members', () => {
     });
 
     it('Isolates tenant members', async () => {
-      const resp = await request(app)
-        .get('/members')
-        .set('Accept', 'application/json')
-        .expect(200);
+      const resp = await request(app).get('/members').set('Accept', 'application/json').expect(200);
 
       resp.body.forEach((user: any) => {
         expect(user.tenant_id).toBe(mockUser.tenantId);

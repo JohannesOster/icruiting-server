@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 
 export const PaymentService = () => {
   const stripeKey = config.get('stripeSecretKey');
-  const stripe = new Stripe(stripeKey, {apiVersion: '2022-08-01'});
+  const stripe = new Stripe(stripeKey, {apiVersion: '2024-06-20'});
 
   const customers = {
     create: async (email: string, subscriptionId: string) => {
@@ -42,7 +42,7 @@ export const PaymentService = () => {
       ]).then(([active, trialing]) => active.data.concat(trialing.data));
     },
     cancel: (subscriptionId: string) => {
-      return stripe.subscriptions.del(subscriptionId);
+      return stripe.subscriptions.cancel(subscriptionId);
     },
     // List all products / possible subscriptions that exist
     list: () => {
