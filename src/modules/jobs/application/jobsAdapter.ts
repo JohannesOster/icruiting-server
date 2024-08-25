@@ -1,7 +1,7 @@
 import fs from 'fs';
 import storageService from 'infrastructure/storageService';
 import {BaseError} from 'application';
-import {File, IncomingForm} from 'formidable';
+import formidable, {File} from 'formidable';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {DB} from '../infrastructure/repositories';
 import jobsMapper from '../mappers/jobsMapper';
@@ -139,19 +139,22 @@ export const JobsAdapter = (db: DB) => {
     return {body: body};
   });
 
-  const _validateJobFile = (file: File | File[]) => {
-    if (Array.isArray(file)) throw new BaseError(422, 'Multifile no supported.');
-    if (!file.name) throw new BaseError(500, 'Missing file name');
+  const _validateJobFile = (file: File[] | undefined) => {
+    if (!file) throw new BaseError(422, 'Missing file');
+    if (!file[0]) throw new BaseError(422, 'Missing file');
+    if (!file[0].originalFilename) throw new BaseError(500, 'Missing file name');
 
-    const extension = file.name.substr(file.name.lastIndexOf('.') + 1);
+    const extension = file[0].originalFilename.substr(
+      file[0].originalFilename.lastIndexOf('.') + 1,
+    );
     if (extension !== 'json') throw new BaseError(422, `Invalid fileformat ${extension}`);
 
-    return file;
+    return file[0];
   };
 
   const _readJSONFile = async (file: File) => {
     const data = await new Promise<Buffer>((resolve, reject) => {
-      fs.readFile(file.path, (error, data) => {
+      fs.readFile(file.filepath, (error, data) => {
         if (error) return reject(new BaseError(500, error.message));
         resolve(data);
       });
@@ -224,8 +227,7 @@ export const JobsAdapter = (db: DB) => {
   const importJob = httpReqHandler(async (req) => {
     const {tenantId} = req.user;
     return new Promise((resolve, reject) => {
-      const formidable = new IncomingForm();
-      formidable.parse(req, async (error, fields, files) => {
+      formidable().parse(req, async (error, fields, files) => {
         try {
           if (error) return reject(new BaseError(500, error));
           const file = _validateJobFile(files.job);

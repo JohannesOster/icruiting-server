@@ -22,31 +22,23 @@ export const FormsRepository = ({db, pgp}: DBAccess) => {
       .then((forms) => forms.map(formsMapper.toDomain));
   };
 
-  const retrieve = (
-    tenantId: string | null,
-    formId: string,
-  ): Promise<Form | null> => {
+  const retrieve = (tenantId: string | null, formId: string): Promise<Form | null> => {
     return db
       .oneOrNone(sql.retrieve, {tenant_id: tenantId, form_id: formId})
       .then((form) => (form ? formsMapper.toDomain(form) : null));
   };
 
-  const create = async (
-    params: ReturnType<typeof formsMapper.toPersistance>,
-  ): Promise<Form> => {
+  const create = async (params: ReturnType<typeof formsMapper.toPersistance>): Promise<Form> => {
     const {formFields, ...form} = params;
 
     const helpers = db.$config.pgp.helpers;
 
     // - insert form
-    const formStmt =
-      helpers.insert(decamelizeKeys(form), null, 'form') + ' RETURNING *';
+    const formStmt = helpers.insert(decamelizeKeys(form), null, 'form') + ' RETURNING *';
     const insertedForm = await db.one(formStmt);
 
     if (!formFields.length) {
-      return Promise.resolve({...insertedForm, formFields: []}).then(
-        formsMapper.toDomain,
-      );
+      return Promise.resolve({...insertedForm, formFields: []}).then(formsMapper.toDomain);
     }
 
     // - insert formFields
@@ -107,9 +99,7 @@ export const FormsRepository = ({db, pgp}: DBAccess) => {
           form_id: params.formId,
           form_title: params.formTitle,
         };
-        const stmt =
-          update(values, cs) +
-          ' WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
+        const stmt = update(values, cs) + ' WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
         const promise = t.none(stmt, {
           tenant_id: params.tenantId,
           form_id: params.formId,
@@ -127,10 +117,7 @@ export const FormsRepository = ({db, pgp}: DBAccess) => {
       /** DELETE ======================== */
       promises.concat(
         fieldsMap.secondMinusFirst.map(async ({formFieldId}) => {
-          return t.none(
-            'DELETE FROM form_field WHERE form_field_id=$1',
-            formFieldId,
-          );
+          return t.none('DELETE FROM form_field WHERE form_field_id=$1', formFieldId);
         }),
       );
 
@@ -192,8 +179,7 @@ export const FormsRepository = ({db, pgp}: DBAccess) => {
 
         const values = decamelizeKeys(fieldsMap.intersection);
         const updateStmt =
-          update(values, csUpdate) +
-          ' WHERE v.form_field_id::uuid = t.form_field_id';
+          update(values, csUpdate) + ' WHERE v.form_field_id::uuid = t.form_field_id';
         promises.push(t.any(updateStmt));
       }
       return t.batch(promises);
@@ -206,8 +192,7 @@ export const FormsRepository = ({db, pgp}: DBAccess) => {
   };
 
   const del = (tenantId: string, formId: string): Promise<null> => {
-    const stmt =
-      'DELETE FROM form WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
+    const stmt = 'DELETE FROM form WHERE form_id=${form_id} AND tenant_id=${tenant_id}';
     return db.none(stmt, {tenant_id: tenantId, form_id: formId});
   };
 
