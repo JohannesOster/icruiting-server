@@ -1,6 +1,9 @@
 import {CognitoUserAttribute, CognitoUserPool, ISignUpResult} from 'amazon-cognito-identity-js';
 import {BaseError} from 'application';
-import {CognitoIdentityServiceProvider} from 'aws-sdk';
+import {
+  CognitoIdentityProvider,
+  DeliveryMediumType,
+} from '@aws-sdk/client-cognito-identity-provider';
 import CognitoExpress from 'cognito-express';
 import {mapCognitoUser, removePrefix} from './utils';
 import config from 'config';
@@ -41,11 +44,11 @@ export const AuthService = () => {
     userRole: 'member' | 'admin';
   };
   const createUser = (user: createUserProps) => {
-    const cIdp = new CognitoIdentityServiceProvider();
+    const cIdp = new CognitoIdentityProvider();
     const params = {
       UserPoolId: cognitoUserPoolId,
       Username: user.email,
-      DesiredDeliveryMediums: ['EMAIL'],
+      DesiredDeliveryMediums: [DeliveryMediumType.EMAIL],
       UserAttributes: [
         {Name: 'email', Value: user.email},
         {Name: 'custom:tenant_id', Value: user.tenantId},
@@ -53,7 +56,7 @@ export const AuthService = () => {
       ],
     };
 
-    return cIdp.adminCreateUser(params).promise();
+    return cIdp.adminCreateUser(params);
   };
   type SignUpParams = {tenantId: string; email: string; password: string};
   const signUpUser = ({tenantId, email, password}: SignUpParams): Promise<ISignUpResult> => {
@@ -74,7 +77,7 @@ export const AuthService = () => {
   };
 
   const listUsers = (tenantId: string): Promise<{[key: string]: string}[]> => {
-    const cIdp = new CognitoIdentityServiceProvider();
+    const cIdp = new CognitoIdentityProvider();
     return new Promise(async (resolve) => {
       const params = {
         UserPoolId: cognitoUserPoolId,
@@ -91,26 +94,32 @@ export const AuthService = () => {
       const filterConfirmed = {Filter: 'cognito:user_status = "CONFIRMED"'};
       const filterPending = {Filter: 'cognito:user_status = "FORCE_CHANGE_PASSWORD"'};
 
-      let {Users: confirmed = [], PaginationToken: cPToken} = await cIdp
-        .listUsers({...params, ...filterConfirmed})
-        .promise();
-      let {Users: pending = [], PaginationToken: pPToken} = await cIdp
-        .listUsers({...params, ...filterPending})
-        .promise();
+      let {Users: confirmed = [], PaginationToken: cPToken} = await cIdp.listUsers({
+        ...params,
+        ...filterConfirmed,
+      });
+      let {Users: pending = [], PaginationToken: pPToken} = await cIdp.listUsers({
+        ...params,
+        ...filterPending,
+      });
 
       while (cPToken || pPToken) {
         if (cPToken) {
-          const {Users: cUsers = [], PaginationToken: _cPToken} = await cIdp
-            .listUsers({...params, ...filterConfirmed, PaginationToken: cPToken})
-            .promise();
+          const {Users: cUsers = [], PaginationToken: _cPToken} = await cIdp.listUsers({
+            ...params,
+            ...filterConfirmed,
+            PaginationToken: cPToken,
+          });
           confirmed = confirmed.concat(cUsers);
           cPToken = _cPToken;
         }
 
         if (pPToken) {
-          const {Users: pUsers = [], PaginationToken: _pPToken} = await cIdp
-            .listUsers({...params, ...filterPending, PaginationToken: pPToken})
-            .promise();
+          const {Users: pUsers = [], PaginationToken: _pPToken} = await cIdp.listUsers({
+            ...params,
+            ...filterPending,
+            PaginationToken: pPToken,
+          });
           pending = pending.concat(pUsers);
           pPToken = _pPToken;
         }
@@ -132,25 +141,25 @@ export const AuthService = () => {
 
   type UpdateUserRoleParams = {userRole: string; email: string};
   const updateUserRole = ({userRole, email}: UpdateUserRoleParams) => {
-    const cIdp = new CognitoIdentityServiceProvider();
+    const cIdp = new CognitoIdentityProvider();
     const params = {
       UserPoolId: cognitoUserPoolId,
       Username: email,
       UserAttributes: [{Name: 'custom:user_role', Value: userRole}],
     };
-    return cIdp.adminUpdateUserAttributes(params).promise();
+    return cIdp.adminUpdateUserAttributes(params);
   };
 
   const deleteUser = (email: string) => {
-    const cIdp = new CognitoIdentityServiceProvider();
+    const cIdp = new CognitoIdentityProvider();
     const params = {UserPoolId: cognitoUserPoolId, Username: email};
-    return cIdp.adminDeleteUser(params).promise();
+    return cIdp.adminDeleteUser(params);
   };
 
   const retrieve = (email: string) => {
-    const cIdp = new CognitoIdentityServiceProvider();
+    const cIdp = new CognitoIdentityProvider();
     const params = {UserPoolId: cognitoUserPoolId, Username: email};
-    return cIdp.adminGetUser(params).promise();
+    return cIdp.adminGetUser(params);
   };
 
   return {

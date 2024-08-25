@@ -34,15 +34,7 @@ jest.mock('amazon-cognito-identity-js', () => ({
   })),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    listObjects: () => ({
-      promise: () => Promise.resolve({Contents: [{Key: faker.internet.url()}]}),
-    }),
-    deleteObjects: () => ({
-      promise: () => Promise.resolve(),
-    }),
-  })),
+jest.mock('@aws-sdk/client-cognito-identity-provider', () => ({
   CognitoIdentityServiceProvider: jest.fn().mockImplementation(() => ({
     adminCreateUser: (parmas: {
       UserPoolId: string;

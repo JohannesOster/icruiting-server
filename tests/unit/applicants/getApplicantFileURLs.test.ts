@@ -1,12 +1,7 @@
 import {random, image} from 'faker';
 import {getApplicantFileURLs} from 'modules/applicants/application/utils';
 
-const mockURL = image.imageUrl();
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    getSignedUrlPromise: () => Promise.resolve(mockURL),
-  })),
-}));
+jest.mock('infrastructure/storageService/storageService');
 
 describe('applicants', () => {
   describe('getApplicantFileURLs', () => {
@@ -19,7 +14,7 @@ describe('applicants', () => {
 
       const expectedResult = files.map(({formFieldId}) => ({
         formFieldId,
-        uri: mockURL,
+        uri: 'https://mock-signed-url.com',
       }));
       const resp = await getApplicantFileURLs(files);
 

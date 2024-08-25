@@ -14,12 +14,6 @@ jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   }),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    getSignedUrlPromise: () => Promise.resolve(''),
-  })),
-}));
-
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
 });
@@ -36,11 +30,7 @@ describe('applicants', () => {
     beforeAll(async () => {
       const {tenantId} = mockUser;
       const {id: jobId} = await dataGenerator.insertJob(tenantId);
-      const form = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        'application',
-      );
+      const form = await dataGenerator.insertForm(tenantId, jobId, 'application');
       applicant = await dataGenerator.insertApplicant(
         tenantId,
         jobId,
@@ -76,17 +66,9 @@ describe('applicants', () => {
     it('isloates tenant', async () => {
       const {id: tenantId} = await dataGenerator.insertTenant(random.uuid());
       const {id: jobId} = await dataGenerator.insertJob(tenantId);
-      const form = await dataGenerator.insertForm(
-        tenantId,
-        jobId,
-        'application',
-      );
+      const form = await dataGenerator.insertForm(tenantId, jobId, 'application');
       const fieldIds = form.formFields.map(({id}) => id);
-      const {applicantId} = (await dataGenerator.insertApplicant(
-        tenantId,
-        jobId,
-        fieldIds,
-      )) as any;
+      const {applicantId} = (await dataGenerator.insertApplicant(tenantId, jobId, fieldIds)) as any;
 
       await request(app)
         .get(`/applicants/${applicantId}`)

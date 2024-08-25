@@ -56,11 +56,19 @@ const config = convict({
       env: 'DATABASE_URL',
     },
   },
-  awsS3Bucket: {
-    doc: '',
-    format: String,
-    default: '',
-    env: 'S3_BUCKET',
+  awsS3: {
+    bucket: {
+      doc: '',
+      format: String,
+      default: '',
+      env: 'S3_BUCKET',
+    },
+    region: {
+      doc: '',
+      format: String,
+      default: '',
+      env: 'S3_REGION',
+    },
   },
   mailService: {
     email: {

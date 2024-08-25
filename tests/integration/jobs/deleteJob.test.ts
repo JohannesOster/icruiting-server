@@ -15,14 +15,6 @@ jest.mock('shared/infrastructure/http/middlewares/auth', () => ({
   }),
 }));
 
-jest.mock('aws-sdk', () => ({
-  S3: jest.fn().mockImplementation(() => ({
-    deleteObjects: () => ({
-      promise: () => Promise.resolve(),
-    }),
-  })),
-}));
-
 beforeAll(async () => {
   await dataGenerator.insertTenant(mockUser.tenantId);
 });
@@ -48,10 +40,7 @@ describe('jobs', () => {
     });
 
     it('deletes job entity', async () => {
-      await request(app)
-        .del(`/jobs/${job.id}`)
-        .set('Accept', 'application/json')
-        .expect(200);
+      await request(app).del(`/jobs/${job.id}`).set('Accept', 'application/json').expect(200);
 
       const stmt = 'SELECT COUNT(*) FROM job WHERE job_id = $1';
       const {count} = await db.one(stmt, job.id);

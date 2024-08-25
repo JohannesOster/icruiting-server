@@ -114,7 +114,6 @@ export const ApplicantsRepository = ({db, pgp}: DBAccess) => {
     attributes: {formFieldId: string; attributeValue: string}[];
   }): Promise<Applicant> => {
     const helpers = db.$config.pgp.helpers;
-    console.error('params', params);
 
     const delCond = ' WHERE applicant_id=${applicant_id}';
     const delStmt = 'DELETE FROM applicant_attribute' + delCond;
