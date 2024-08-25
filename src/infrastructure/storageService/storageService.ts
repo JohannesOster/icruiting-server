@@ -11,9 +11,8 @@ import {Readable} from 'node:stream';
 import config from 'config';
 
 export const StorageService = () => {
-  console.log('ASDFASDFASDFASD');
-  const bucket = config.get('awsS3Bucket');
-  const client = new S3Client();
+  const bucket = config.get('awsS3.bucket');
+  const client = new S3Client({region: config.get('awsS3.region')});
 
   const getUrl = (path: string) => {
     const params = {Bucket: bucket, Key: path};
