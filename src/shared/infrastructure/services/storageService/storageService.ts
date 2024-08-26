@@ -18,7 +18,6 @@ export const StorageService = () => {
     const params = {Bucket: bucket, Key: path};
     const command = new GetObjectCommand(params);
     const url = await getSignedUrl(client, command, {expiresIn: 3600});
-    console.log(url);
     return url;
   };
 
