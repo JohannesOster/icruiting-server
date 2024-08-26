@@ -2,7 +2,7 @@ import fs from 'fs';
 import formidable from 'formidable';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {BaseError} from 'application';
-import storageService from 'infrastructure/storageService';
+import storageService from 'shared/infrastructure/services/storageService';
 import {DB} from '../infrastructure/repositories';
 
 export const ThemesAdapter = (db: DB) => {

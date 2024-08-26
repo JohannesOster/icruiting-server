@@ -3,7 +3,7 @@ import config from 'config';
 import {DB} from '../infrastructure/db';
 import {BaseError} from 'application';
 import {validateSubscription} from './utils';
-import storageService from 'infrastructure/storageService';
+import storageService from 'shared/infrastructure/services/storageService';
 import {createForm} from 'modules/forms/domain/form';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {formsMapper} from '../mappers';

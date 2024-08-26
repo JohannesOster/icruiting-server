@@ -1,5 +1,5 @@
 import fs from 'fs';
-import storageService from 'infrastructure/storageService';
+import storageService from 'shared/infrastructure/services/storageService';
 import {BaseError} from 'application';
 import formidable, {File} from 'formidable';
 import {httpReqHandler} from 'shared/infrastructure/http';

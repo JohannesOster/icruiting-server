@@ -6,7 +6,7 @@ import dataGenerator from '../testUtils/dataGenerator';
 import Mail from 'nodemailer/lib/mailer';
 import {Form} from 'modules/forms/domain';
 
-jest.mock('infrastructure/mailService/mailService', () => ({
+jest.mock('shared/infrastructure/services/mailService/mailService', () => ({
   sendMail: jest.fn((options: Mail.Options) => Promise.resolve({})),
 }));
 

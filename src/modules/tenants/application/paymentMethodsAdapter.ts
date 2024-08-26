@@ -1,17 +1,14 @@
 import {BaseError} from 'application';
 import {httpReqHandler} from 'shared/infrastructure/http';
-import paymentService from 'infrastructure/paymentService';
+import paymentService from 'shared/infrastructure/services/paymentService';
 
 export const PaymentMethodsAdapter = () => {
   const getSetupIntent = httpReqHandler(async (req) => {
     const {stripeCustomerId} = req.user;
 
-    if (!stripeCustomerId)
-      throw new BaseError(422, 'Missing Stripe customer id');
+    if (!stripeCustomerId) throw new BaseError(422, 'Missing Stripe customer id');
 
-    const setupIntent = await paymentService.payment.initialize(
-      stripeCustomerId,
-    );
+    const setupIntent = await paymentService.payment.initialize(stripeCustomerId);
 
     return {body: setupIntent.client_secret};
   });
@@ -19,12 +16,9 @@ export const PaymentMethodsAdapter = () => {
   const list = httpReqHandler(async (req) => {
     const {stripeCustomerId} = req.user;
 
-    if (!stripeCustomerId)
-      throw new BaseError(422, 'Missing Stripe customer id');
+    if (!stripeCustomerId) throw new BaseError(422, 'Missing Stripe customer id');
 
-    const paymentMethods = await paymentService.paymentMethods.list(
-      stripeCustomerId,
-    );
+    const paymentMethods = await paymentService.paymentMethods.list(stripeCustomerId);
 
     return {body: paymentMethods};
   });
@@ -33,8 +27,7 @@ export const PaymentMethodsAdapter = () => {
     const {stripeCustomerId} = req.user;
     const {paymentMethodId} = req.params;
 
-    if (!stripeCustomerId)
-      throw new BaseError(422, 'Missing Stripe customer id');
+    if (!stripeCustomerId) throw new BaseError(422, 'Missing Stripe customer id');
 
     await paymentService.paymentMethods.del(stripeCustomerId, paymentMethodId);
 
@@ -45,13 +38,9 @@ export const PaymentMethodsAdapter = () => {
     const {stripeCustomerId} = req.user;
     const {paymentMethodId} = req.body;
 
-    if (!stripeCustomerId)
-      throw new BaseError(422, 'Missing Stripe customer id');
+    if (!stripeCustomerId) throw new BaseError(422, 'Missing Stripe customer id');
 
-    await paymentService.paymentMethods.setDefault(
-      stripeCustomerId,
-      paymentMethodId,
-    );
+    await paymentService.paymentMethods.setDefault(stripeCustomerId, paymentMethodId);
 
     return {};
   });

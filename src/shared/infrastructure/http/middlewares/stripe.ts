@@ -1,6 +1,6 @@
 import {BaseError} from 'application';
 import db from 'infrastructure/db';
-import paymentService from 'infrastructure/paymentService';
+import paymentService from 'shared/infrastructure/services/paymentService';
 import {catchAsync} from '../httpReqHandler';
 
 export const requireSubscription = catchAsync(async (req, res, next) => {
