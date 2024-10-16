@@ -1,5 +1,4 @@
 import fs from 'fs';
-import puppeteer from 'puppeteer';
 import pug from 'pug';
 import formidable from 'formidable';
 import {BaseError} from 'application';
@@ -9,8 +8,11 @@ import {calcReport} from './calcReport';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {DB} from '../infrastructure/repositories';
 import {FormCategory} from 'modules/forms/domain';
+import {BrowserManager} from './browserManager';
 
 export const ApplicantsAdapter = (db: DB) => {
+  const browserManager = new BrowserManager(5000);
+
   const _retrieveApplicantWithAttributes = async (tenantId: string, applicantId: string) => {
     const applicant = await db.applicants.retrieve(tenantId, applicantId);
     if (!applicant) throw new BaseError(404, 'Not Found');
@@ -262,10 +264,7 @@ export const ApplicantsAdapter = (db: DB) => {
       formCategory: 'assessment',
     });
 
-    const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
-    const page = await browser.newPage();
-    await page.setContent(template, {waitUntil: 'networkidle0'});
-    const pdf = await page.pdf({
+    const pdf = await browserManager.renderPDF(template, {
       format: 'A4',
       displayHeaderFooter: true,
       headerTemplate: ``,
@@ -278,7 +277,6 @@ export const ApplicantsAdapter = (db: DB) => {
       // this is needed to prevent content from being placed over the footer
       margin: {top: '24px', bottom: '24px'},
     });
-    await browser.close();
 
     return {file: Buffer.from(pdf)};
   });
