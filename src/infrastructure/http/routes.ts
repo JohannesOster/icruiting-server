@@ -243,19 +243,62 @@ router.use('/pdf', async (req, res) => {
             formFieldScore: 0,
             stdDevFormFieldScore: 0,
           },
+          {
+            formFieldId: 'positives',
+            rowIndex: 0,
+            intent: 'aggregate',
+            label: 'Welche Verhaltensweisen soll der/die Bewerber:in beibehalten?*',
+            aggregatedValues: [
+              'Beeindruckende Körpersprache. Zweifellos eine erfahrene Präsentatorin!',
+              'Unglaubliche Wortgewandtheit. Hat mich sehr beeindruckt!',
+              'Ihre Kopfbeharung hat mich absolut überzeugt. Strong strong hire.',
+            ],
+            countDistinct: {},
+            formFieldScore: 4,
+            stdDevFormFieldScore: 0.34,
+          },
+          {
+            formFieldId: 'positives',
+            rowIndex: 0,
+            intent: 'aggregate',
+            label: 'Welche Verhaltensweisen soll der/die Bewerber:in ablegen?*',
+            aggregatedValues: [
+              'Ich konnte meine Augen nicht von ihrer Nasenform abwenden. Strong strong hire.',
+            ],
+            countDistinct: {},
+            formFieldScore: 4,
+            stdDevFormFieldScore: 0.34,
+          },
         ],
       },
     ],
     jobRequirementResults: [
+      {jobRequirementId: 'kreativitaet', requirementLabel: 'Kreativität', jobRequirementScore: 3},
+      {jobRequirementId: 'motivation', requirementLabel: 'Motivation', jobRequirementScore: 4},
+      {
+        jobRequirementId: 'professionalitaet',
+        requirementLabel: 'Professionalität',
+        jobRequirementScore: 1,
+      },
       {
         jobRequirementId: 'strukturiertheit',
         requirementLabel: 'Strukturiertheit',
         jobRequirementScore: 1,
       },
       {
-        jobRequirementId: 'professionalitaet',
-        requirementLabel: 'Professionalität',
-        jobRequirementScore: 1,
+        jobRequirementId: 'teamfaehigkeit',
+        requirementLabel: 'Teamfähigkeit',
+        jobRequirementScore: 4,
+      },
+      {
+        jobRequirementId: 'teamfit',
+        requirementLabel: 'Teamfit',
+        jobRequirementScore: 2.5,
+      },
+      {
+        jobRequirementId: 'usp',
+        requirementLabel: 'USP',
+        jobRequirementScore: 2.5,
       },
     ],
   };
@@ -277,7 +320,7 @@ router.use('/pdf', async (req, res) => {
   const page = await browser.newPage();
   await page.setContent(template, {waitUntil: 'networkidle0'});
   await page.pdf({
-    path: 'report.pdf',
+    path: `${fullName?.toLowerCase().replace(' ', '-')}.pdf`,
     format: 'A4',
     displayHeaderFooter: true,
     headerTemplate: ``,

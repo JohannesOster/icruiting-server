@@ -1,4 +1,6 @@
 import fs from 'fs';
+import puppeteer from 'puppeteer';
+import pug from 'pug';
 import formidable from 'formidable';
 import {BaseError} from 'application';
 import storageService from 'shared/infrastructure/services/storageService';
@@ -9,10 +11,7 @@ import {DB} from '../infrastructure/repositories';
 import {FormCategory} from 'modules/forms/domain';
 
 export const ApplicantsAdapter = (db: DB) => {
-  const retrieve = httpReqHandler(async (req) => {
-    const {applicantId} = req.params;
-    const {tenantId} = req.user;
-
+  const _retrieveApplicantWithAttributes = async (tenantId: string, applicantId: string) => {
     const applicant = await db.applicants.retrieve(tenantId, applicantId);
     if (!applicant) throw new BaseError(404, 'Not Found');
 
@@ -45,6 +44,11 @@ export const ApplicantsAdapter = (db: DB) => {
       key: formFields[file.formFieldId],
     }));
 
+    return resp;
+  };
+
+  const retrieve = httpReqHandler(async (req) => {
+    const resp = await _retrieveApplicantWithAttributes(req.user.tenantId, req.params.applicantId);
     return {body: resp};
   });
 
@@ -234,6 +238,51 @@ export const ApplicantsAdapter = (db: DB) => {
     return {body: report};
   });
 
+  const getPDFReport = httpReqHandler(async (req) => {
+    const {applicantId} = req.params;
+    const {tenantId} = req.user;
+    type QueryType = {formCategory: FormCategory};
+    const {formCategory} = req.query as QueryType;
+
+    const applicant = await _retrieveApplicantWithAttributes(tenantId, applicantId);
+    if (!applicant) throw new BaseError(404, 'Applicant Not Found');
+    const job = await db.jobs.retrieve(tenantId, applicant.jobId);
+    if (!job) throw new BaseError(404, 'Job Not Found');
+
+    const data = await db.formSubmissions.prepareReport(tenantId, formCategory, job.id);
+    const report = calcReport(data, applicantId, job.jobRequirements);
+
+    const fullName = applicant.attributes?.find(
+      (attr: any) => attr.key === 'Vollständiger Name',
+    )?.value;
+
+    const template = pug.compileFile(`${__dirname}/../infrastructure/http/views/report.pug`)({
+      applicant: {...applicant, name: fullName},
+      report,
+      formCategory: 'assessment',
+    });
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setContent(template, {waitUntil: 'networkidle0'});
+    const pdf = await page.pdf({
+      format: 'A4',
+      displayHeaderFooter: true,
+      headerTemplate: ``,
+      footerTemplate: `
+      <div style="border-top: solid 1px #bbb; width: 100%; font-size: 12px;
+          padding: 5px 5px 0; color: #bbb; position: relative;">
+          <div style="position: absolute; right: 5px; top: 5px;"><span class="pageNumber"></span>/<span class="totalPages"></span></div>
+      </div>
+    `,
+      // this is needed to prevent content from being placed over the footer
+      margin: {top: '24px', bottom: '24px'},
+    });
+    await browser.close();
+
+    return {file: Buffer.from(pdf)};
+  });
+
   const del = httpReqHandler(async (req) => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
@@ -261,5 +310,5 @@ export const ApplicantsAdapter = (db: DB) => {
     return {body: applicant};
   });
 
-  return {retrieve, list, update, getReport, del, confirm, getTEReport};
+  return {retrieve, list, update, getReport, del, confirm, getTEReport, getPDFReport};
 };

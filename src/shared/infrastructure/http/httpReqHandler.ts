@@ -15,6 +15,7 @@ type HTTPResponse = {
   status?: number;
   body?: any;
   view?: string;
+  file?: Buffer;
 };
 
 type RequestHandler = (req: HTTPRequest) => Promise<HTTPResponse>;
@@ -22,8 +23,13 @@ export const httpReqHandler = (fn: RequestHandler): ExpressRequestHandler => {
   return async (req, res, next) => {
     await fn(req)
       .then((response) => {
-        const {status, body, view} = response;
+        const {status, body, view, file} = response;
         if (view) return res.render(view, body);
+        if (file) {
+          res.set('Content-Type', 'application/octet-stream');
+          res.set('Content-Length', `${file.length}`);
+          return res.send(file);
+        }
         res.status(status || 200).json(body);
       })
       .catch(next);
