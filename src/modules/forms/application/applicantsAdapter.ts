@@ -3,9 +3,9 @@ import formidable from 'formidable';
 import {v4 as uuid} from 'uuid';
 import {DB} from '../infrastructure/db';
 import {BaseError} from 'application';
-import templates, {Template} from 'infrastructure/mailService/templates';
-import {sendMail} from 'infrastructure/mailService';
-import storageService from 'infrastructure/storageService';
+import {sendMail, Template} from 'shared/infrastructure/services/mailService';
+import templates from 'shared/infrastructure/services/mailService/templates';
+import storageService from 'shared/infrastructure/services/storageService';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {validateSubscription} from './utils';
 

@@ -1,7 +1,7 @@
 import {random, image} from 'faker';
 import {getApplicantFileURLs} from 'modules/applicants/application/utils';
 
-jest.mock('infrastructure/storageService/storageService');
+jest.mock('shared/infrastructure/services/storageService/storageService');
 
 describe('applicants', () => {
   describe('getApplicantFileURLs', () => {

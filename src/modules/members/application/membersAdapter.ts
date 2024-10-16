@@ -1,4 +1,4 @@
-import authService from 'infrastructure/authService';
+import authService from 'shared/infrastructure/services/authService';
 import {httpReqHandler} from 'shared/infrastructure/http';
 import {DB} from '../infrastructure/repositories';
 

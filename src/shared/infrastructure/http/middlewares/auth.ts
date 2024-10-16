@@ -1,5 +1,5 @@
 import {BaseError} from 'application';
-import authService from 'infrastructure/authService';
+import authService from 'shared/infrastructure/services/authService';
 import {catchAsync} from '../httpReqHandler';
 
 export const requireAuth = catchAsync(async (req, res, next) => {
