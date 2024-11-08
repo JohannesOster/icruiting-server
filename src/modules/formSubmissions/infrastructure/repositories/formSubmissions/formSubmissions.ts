@@ -7,9 +7,7 @@ import {DBAccess} from 'shared/infrastructure/http';
 import {formSubmissionsMapper} from 'modules/formSubmissions/mappers';
 
 export const FormSubmissionsRepository = ({db, pgp}: DBAccess) => {
-  const reduceSubmission = (
-    submission: {formFieldId: string; submissionValue: string}[],
-  ) => {
+  const reduceSubmission = (submission: {formFieldId: string; submissionValue: string}[]) => {
     return submission.reduce((acc, {formFieldId, submissionValue}) => {
       acc[formFieldId] = submissionValue;
       return acc;
@@ -24,10 +22,9 @@ export const FormSubmissionsRepository = ({db, pgp}: DBAccess) => {
   const create = async (params: DBFormSubmission): Promise<FormSubmission> => {
     const {insert, ColumnSet} = db.$config.pgp.helpers;
 
-    const subCS = new ColumnSet(
-      ['applicant_id', 'submitter_id', 'form_id', 'tenant_id'],
-      {table: 'form_submission'},
-    );
+    const subCS = new ColumnSet(['applicant_id', 'submitter_id', 'form_id', 'tenant_id'], {
+      table: 'form_submission',
+    });
 
     const {tenantId, applicantId, submitterId, formId} = params;
     const subParams = {tenantId, applicantId, submitterId, formId};
@@ -67,8 +64,7 @@ export const FormSubmissionsRepository = ({db, pgp}: DBAccess) => {
   };
 
   const update = async (params: DBFormSubmission): Promise<FormSubmission> => {
-    const selCond =
-      ' WHERE form_submission_id=${form_submission_id} AND tenant_id=${tenant_id}';
+    const selCond = ' WHERE form_submission_id=${form_submission_id} AND tenant_id=${tenant_id}';
     const sub = await db.one(
       'SELECT * FROM form_submission' + selCond,
       decamelizeKeys({
@@ -105,11 +101,9 @@ export const FormSubmissionsRepository = ({db, pgp}: DBAccess) => {
     tenantId: string,
     formCategory: FormCategory,
     jobId: string,
+    submitterId: string,
   ): Promise<ReportPrepareRow[]> => {
-    return db.any(
-      sql.prepareReport,
-      decamelizeKeys({tenantId, formCategory, jobId}),
-    );
+    return db.any(sql.prepareReport, decamelizeKeys({tenantId, formCategory, jobId, submitterId}));
   };
 
   const prepareTEReport = (
@@ -117,10 +111,7 @@ export const FormSubmissionsRepository = ({db, pgp}: DBAccess) => {
     formId: FormCategory,
     jobId: string,
   ): Promise<ReportPrepareRow[]> => {
-    return db.any(
-      sql.prepareTEReport,
-      decamelizeKeys({tenantId, formId, jobId}),
-    );
+    return db.any(sql.prepareTEReport, decamelizeKeys({tenantId, formId, jobId}));
   };
 
   const del = (tenantId: string, formSubmissionId: string): Promise<null> => {
@@ -142,16 +133,14 @@ export const FormSubmissionsRepository = ({db, pgp}: DBAccess) => {
     jobId: string,
     formCategory: string,
   ): Promise<FormSubmission[]> => {
-    return db
-      .any(sql.list, decamelizeKeys({tenantId, jobId, formCategory}))
-      .then((rows) => {
-        return rows.map((row) =>
-          formSubmissionsMapper.toDomain({
-            ...row,
-            submission: reduceSubmission(row.submission),
-          }),
-        );
-      });
+    return db.any(sql.list, decamelizeKeys({tenantId, jobId, formCategory})).then((rows) => {
+      return rows.map((row) =>
+        formSubmissionsMapper.toDomain({
+          ...row,
+          submission: reduceSubmission(row.submission),
+        }),
+      );
+    });
   };
 
   return {

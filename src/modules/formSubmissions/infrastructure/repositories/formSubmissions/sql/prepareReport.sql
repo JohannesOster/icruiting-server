@@ -18,4 +18,6 @@ INNER JOIN form_submission ON form_submission.form_submission_id = form_submissi
 INNER JOIN form ON form.form_id = form_submission.form_id
 WHERE form.form_category = ${form_category}
 	AND form.job_id = ${job_id}
-	AND form.tenant_id = ${tenant_id};
+	AND form.tenant_id = ${tenant_id}
+	AND (${submitter_id} IS NULL OR form_submission.submitter_id = ${submitter_id});
+

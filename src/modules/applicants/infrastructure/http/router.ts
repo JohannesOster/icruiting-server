@@ -23,6 +23,7 @@ export const ApplicantsRouter: RouterFactory = (dbAccess) => {
 
   router.use(requireAdmin);
   router.get('/:applicantId/report', getReportRules, validate, adapter.getReport);
+  router.get('/:applicantId/personal-report', getReportRules, validate, adapter.getPersonalReport);
   router.get('/:applicantId/report/pdf', getReportRules, validate, adapter.getPDFReport);
   router.get('/:applicantId/report/te', getTEReportRules, validate, adapter.getTEReport);
 
