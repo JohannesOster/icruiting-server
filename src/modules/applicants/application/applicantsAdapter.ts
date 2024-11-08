@@ -222,6 +222,23 @@ export const ApplicantsAdapter = (db: DB) => {
     return {body: report};
   });
 
+  const getPersonalReport = httpReqHandler(async (req) => {
+    const {applicantId} = req.params;
+    const {tenantId, userId} = req.user;
+    type QueryType = {formCategory: FormCategory};
+    const {formCategory} = req.query as QueryType;
+
+    const applicant = await db.applicants.retrieve(tenantId, applicantId);
+    if (!applicant) throw new BaseError(404, 'Applicant Not Found');
+    const job = await db.jobs.retrieve(tenantId, applicant.jobId);
+    if (!job) throw new BaseError(404, 'Job Not Found');
+
+    const data = await db.formSubmissions.prepareReport(tenantId, formCategory, job.id, userId);
+    const report = calcReport(data, applicantId, job.jobRequirements);
+
+    return {body: report};
+  });
+
   const getTEReport = httpReqHandler(async (req) => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
@@ -308,5 +325,15 @@ export const ApplicantsAdapter = (db: DB) => {
     return {body: applicant};
   });
 
-  return {retrieve, list, update, getReport, del, confirm, getTEReport, getPDFReport};
+  return {
+    retrieve,
+    list,
+    update,
+    getReport,
+    del,
+    confirm,
+    getTEReport,
+    getPDFReport,
+    getPersonalReport,
+  };
 };
