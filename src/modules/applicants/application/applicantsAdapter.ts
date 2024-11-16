@@ -260,15 +260,16 @@ export const ApplicantsAdapter = (db: DB) => {
   const getPDFReport = httpReqHandler(async (req) => {
     const {applicantId} = req.params;
     const {tenantId} = req.user;
-    type QueryType = {formCategory: FormCategory};
-    const {formCategory} = req.query as QueryType;
+    type QueryType = {formCategory: FormCategory; formId?: string};
+    const {formCategory, formId} = req.query as QueryType;
 
     const applicant = await _retrieveApplicantWithAttributes(tenantId, applicantId);
     if (!applicant) throw new BaseError(404, 'Applicant Not Found');
     const job = await db.jobs.retrieve(tenantId, applicant.jobId);
     if (!job) throw new BaseError(404, 'Job Not Found');
 
-    const data = await db.formSubmissions.prepareReport(tenantId, formCategory, job.id);
+    let data = await db.formSubmissions.prepareReport(tenantId, formCategory, job.id);
+    if (formId) data = data.filter((r) => r.formId === formId || r.replicaOf === formId);
     const report = calcReport(data, applicantId, job.jobRequirements);
 
     const fullName = applicant.attributes?.find(
