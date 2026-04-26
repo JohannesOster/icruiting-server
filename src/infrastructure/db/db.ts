@@ -10,6 +10,9 @@ const initOptions: IInitOptions = {
 };
 
 const pgp = pgPromise(initOptions);
-const db = pgp(config.get('db.url'));
+const db = pgp({
+  connectionString: config.get('db.url'),
+  ssl: config.get('env') === 'production' ? {rejectUnauthorized: false} : false,
+});
 
 export {db, pgp};
