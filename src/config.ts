@@ -10,11 +10,19 @@ const config = convict({
     default: 'development',
     env: 'NODE_ENV',
   },
-  discordWebHook: {
-    doc: '',
-    format: String,
-    default: '',
-    env: 'DISCORD_ERROR_LOGGING_WEBHOOK',
+  ntfy: {
+    url: {
+      doc: 'Base URL of a self-hosted ntfy server. Falls back to https://ntfy.sh when unset.',
+      format: String,
+      default: '',
+      env: 'NTFY_URL',
+    },
+    topic: {
+      doc: 'ntfy topic error/signup notifications get published to.',
+      format: String,
+      default: '',
+      env: 'NTFY_TOPIC',
+    },
   },
   liquibase: {
     url: {

@@ -32,7 +32,11 @@ const ErrorHandler = () => {
       logger.error(appError.message, appError);
 
       if (![400, 404, 422].includes(appError.statusCode)) {
-        logger.discord(JSON.stringify({appError, stack: appError.stack}));
+        logger.ntfy(JSON.stringify({appError, stack: appError.stack}), {
+          title: `icruiting error ${appError.statusCode}`,
+          priority: 'high',
+          tags: 'rotating_light',
+        });
       }
 
       // Unknown error (non-trusted) is being thrown - crash app
