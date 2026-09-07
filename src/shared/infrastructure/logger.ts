@@ -1,5 +1,6 @@
 import {pino} from 'pino';
 import https from 'https';
+import http from 'http';
 import config from 'config';
 
 const Logger = () => {
@@ -30,12 +31,28 @@ const Logger = () => {
     _logger.error(message, ...args);
   };
 
-  const discord = (message: string) => {
-    const req = https.request({
+  // Only publishes in production - dev/test have no NTFY_TOPIC configured.
+  const ntfy = (
+    message: string,
+    options: {title?: string; priority?: string; tags?: string} = {},
+  ) => {
+    if (config.get('env') !== 'production') return;
+
+    const topic = config.get('ntfy.topic');
+    if (!topic) return;
+
+    const baseUrl = config.get('ntfy.url') || 'https://ntfy.sh';
+    const url = new URL(`${baseUrl}/${topic}`);
+    const client = url.protocol === 'http:' ? http : https;
+
+    const req = client.request(url, {
       method: 'POST',
-      host: 'discord.com',
-      path: config.get('discordWebHook'),
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        ...(options.title ? {Title: options.title} : {}),
+        ...(options.priority ? {Priority: options.priority} : {}),
+        ...(options.tags ? {Tags: options.tags} : {}),
+      },
     });
 
     req.write(message);
@@ -43,7 +60,7 @@ const Logger = () => {
     req.end();
   };
 
-  return {debug, info, warning, error, discord};
+  return {debug, info, warning, error, ntfy};
 };
 
 export default Logger();

@@ -31,8 +31,14 @@ const ErrorHandler = () => {
       const appError: BaseError = normalizeError(errorToHandle);
       logger.error(appError.message, appError);
 
-      if (![400, 404, 422].includes(appError.statusCode)) {
-        logger.discord(JSON.stringify({appError, stack: appError.stack}));
+      // 4xx are expected: bad input, missing/invalid auth, not found. Only server-side
+      // failures point at a bug or weakness, so only those are worth a notification.
+      if (appError.statusCode >= 500) {
+        logger.ntfy(JSON.stringify({appError, stack: appError.stack}), {
+          title: `icruiting error ${appError.statusCode}`,
+          priority: 'high',
+          tags: 'rotating_light',
+        });
       }
 
       // Unknown error (non-trusted) is being thrown - crash app
@@ -51,7 +57,15 @@ const ErrorHandler = () => {
   const normalizeError = (errorToHandle: unknown): BaseError => {
     if (errorToHandle instanceof BaseError) return errorToHandle;
     if (errorToHandle instanceof Error) {
-      const appError = new BaseError(500, errorToHandle.message, errorToHandle.name);
+      // Libraries like body-parser signal client errors by setting status/statusCode on a
+      // plain Error (malformed JSON -> 400). Honour that, otherwise every bot posting
+      // garbage normalizes to 500 and pages someone. No status means a real crash.
+      const {statusCode, status} = errorToHandle as {statusCode?: number; status?: number};
+      const appError = new BaseError(
+        statusCode ?? status ?? 500,
+        errorToHandle.message,
+        errorToHandle.name,
+      );
       appError.stack = errorToHandle.stack;
       return appError;
     }
