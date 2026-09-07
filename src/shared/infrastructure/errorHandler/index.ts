@@ -31,7 +31,9 @@ const ErrorHandler = () => {
       const appError: BaseError = normalizeError(errorToHandle);
       logger.error(appError.message, appError);
 
-      if (![400, 404, 422].includes(appError.statusCode)) {
+      // 4xx are expected: bad input, missing/invalid auth, not found. Only server-side
+      // failures point at a bug or weakness, so only those are worth a notification.
+      if (appError.statusCode >= 500) {
         logger.ntfy(JSON.stringify({appError, stack: appError.stack}), {
           title: `icruiting error ${appError.statusCode}`,
           priority: 'high',
