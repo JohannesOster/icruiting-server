@@ -57,7 +57,15 @@ const ErrorHandler = () => {
   const normalizeError = (errorToHandle: unknown): BaseError => {
     if (errorToHandle instanceof BaseError) return errorToHandle;
     if (errorToHandle instanceof Error) {
-      const appError = new BaseError(500, errorToHandle.message, errorToHandle.name);
+      // Libraries like body-parser signal client errors by setting status/statusCode on a
+      // plain Error (malformed JSON -> 400). Honour that, otherwise every bot posting
+      // garbage normalizes to 500 and pages someone. No status means a real crash.
+      const {statusCode, status} = errorToHandle as {statusCode?: number; status?: number};
+      const appError = new BaseError(
+        statusCode ?? status ?? 500,
+        errorToHandle.message,
+        errorToHandle.name,
+      );
       appError.stack = errorToHandle.stack;
       return appError;
     }

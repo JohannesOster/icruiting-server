@@ -66,6 +66,15 @@ describe('errorHandler.handleError', () => {
       expect(mockedNtfy.mock.calls[0][1]).toMatchObject({title: 'icruiting error 500'});
     });
 
+    it.each([
+      ['statusCode', {statusCode: 400}],
+      ['status', {status: 400}],
+    ])('does not notify when a library error carries %s: 400', (_label, props) => {
+      errorHandler.handleError(Object.assign(new SyntaxError('Unexpected token'), props));
+
+      expect(mockedNtfy).not.toHaveBeenCalled();
+    });
+
     it('notifies on a thrown non-error value, normalized to 500', () => {
       errorHandler.handleError('just a string');
 
