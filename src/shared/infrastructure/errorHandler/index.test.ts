@@ -51,12 +51,46 @@ describe('errorHandler.handleError', () => {
       expect(mockedNtfy).toHaveBeenCalledTimes(1);
     });
 
-    it('notifies with the message and stack, titled by status code', () => {
+    it('leads with the error message, titled by status code', () => {
       errorHandler.handleError(new BaseError(500, 'boom'));
 
       const [body, options] = mockedNtfy.mock.calls[0];
-      expect(body).toContain('boom');
+      expect(body.split('\n')[0]).toBe('boom');
       expect(options).toMatchObject({title: 'icruiting error 500', priority: 'high'});
+    });
+
+    it('does not JSON-encode the body, which would drop the message entirely', () => {
+      // Error.message is non-enumerable: JSON.stringify({appError}) silently omits it.
+      errorHandler.handleError(new BaseError(500, 'invalid input syntax for type uuid'));
+
+      const [body] = mockedNtfy.mock.calls[0];
+      expect(body).toContain('invalid input syntax for type uuid');
+      expect(body).not.toContain('"appError"');
+      expect(body).not.toContain('isTrusted');
+    });
+
+    it('includes stack frames, capped so the notification stays readable', () => {
+      const err = new BaseError(500, 'boom');
+      err.stack = ['error: boom', ...Array.from({length: 30}, (_, i) => `    at frame${i}`)].join(
+        '\n',
+      );
+
+      errorHandler.handleError(err);
+
+      const [body] = mockedNtfy.mock.calls[0];
+      expect(body).toContain('at frame0');
+      expect(body).toContain('at frame4');
+      expect(body).not.toContain('at frame5');
+    });
+
+    it('still notifies when the error carries no stack', () => {
+      const err = new BaseError(500, 'boom');
+      err.stack = undefined;
+
+      errorHandler.handleError(err);
+
+      expect(mockedNtfy).toHaveBeenCalledTimes(1);
+      expect(mockedNtfy.mock.calls[0][0]).toBe('boom');
     });
 
     it('notifies on a plain Error, normalized to 500', () => {

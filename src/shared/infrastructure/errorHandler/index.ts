@@ -3,6 +3,8 @@ import * as util from 'util';
 import logger from 'shared/infrastructure/logger';
 import {BaseError} from 'application';
 
+const STACK_FRAMES = 5;
+
 const ErrorHandler = () => {
   let httpServerRef: Http.Server;
   const listenToErrorEvents = (httpServer: Http.Server) => {
@@ -34,7 +36,7 @@ const ErrorHandler = () => {
       // 4xx are expected: bad input, missing/invalid auth, not found. Only server-side
       // failures point at a bug or weakness, so only those are worth a notification.
       if (appError.statusCode >= 500) {
-        logger.ntfy(JSON.stringify({appError, stack: appError.stack}), {
+        logger.ntfy(formatAlert(appError), {
           title: `icruiting error ${appError.statusCode}`,
           priority: 'high',
           tags: 'rotating_light',
@@ -51,6 +53,19 @@ const ErrorHandler = () => {
       process.stdout.write(JSON.stringify(handlingError));
       process.stdout.write(JSON.stringify(errorToHandle));
     }
+  };
+
+  // A notification is read on a phone: lead with the message and keep only the top frames.
+  // JSON.stringify is no good here - Error.message is non-enumerable, so it silently
+  // vanishes and the alert arrives without the one line that says what broke. The full
+  // stack is still in the logs via logger.error above.
+  const formatAlert = (appError: BaseError): string => {
+    const frames = (appError.stack ?? '')
+      .split('\n')
+      .slice(1, STACK_FRAMES + 1)
+      .join('\n');
+
+    return [appError.message, frames].filter(Boolean).join('\n\n');
   };
 
   // The input might not be 'BaseError' or even 'Error' instance, the output of this function will be - BaseError.
